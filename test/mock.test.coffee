@@ -7,20 +7,68 @@ describe "Mock", ->
       m.expects("my_method").should.equal m
       
     it "does not throw an error if an expected method is called", ->
-      m = new Mock()
-      (-> m.my_method() ).should.not.throw
+      m = (new Mock).expects("my_method")
+      m.my_method()
 
     it "throws an error if an unexpected method is called", ->
       m = new Mock()
       (-> m.my_method() ).should.throw( /has no method 'my_method'/ )
+      
+    it "can be called many times to expect the same method", ->
+      m = (new Mock).expects("my_method").expects("my_method")
+      m.my_method()
+      
+    it "can be called many times to expect different methods", ->
+      m = (new Mock).expects("my_method1").expects("my_method2")
+      m.my_method1()
+      m.my_method2()
+      
+    it "can be called after expected methods have been called (likely bad form but harmless)", ->
+      m = (new Mock).expects("my_method1")
+      m.my_method1()
+      m.expects("my_method2")
+      m.my_method2()
 
   describe ".check()", ->
     it "does not throw an error if an expected method was called", ->
       m = (new Mock).expects("my_method")
       m.my_method()
-      (-> m.check() ).should.not.throw
+      m.check()
     
     it "throws an error if an expected method was not called", ->
       m = (new Mock).expects("my_method")
-      (-> m.check() ).should.throw( /'my_method' was never called/ )
-  
+      (-> m.check() ).should.throw( /'my_method' had 0 calls; expected 1 call/ )
+        
+    it "does not throw an error if a method is called the expected number of times", ->
+      m = (new Mock).expects("my_method").expects("my_method")
+      m.my_method() ; m.my_method()
+      m.check()
+      
+    it "throws an error if a method is called too few times", ->
+      m = (new Mock).expects("my_method").expects("my_method")
+      m.my_method()
+      (-> m.check() ).should.throw( /'my_method' had 1 calls; expected 2 calls/ )
+    
+    it "throws an error if a method is called too many times", ->
+      m = (new Mock).expects("my_method").expects("my_method")
+      m.my_method() ; m.my_method() ; m.my_method()
+      (-> m.check() ).should.throw( /'my_method' had 3 calls; expected 2 calls/ )
+      
+    it "can be called many times (meaningless but harmless)", ->
+      m = (new Mock).expects("my_method")
+      m.my_method()
+      m.check()
+      m.check()
+
+    it "can be called many times in any order (likely bad form but harmless)", ->
+      m = (new Mock).expects("my_method1")
+      m.my_method1()
+      m.check()
+      m.expects("my_method2")
+      m.my_method2()
+      m.check()
+      
+    it "reports all all methods that were called an incorrect number of times", ->
+      m = (new Mock).expects("my_method1").expects("my_method2")
+      (-> m.check() ).should.throw( /my_method1(.|\n)*?my_method2/ )
+      
