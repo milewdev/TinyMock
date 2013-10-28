@@ -4,8 +4,7 @@ class Mock
     @call_counts = {}
   
   expects: (method_name) ->
-    throw new Error("you cannot do my_mock.expects('expects'); 'expects' is a reserved method name") if method_name == "expects"
-    throw new Error("you cannot do my_mock.expects('check'); 'check' is a reserved method name") if method_name == "check"
+    throw new Error("you cannot do my_mock.expects('#{method_name}'); '#{method_name}' is a reserved method name") if method_name in [ "expects", "check" ]
     @call_counts[ method_name ] ?= { expected: 0, actual: 0 }
     @call_counts[ method_name ].expected += 1
     @[ method_name ] = -> @call_counts[ method_name ].actual += 1
