@@ -25,6 +25,7 @@ class Mock
       messages += "'#{method_name}' had #{call_count.actual} calls; expected #{call_count.expected} calls\n" 
     throw new Error(messages) unless messages == ""
     @last_method_was = "check"
+    @
 
 
 mock = (fn) ->

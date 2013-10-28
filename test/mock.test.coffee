@@ -70,7 +70,7 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
   
 describe "Mock.check()", ->
 
-  it.skip "returns the mock instance", ->
+  it "returns the mock instance", ->
     m = new Mock()
     m.check().should.equal m
     
