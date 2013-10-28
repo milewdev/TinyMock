@@ -1,4 +1,4 @@
-{Mock} = require("../src/mock")
+{mock, Mock} = require("../src/mock")
 
 describe "Mock", ->
   describe ".expects(method_name)", ->
@@ -72,3 +72,21 @@ describe "Mock", ->
       m = (new Mock).expects("my_method1").expects("my_method2")
       (-> m.check() ).should.throw( /my_method1(.|\n)*?my_method2/ )
       
+      
+describe "mock( function(mock1 [, mock2 ...]) )", ->
+  it "passes mock objects to the function argument", ->
+    mock (my_mock1, my_mock2) ->
+      my_mock1[ "expects" ].should.exist
+      my_mock2[ "expects" ].should.exist
+
+  it "invokes Mock.check on the mock object after invoking the function argument", ->
+    my_mock_reference = false
+    mock (my_mock) ->
+      my_mock.check = -> my_mock_reference = true
+    my_mock_reference.should.equal true
+    
+  it "does not eat expections thrown by Mock.check", ->
+    (->
+      mock (my_mock) ->
+        my_mock.expects("my_method")
+    ).should.throw( /'my_method' had 0 calls; expected 1 calls/ )

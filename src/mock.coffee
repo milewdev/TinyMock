@@ -16,4 +16,11 @@ class Mock
     throw new Error(messages) unless messages == ""
 
 
+mock = (fn) ->
+  mocks = ( new Mock() for i in [1..10] )
+  fn.apply(undefined, mocks)
+  m.check() for m in mocks
+
+
+(exports ? window).mock = mock
 (exports ? window).Mock = Mock
