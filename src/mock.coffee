@@ -10,6 +10,10 @@ class Mock
     @[ method_name ] = -> @call_counts[ method_name ].actual += 1
     @
     
+    
+  with: (args...) ->
+    throw new Error("you need to supply at least one argument to .with(), e.g. my_mock.expects('my_method').with(42)") if args.length == 0
+    
   check: ->
     messages = ""
     for method_name, call_count of @call_counts when call_count.expected != call_count.actual
