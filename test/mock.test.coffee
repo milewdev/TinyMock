@@ -33,15 +33,20 @@ describe "Mock.expects(method_name)", ->
     
     
     
-describe "Mock.with( value [, value ...] )", ->
+describe "Mock.args( value [, value ...] )", ->
 
-  it "returns the mock instance"
+  it "returns the mock instance", ->
+    m = new Mock()
+    m.expects("my_method").args(42).should.equal m
 
   it "throws an error if no 'value' arguments are specified", ->
     m = new Mock()
-    (-> m.expects("my_method").with() ).should.throw( "you need to supply at least one argument to .with(), e.g. my_mock.expects('my_method').with(42)" )
+    (-> m.expects("my_method").args() ).should.throw( "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)" )
     
-  it "throws an error if expect() has not been called yet"
+  it "throws an error if it was not called immediately after .expects()", ->
+    m = new Mock()
+    (-> m.args(42) ).should.throw( ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)" )
+    (-> m.expects("my_method").args(42).args(43) ).should.throw( ".args() must be called immediately after .expects()" )
   
   
   
@@ -64,6 +69,12 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
 
   
 describe "Mock.check()", ->
+
+  it.skip "returns the mock instance", ->
+    m = new Mock()
+    m.check().should.equal m
+    
+  it "throws an error if no expectations have been defined"
   
   it "can be called many times (meaningless but harmless)", ->
     m = (new Mock).expects("my_method")
