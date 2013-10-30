@@ -45,8 +45,10 @@ describe "Mock.args( value [, value ...] )", ->
     
   it "throws an error if it was not called immediately after .expects()", ->
     m = new Mock()
-    (-> m.args(42) ).should.throw( ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)" )
+    (-> m.args(42) ).should.throw( ".args() must be called immediately after .expects()" )
     (-> m.expects("my_method").args(42).args(43) ).should.throw( ".args() must be called immediately after .expects()" )
+    
+  it "throws an exception when there is a duplicate expectation"
   
   
   
@@ -60,11 +62,20 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     m = new Mock()
     (-> m.my_method() ).should.throw( "has no method 'my_method'" )
 
-  it "does not throw an error if my_method is called with arguments but none were expected"
+  it "does not throw an error if my_method is called with arguments but none were expected", ->
+    m = (new Mock).expects("my_method")
+    m.my_method(1,2,3)
+    
+  # TODO: to be replaced by test immediately below this one.
+  it "throws an error if the args do not match the expectation", ->
+    m = (new Mock).expects("my_method").args(1,2,3)
+    (-> m.my_method(4,5,6) ).should.throw( "my_method arguments do not match expectation" )
   
-  it "throws an error if my_method is called with the wrong number of arguments"
-  
-  it "throws an error if my_method is called with the wrong type of arguments"
+  it.skip "throws an error if the args to a my_method call do not match any expectations", ->
+    m = (new Mock)
+      .expects("my_method").args(1,2,3)
+      .expects("my_method").args(4,5,6)
+    (-> m.my_method(7,8,9) ).should.throw( "received my_method(7,8,9) but it does not match any expectations" )
 
 
   
@@ -92,14 +103,14 @@ describe "Mock.check()", ->
 
   # revisit all below in light of .with()
   
-  it.skip "does not throw an error if an expected method was called", ->
+  it "does not throw an error if an expected method was called", ->
     m = (new Mock).expects("my_method")
     m.my_method()
     m.check()
   
-  it.skip "throws an error if an expected method was not called", ->
+  it "throws an error if an expected method was not called", ->
     m = (new Mock).expects("my_method")
-    (-> m.check() ).should.throw( "'my_method' had 0 calls; expected 1 call" )
+    (-> m.check() ).should.throw( "'my_method' was never called" )
       
   it.skip "does not throw an error if a method is called the expected number of times", ->
     m = (new Mock).expects("my_method").expects("my_method")
@@ -139,4 +150,4 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     (->
       mock (my_mock) ->
         my_mock.expects("my_method")
-    ).should.throw( "'my_method' had 0 calls; expected 1 calls" )
+    ).should.throw( "'my_method' was never called" )
