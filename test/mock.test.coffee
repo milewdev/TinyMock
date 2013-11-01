@@ -48,7 +48,11 @@ describe "Mock.args( value [, value ...] )", ->
     (-> m.args(42) ).should.throw( ".args() must be called immediately after .expects()" )
     (-> m.expects("my_method").args(42).args(43) ).should.throw( ".args() must be called immediately after .expects()" )
     
-  it "throws an exception when there is a duplicate expectation"
+  it "throws an exception when there is a duplicate expectation", ->
+    m = (new Mock).expects("my_method").args(1,2,3)
+    (-> m.expects("my_method").args(1,2,3) ).should.throw( ".expects('my_method').args(1,2,3) is a duplicate expectation" )
+    
+  it "wraps strings with quotes in expection messages"
   
   
   
@@ -66,16 +70,11 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     m = (new Mock).expects("my_method")
     m.my_method(1,2,3)
     
-  # TODO: to be replaced by test immediately below this one.
-  it "throws an error if the args do not match the expectation", ->
-    m = (new Mock).expects("my_method").args(1,2,3)
-    (-> m.my_method(4,5,6) ).should.throw( "my_method arguments do not match expectation" )
-  
-  it.skip "throws an error if the args to a my_method call do not match any expectations", ->
+  it "throws an error if the args do not match any expectations", ->
     m = (new Mock)
       .expects("my_method").args(1,2,3)
       .expects("my_method").args(4,5,6)
-    (-> m.my_method(7,8,9) ).should.throw( "received my_method(7,8,9) but it does not match any expectations" )
+    (-> m.my_method(7,8,9) ).should.throw( "my_method(7,8,9) does not match any expectations" )
 
 
   
