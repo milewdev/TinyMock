@@ -84,7 +84,9 @@ describe "Mock.check()", ->
     m = new Mock()
     m.check().should.equal m
     
-  it "throws an error if no expectations have been defined"
+  it "does not throw an error if no expectations have been defined", ->
+    m = new Mock()
+    (-> m.check() ).should.not.throw
   
   it "can be called many times (meaningless but harmless)", ->
     m = (new Mock).expects("my_method")
