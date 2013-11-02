@@ -10,18 +10,14 @@ describe "Mock.expects(method_name)", ->
     
   it "can be called many times to expect the same method", ->
     m = (new Mock).expects("my_method").expects("my_method")
-    m.my_method()
     
   it "can be called many times to expect different methods", ->
     m = (new Mock).expects("my_method1").expects("my_method2")
-    m.my_method1()
-    m.my_method2()
     
   it "can be called after expected methods have been called (harmless but likely bad form)", ->
     m = (new Mock).expects("my_method1")
     m.my_method1()
     m.expects("my_method2")
-    m.my_method2()
     
   it "throws an error if method_name is 'expects'", ->
     m = new Mock()
@@ -86,11 +82,10 @@ describe "Mock.check()", ->
     
   it "does not throw an error if no expectations have been defined", ->
     m = new Mock()
-    (-> m.check() ).should.not.throw
+    m.check()
   
   it "can be called many times (meaningless but harmless)", ->
-    m = (new Mock).expects("my_method")
-    m.my_method()
+    m = new Mock()
     m.check()
     m.check()
 
@@ -122,25 +117,11 @@ describe "Mock.check()", ->
       .expects("my_method").args(4,5,6)
     m.my_method(1,2,3)
     (-> m.check() ).should.throw( "'my_method(4,5,6)' was never called" )
-      
-  it.skip "does not throw an error if a method is called the expected number of times", ->
-    m = (new Mock).expects("my_method").expects("my_method")
-    m.my_method() ; m.my_method()
-    m.check()
     
-  it.skip "throws an error if a method is called too few times", ->
-    m = (new Mock).expects("my_method").expects("my_method")
-    m.my_method()
-    (-> m.check() ).should.throw( "'my_method' had 1 calls; expected 2 calls" )
-  
-  it.skip "throws an error if a method is called too many times", ->
-    m = (new Mock).expects("my_method").expects("my_method")
-    m.my_method() ; m.my_method() ; m.my_method()
-    (-> m.check() ).should.throw( "'my_method' had 3 calls; expected 2 calls" )
-    
-  it.skip "reports all all methods that were called an incorrect number of times", ->
-    m = (new Mock).expects("my_method1").expects("my_method2")
-    (-> m.check() ).should.throw( /my_method1(.|\n)*?my_method2/ )
+  it "allows an expected method to be called any number of times", ->
+    m = (new Mock).expects("my_method").args(1,2,3)
+    m.my_method(1,2,3)
+    m.my_method(1,2,3)
     
     
     
