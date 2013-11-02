@@ -5,9 +5,7 @@ class Signature
     @called = false
     
   toString: ->
-    args = @args
-    args ?= "void"
-    "(#{args})"
+    @args ? ""
 
 
 
@@ -47,7 +45,9 @@ class Mock
     for signature in @method_calls[ @last_method_name ] 
       if signature.args? and ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
         throw new Error(".expects('#{@last_method_name}').args(#{args}) is a duplicate expectation")
-    @method_calls[ @last_method_name ] = [ new Signature(args) ]
+    if @method_calls[ @last_method_name ].length == 1 and not @method_calls[ @last_method_name ][ 0 ].args?
+      @method_calls[ @last_method_name ] = []
+    @method_calls[ @last_method_name ].push( new Signature(args) )
     @last_method_was = "args"
     @
     
@@ -55,7 +55,7 @@ class Mock
     messages = ""
     for method_name, signatures of @method_calls 
       for signature in signatures when signature.called == false
-        messages += "'#{method_name}' was never called\n" 
+        messages += "'#{method_name}(#{signature.toString()})' was never called\n" 
     throw new Error(messages) unless messages == ""
     @last_method_was = "check"
     @

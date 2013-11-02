@@ -94,7 +94,7 @@ describe "Mock.check()", ->
     m.check()
     m.check()
 
-  it "can be called many times in any order (harmless but likely bad form)", ->
+  it "can be called many times in any order (meaningless but harmless)", ->
     m = (new Mock).expects("my_method1")
     m.my_method1()
     m.check()
@@ -102,16 +102,26 @@ describe "Mock.check()", ->
     m.my_method2()
     m.check()
 
-  # revisit all below in light of .with()
-  
-  it "does not throw an error if an expected method was called", ->
+  it "does not throw an error if an expected method without args was called", ->
     m = (new Mock).expects("my_method")
     m.my_method()
     m.check()
+
+  it "does not throw an error if an expected method with args was called", ->
+    m = (new Mock).expects("my_method").args(1,2,3)
+    m.my_method(1,2,3)
+    m.check()
   
-  it "throws an error if an expected method was not called", ->
+  it "throws an error if an expected method without args was not called", ->
     m = (new Mock).expects("my_method")
-    (-> m.check() ).should.throw( "'my_method' was never called" )
+    (-> m.check() ).should.throw( "'my_method()' was never called" )
+  
+  it "throws an error if an expected method with args was not called", ->
+    m = (new Mock)
+      .expects("my_method").args(1,2,3)
+      .expects("my_method").args(4,5,6)
+    m.my_method(1,2,3)
+    (-> m.check() ).should.throw( "'my_method(4,5,6)' was never called" )
       
   it.skip "does not throw an error if a method is called the expected number of times", ->
     m = (new Mock).expects("my_method").expects("my_method")
@@ -151,4 +161,4 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     (->
       mock (my_mock) ->
         my_mock.expects("my_method")
-    ).should.throw( "'my_method' was never called" )
+    ).should.throw( "'my_method()' was never called" )
