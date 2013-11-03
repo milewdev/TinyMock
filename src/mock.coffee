@@ -16,7 +16,7 @@ class Mock
     @last_method_was = undefined
   
   expects: (method_name) ->
-    if method_name in [ "expects", "check" ]
+    if method_name in [ "expects", "args", "returns", "check" ]
       throw new Error("you cannot do my_mock.expects('#{method_name}'); '#{method_name}' is a reserved method name")
     @last_signature = new Signature()
     @method_calls[ method_name ] ?= []
