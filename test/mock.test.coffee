@@ -2,6 +2,17 @@
 
 
 
+describe "Mock", ->
+
+  it "allows a method with args and the same method without args", ->
+    m = new Mock()
+    m.expects("my_method")
+    m.expects("my_method").args(1,2,3)
+    m.my_method()
+    m.my_method(1,2,3)
+  
+  
+  
 describe "Mock.expects(method_name)", ->
   
   it "returns the mock instance", ->
@@ -9,10 +20,12 @@ describe "Mock.expects(method_name)", ->
     m.expects("my_method").should.equal m
     
   it "can be called many times to expect the same method", ->
-    m = (new Mock).expects("my_method").expects("my_method")
+    m = new Mock()
+    m.expects("my_method").expects("my_method")
     
   it "can be called many times to expect different methods", ->
-    m = (new Mock).expects("my_method1").expects("my_method2")
+    m = new Mock()
+    m.expects("my_method1").expects("my_method2")
     
   it "can be called after expected methods have been called (harmless but likely bad form)", ->
     m = (new Mock).expects("my_method1")
@@ -32,23 +45,50 @@ describe "Mock.expects(method_name)", ->
 describe "Mock.args( value [, value ...] )", ->
 
   it "returns the mock instance", ->
-    m = new Mock()
-    m.expects("my_method").args(42).should.equal m
+    m = new Mock().expects("my_method")
+    m.args(42).should.equal m
 
   it "throws an error if no 'value' arguments are specified", ->
-    m = new Mock()
-    (-> m.expects("my_method").args() ).should.throw( "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)" )
+    m = (new Mock).expects("my_method")
+    (-> m.args() ).should.throw( "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)" )
     
   it "throws an error if it was not called immediately after .expects()", ->
     m = new Mock()
     (-> m.args(42) ).should.throw( ".args() must be called immediately after .expects()" )
-    (-> m.expects("my_method").args(42).args(43) ).should.throw( ".args() must be called immediately after .expects()" )
+    m.expects("my_method").args(42)
+    (-> m.args(43) ).should.throw( ".args() must be called immediately after .expects()" )
     
   it "throws an exception when there is a duplicate expectation", ->
-    m = (new Mock).expects("my_method").args(1,2,3)
-    (-> m.expects("my_method").args(1,2,3) ).should.throw( ".expects('my_method').args(1,2,3) is a duplicate expectation" )
+    m = new Mock()
+    m.expects("my_method").args(1,2,3)
+    m.expects("my_method")
+    (-> m.args(1,2,3) ).should.throw( ".expects('my_method').args(1,2,3) is a duplicate expectation" )
     
   it "wraps strings with quotes in expection messages"
+  
+  
+  
+describe "Mock.returns(value)", ->
+  
+  it "returns the mock instance", ->
+    m = (new Mock).expects("my_method")
+    m.returns(123).should.equal m
+  
+  it "throws an error if no 'value' argument is specified", ->
+    m = (new Mock).expects("my_method")
+    (-> m.returns() ).should.throw( "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)" )
+  
+  it "can be called immediately after .expects()", ->
+    m = (new Mock).expects("my_method")
+    m.returns(123)
+  
+  it "can be called immediate after .args()", ->
+    m = (new Mock).expects("my_method").args(1,2,3)
+    m.returns(123)
+  
+  it "throws an error if it was not called immediately after either .expects() or .args()", ->
+    m = new Mock()
+    (-> m.returns(123) ).should.throw( ".returns() must be called immediately after .expects() or .args()" )
   
   
   
@@ -62,15 +102,23 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     m = new Mock()
     (-> m.my_method() ).should.throw( "has no method 'my_method'" )
 
-  it "does not throw an error if my_method is called with arguments but none were expected", ->
+  it "throws an error if my_method is called with arguments but none were expected", ->
     m = (new Mock).expects("my_method")
-    m.my_method(1,2,3)
+    (-> m.my_method(1,2,3) ).should.throw( "my_method(1,2,3) does not match any expectations" )
     
   it "throws an error if the args do not match any expectations", ->
     m = (new Mock)
       .expects("my_method").args(1,2,3)
       .expects("my_method").args(4,5,6)
     (-> m.my_method(7,8,9) ).should.throw( "my_method(7,8,9) does not match any expectations" )
+    
+  it "returns the value specified in a .returns()", ->
+    m = (new Mock).expects("my_method").returns(123)
+    m.my_method().should.equal 123
+    
+  it "returns undefined if no .returns() was specified", ->
+    m = (new Mock).expects("my_method")
+    should.not.exist m.my_method()
 
 
   
