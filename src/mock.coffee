@@ -23,15 +23,11 @@ class Mock
     @method_calls[ method_name ].push(@last_signature)
     @[ method_name ] = (args...) ->     # TODO: use closure?  Memory expensive?
       method_calls = @method_calls[ method_name ]
-      match = undefined
       for signature in @method_calls[ method_name ] 
         if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
-          match = signature
-          break
-      unless match?
-        throw new Error("#{method_name}(#{args}) does not match any expectations") 
-      match.called = true
-      return match.returns
+          signature.called = true
+          return signature.returns
+      throw new Error("#{method_name}(#{args}) does not match any expectations") 
     @last_method_name = method_name
     @last_method_was = "expects"
     @
@@ -68,9 +64,9 @@ class Mock
     
 
 mock = (fn) ->
-  mocks = ( new Mock() for i in [1..10] )
+  mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
-  m.check() for m in mocks
+  mock.check() for mock in mocks
 
 
     
