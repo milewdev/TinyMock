@@ -63,7 +63,7 @@ describe "Mock.args( value [, value ...] )", ->
     m = new Mock()
     m.expects("my_method").args(1,2,3)
     m.expects("my_method")
-    (-> m.args(1,2,3) ).should.throw( ".expects('my_method').args(1,2,3) is a duplicate expectation" )
+    (-> m.args(1,2,3) ).should.throw( "my_method(1,2,3) is a duplicate expectation" )
     
   it "wraps strings with quotes in expection messages"
   

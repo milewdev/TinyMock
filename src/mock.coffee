@@ -16,8 +16,7 @@ class Mock
     @last_method_was = undefined
   
   expects: (method_name) ->
-    if method_name in [ "expects", "args", "returns", "check" ]
-      throw new Error("you cannot do my_mock.expects('#{method_name}'); '#{method_name}' is a reserved method name")
+    throw_reserved(method_name) if is_reserved(method_name)
     @last_signature = new Signature()
     @method_calls[ method_name ] ?= []
     @method_calls[ method_name ].push(@last_signature)
@@ -27,29 +26,26 @@ class Mock
         if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
           signature.called = true
           return signature.returns
-      throw new Error("#{method_name}(#{args}) does not match any expectations") 
+      throw_unknown_expectation("#{method_name}(#{args})")
     @last_method_name = method_name
     @last_method_was = "expects"
     @
     
   args: (args...) ->
-    if args.length == 0
-      throw new Error("you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)") 
-    if @last_method_was != "expects"
-      throw new Error(".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)") 
+    throw_args_must_be_after_expects() unless @last_method_was in [ "expects" ]
+    throw_args_usage() if args.length == 0
     for signature in @method_calls[ @last_method_name ] 
       if signature.args? and ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
-        throw new Error(".expects('#{@last_method_name}').args(#{args}) is a duplicate expectation")
+        throw_duplicate_expectation("#{@last_method_name}(#{args})")
     @last_signature.args = args
     @last_method_was = "args"
     @
     
   returns: (value) ->
-    unless value?
-      throw new Error("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
-    unless @last_method_was in [ "expects", "args" ]
-      throw new Error(".returns() must be called immediately after .expects() or .args()")
+    throw_returns_must_be_after_expects_or_args() unless @last_method_was in [ "expects", "args" ]
+    throw_returns_usage() unless value?
     @last_signature.returns = value
+    @last_method_was = "returns"
     @
     
   check: ->
@@ -60,6 +56,32 @@ class Mock
     throw new Error(messages) unless messages == ""
     @last_method_was = "check"
     @
+    
+  # private
+  
+  is_reserved = (word) ->
+    word in [ "expects", "args", "returns", "check" ]
+  
+  throw_reserved = (reserved) ->
+    throw new Error("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
+    
+  throw_unknown_expectation = (signature) ->
+    throw new Error("#{signature} does not match any expectations")
+    
+  throw_args_must_be_after_expects = ->
+    throw new Error(".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)") 
+    
+  throw_args_usage = ->
+    throw new Error("you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)") 
+    
+  throw_duplicate_expectation = (signature) ->
+    throw new Error("#{signature} is a duplicate expectation")
+    
+  throw_returns_must_be_after_expects_or_args = ->
+    throw new Error(".returns() must be called immediately after .expects() or .args()")
+    
+  throw_returns_usage = ->
+    throw new Error("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
 
     
 
