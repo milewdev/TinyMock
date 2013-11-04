@@ -45,11 +45,7 @@ class Mock
     @
     
   check: ->
-    messages = ""
-    for method_name, signatures of @method_calls 
-      for signature in signatures when signature.called == false
-        messages += "'#{method_name}(#{signature.args})' was never called\n" 
-    throw new Error(messages) unless messages == ""
+    @_check_for_uncalled_signatures()
     @_set_state("check")
     @
     
@@ -71,6 +67,13 @@ class Mock
     for signature in @method_calls[ @current_method_name ] 
       if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
         @_throw_duplicate_expectation("#{@current_method_name}(#{args})")
+        
+  _check_for_uncalled_signatures: ->
+    messages = ""
+    for method_name, signatures of @method_calls 
+      for signature in signatures when signature.called == false
+        messages += "'#{method_name}(#{signature.args})' was never called\n" 
+    throw new Error(messages) unless messages == ""
   
   _set_state: (state) ->
     @state = state
