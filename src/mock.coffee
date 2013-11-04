@@ -33,9 +33,7 @@ class Mock
     
   args: (args...) ->
     @_check_args_usage(args...)
-    for signature in @method_calls[ @current_method_name ] 
-      if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
-        @_throw_duplicate_expectation("#{@current_method_name}(#{args})")
+    @_check_for_duplicate_signature(args...)
     @current_signature.args = args
     @_set_state("args")
     @
@@ -68,6 +66,11 @@ class Mock
   _check_returns_usage: (value) ->
     @_throw_returns_must_be_after_expects_or_args() unless @_state_in("expects", "args")
     @_throw_returns_usage() unless value?
+      
+  _check_for_duplicate_signature: (args...) ->
+    for signature in @method_calls[ @current_method_name ] 
+      if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
+        @_throw_duplicate_expectation("#{@current_method_name}(#{args})")
   
   _set_state: (state) ->
     @state = state
