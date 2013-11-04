@@ -1,6 +1,7 @@
 class Signature
   
-  constructor: ->
+  constructor: (method_name) ->
+    @method_name = method_name
     @args = []
     @returns = undefined
     @called = false
@@ -17,7 +18,7 @@ class Mock
   
   expects: (method_name) ->
     @_check_expects_usage(method_name)
-    @current_signature = new Signature()
+    @current_signature = new Signature(method_name)
     @method_calls[ method_name ] ?= []
     @method_calls[ method_name ].push(@current_signature)
     @[ method_name ] = @_define_expected_method(method_name)
@@ -45,14 +46,18 @@ class Mock
     
   # private
   
+  _find_signature: (method_name, args...) ->
+    for signature in @method_calls[ method_name ]
+      if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
+        return signature
+    undefined
+  
   _define_expected_method: (method_name) ->
     (args...) ->
-      method_calls = @method_calls[ method_name ]
-      for signature in @method_calls[ method_name ] 
-        if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
-          signature.called = true
-          return signature.returns
-      @_throw_unknown_expectation("#{method_name}(#{args})")
+      signature = @_find_signature(method_name, args...)
+      @_throw_unknown_expectation("#{method_name}(#{args})") unless signature?
+      signature.called = true
+      signature.returns
   
   _check_expects_usage: (method_name) ->
     @_throw_expects_usage() unless method_name?
@@ -67,9 +72,7 @@ class Mock
     @_throw_returns_usage() unless value?
       
   _check_for_duplicate_signature: (args...) ->
-    for signature in @method_calls[ @current_method_name ] 
-      if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
-        @_throw_duplicate_expectation("#{@current_method_name}(#{args})")
+    @_throw_duplicate_expectation("#{@current_method_name}(#{args})") if @_find_signature(@current_method_name, args...)
         
   _check_for_uncalled_signatures: ->
     messages = ""
