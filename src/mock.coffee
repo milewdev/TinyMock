@@ -12,7 +12,6 @@ class Mock
 
   constructor: ->
     @method_calls = {}
-    @current_method_name = undefined
     @current_signature = undefined
     @state = undefined
   
@@ -22,7 +21,6 @@ class Mock
     @method_calls[ method_name ] ?= []
     @method_calls[ method_name ].push(@current_signature)
     @[ method_name ] = @_define_expected_method(method_name)
-    @current_method_name = method_name
     @_set_state("expects")
     @
     
@@ -72,7 +70,7 @@ class Mock
     @_throw_returns_usage() unless value?
       
   _check_for_duplicate_signature: (args...) ->
-    @_throw_duplicate_expectation("#{@current_method_name}(#{args})") if @_find_signature(@current_method_name, args...)
+    @_throw_duplicate_expectation("#{@current_signature.method_name}(#{args})") if @_find_signature(@current_signature.method_name, args...)
         
   _check_for_uncalled_signatures: ->
     messages = ""
