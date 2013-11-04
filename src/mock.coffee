@@ -20,13 +20,7 @@ class Mock
     @current_signature = new Signature()
     @method_calls[ method_name ] ?= []
     @method_calls[ method_name ].push(@current_signature)
-    @[ method_name ] = (args...) ->     # TODO: use closure?  Memory expensive?
-      method_calls = @method_calls[ method_name ]
-      for signature in @method_calls[ method_name ] 
-        if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
-          signature.called = true
-          return signature.returns
-      @_throw_unknown_expectation("#{method_name}(#{args})")
+    @[ method_name ] = @_define_expected_method(method_name)
     @current_method_name = method_name
     @_set_state("expects")
     @
@@ -50,6 +44,15 @@ class Mock
     @
     
   # private
+  
+  _define_expected_method: (method_name) ->
+    (args...) ->
+      method_calls = @method_calls[ method_name ]
+      for signature in @method_calls[ method_name ] 
+        if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
+          signature.called = true
+          return signature.returns
+      @_throw_unknown_expectation("#{method_name}(#{args})")
   
   _check_expects_usage: (method_name) ->
     @_throw_expects_usage() unless method_name?
