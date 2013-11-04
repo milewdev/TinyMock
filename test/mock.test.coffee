@@ -32,6 +32,10 @@ describe "Mock.expects(method_name)", ->
     m.my_method1()
     m.expects("my_method2")
     
+  it "throws an error if method_name is missing", ->
+    m = new Mock()
+    (-> m.expects() ).should.throw( "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')" )
+    
   it "throws an error if method_name is reserved", ->
     m = new Mock()
     for reserved in [ "expects", "args", "returns", "check" ]
