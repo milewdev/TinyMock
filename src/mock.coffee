@@ -11,15 +11,14 @@ class Signature
 class Mock
 
   constructor: ->
-    @method_calls = {}
+    @method_calls = []
     @current_signature = undefined
     @state = undefined
   
   expects: (method_name) ->
     @_check_expects_usage(method_name)
     @current_signature = new Signature(method_name)
-    @method_calls[ method_name ] ?= []
-    @method_calls[ method_name ].push(@current_signature)
+    @method_calls.push(@current_signature)
     @[ method_name ] = @_define_expected_method(method_name)
     @_set_state("expects")
     @
@@ -45,8 +44,8 @@ class Mock
   # private
   
   _find_signature: (method_name, args...) ->
-    for signature in @method_calls[ method_name ]
-      if ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
+    for signature in @method_calls
+      if (signature.method_name == method_name) and ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
         return signature
     undefined
   
@@ -74,9 +73,8 @@ class Mock
         
   _check_for_uncalled_signatures: ->
     messages = ""
-    for method_name, signatures of @method_calls 
-      for signature in signatures when signature.called == false
-        messages += "'#{method_name}(#{signature.args})' was never called\n" 
+    for signature in @method_calls when signature.called == false
+      messages += "'#{signature.method_name}(#{signature.args})' was never called\n" 
     throw new Error(messages) unless messages == ""
   
   _set_state: (state) ->
