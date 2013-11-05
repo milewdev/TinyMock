@@ -75,11 +75,11 @@ class Mock
     @_throw_reserved(method_name) if @_is_reserved(method_name)
   
   _check_args_usage: (args...) ->
-    @_throw_args_must_be_after_expects() unless @_state_in("expects")
+    @_throw_args_must_be_after_expects() unless @_is_state_in("expects")
     @_throw_args_usage() if args.length == 0
   
   _check_returns_usage: (value) ->
-    @_throw_returns_must_be_after_expects_or_args() unless @_state_in("expects", "args")
+    @_throw_returns_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
     @_throw_returns_usage() unless value?
       
   _check_if_duplicate_signature: (method_name, args...) ->
@@ -95,8 +95,7 @@ class Mock
   _set_state: (state) ->
     @state = state
     
-  # TODO: rename to _is_state_in
-  _state_in: (states...) ->
+  _is_state_in: (states...) ->
     @state in states
   
   _is_reserved: (word) ->
