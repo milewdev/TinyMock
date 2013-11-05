@@ -36,7 +36,7 @@ class Mock
   # TODO: add description
   args: (args...) ->
     @_check_args_usage(args...)
-    @_check_for_duplicate_signature(@current_signature.method_name, args...)
+    @_check_if_duplicate_signature(@current_signature.method_name, args...)
     @current_signature.args = args
     @_set_state("args")
     @
@@ -82,8 +82,7 @@ class Mock
     @_throw_returns_must_be_after_expects_or_args() unless @_state_in("expects", "args")
     @_throw_returns_usage() unless value?
       
-  # TODO: rename to _check_if_duplicate_signature
-  _check_for_duplicate_signature: (method_name, args...) ->
+  _check_if_duplicate_signature: (method_name, args...) ->
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
   _check_for_uncalled_signatures: ->
