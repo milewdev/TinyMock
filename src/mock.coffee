@@ -1,3 +1,4 @@
+# TODO: rename to MethodSignature?
 class Signature
   
   constructor: (method_name) ->
@@ -5,6 +6,11 @@ class Signature
     @args = []
     @returns = undefined
     @called = false
+    
+  matches: (method_name, args...) ->
+    (@method_name == method_name) and
+      ( @args.length == args.length ) and
+      ( @args.every ( element, i ) -> element == args[ i ] )
 
 
 
@@ -44,8 +50,9 @@ class Mock
   # private
   
   _find_signature: (method_name, args...) ->
+    # TODO: use list comprehension?
     for signature in @method_calls
-      if (signature.method_name == method_name) and ( signature.args.length == args.length ) and ( signature.args.every ( element, i ) -> element == args[ i ] )
+      if signature.matches(method_name, args...)
         return signature
     undefined
   
@@ -72,6 +79,7 @@ class Mock
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
   _check_for_uncalled_signatures: ->
+    # TODO: use list comprehension?
     messages = ""
     for signature in @method_calls when signature.called == false
       messages += "'#{signature.method_name}(#{signature.args})' was never called\n" 
