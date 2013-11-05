@@ -1,3 +1,4 @@
+# TODO: add description
 class MethodSignature
   
   constructor: (method_name) ->
@@ -6,6 +7,7 @@ class MethodSignature
     @returns = undefined
     @called = false
     
+  # TODO: add description
   matches: (method_name, args...) ->
     (@method_name == method_name) and
       ( @args.length == args.length ) and
@@ -13,13 +15,16 @@ class MethodSignature
 
 
 
+# TODO: add description
 class Mock
 
+  # TODO: add description
   constructor: ->
-    @method_calls = []
-    @current_signature = undefined
+    @method_calls = []                # TODO: rename to @signatures
+    @current_signature = undefined    # TODO: not needed; use a method instead that returns: @method_calls[0] ? undefined
     @state = undefined
   
+  # TODO: add description
   expects: (method_name) ->
     @_check_expects_usage(method_name)
     @current_signature = new MethodSignature(method_name)
@@ -28,6 +33,7 @@ class Mock
     @_set_state("expects")
     @
     
+  # TODO: add description
   args: (args...) ->
     @_check_args_usage(args...)
     @_check_for_duplicate_signature(@current_signature.method_name, args...)
@@ -35,18 +41,22 @@ class Mock
     @_set_state("args")
     @
     
+  # TODO: add description
   returns: (value) ->
     @_check_returns_usage(value)
     @current_signature.returns = value
     @_set_state("returns")
     @
     
+  # TODO: add description
   check: ->
     @_check_for_uncalled_signatures()
     @_set_state("check")
     @
     
   # private
+  
+  # TODO: re-order methods below
   
   _find_signature: (method_name, args...) ->
     for signature in @method_calls when signature.matches(method_name, args...)
@@ -72,6 +82,7 @@ class Mock
     @_throw_returns_must_be_after_expects_or_args() unless @_state_in("expects", "args")
     @_throw_returns_usage() unless value?
       
+  # TODO: rename to _check_if_duplicate_signature
   _check_for_duplicate_signature: (method_name, args...) ->
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
@@ -85,6 +96,7 @@ class Mock
   _set_state: (state) ->
     @state = state
     
+  # TODO: rename to _is_state_in
   _state_in: (states...) ->
     @state in states
   
@@ -117,9 +129,11 @@ class Mock
 
     
 
+# TODO: add description
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
+  # TODO: wrap in try/catch: we want to capture all errors for all mocks.
   mock.check() for mock in mocks
 
 
