@@ -9,7 +9,7 @@ class MethodSignature
     
   # TODO: add description
   matches: (method_name, args...) ->
-    (@method_name == method_name) and
+    ( @method_name == method_name ) and
       ( @args.length == args.length ) and
       ( @args.every ( element, i ) -> element == args[ i ] )
 
@@ -26,7 +26,7 @@ class Mock
   # TODO: add description
   expects: (method_name) ->
     @_check_expects_usage(method_name)
-    @signatures.unshift(new MethodSignature(method_name))
+    @signatures.unshift( new MethodSignature(method_name) )
     # TODO: use ?=, not =
     @[ method_name ] = @_define_expected_method(method_name)
     @_set_state("expects")
@@ -35,7 +35,7 @@ class Mock
   # TODO: add description
   args: (args...) ->
     @_check_args_usage(args...)
-    @_check_if_duplicate_signature(@_current_signature().method_name, args...)
+    @_check_if_duplicate_signature(@_current_method_name(), args...)
     @_current_signature().args = args
     @_set_state("args")
     @
@@ -59,6 +59,9 @@ class Mock
   
   _current_signature: ->
     @signatures[0]
+    
+  _current_method_name: ->
+    @_current_signature()?.method_name
   
   _find_signature: (method_name, args...) ->
     for signature in @signatures when signature.matches(method_name, args...)
