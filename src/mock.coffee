@@ -50,10 +50,8 @@ class Mock
   # private
   
   _find_signature: (method_name, args...) ->
-    # TODO: use list comprehension?
-    for signature in @method_calls
-      if signature.matches(method_name, args...)
-        return signature
+    for signature in @method_calls when signature.matches(method_name, args...)
+      return signature
     undefined
   
   _define_expected_method: (method_name) ->
