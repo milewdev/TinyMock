@@ -202,5 +202,5 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       mock (my_mock1, my_mock2) ->
         my_mock1.expects("my_method1").args(1,2,3)
         my_mock2.expects("my_method2")
-    ).should.throw( "Error: 'my_method1(1,2,3)' was never called\nError: 'my_method2()' was never called\n" )
+    ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
     

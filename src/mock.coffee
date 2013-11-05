@@ -93,7 +93,7 @@ class Mock
     messages = ""
     for signature in @signatures when signature.called == false
       messages += "'#{signature.method_name}(#{signature.args})' was never called\n" 
-    throw new Error(messages) unless messages == ""
+    throw messages unless messages == ""
   
   _set_state: (state) ->
     @state = state
@@ -105,28 +105,28 @@ class Mock
     word in [ "expects", "args", "returns", "check" ]
   
   _throw_expects_usage: ->
-    throw new Error("you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')")
+    throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
   
   _throw_reserved: (reserved) ->
-    throw new Error("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
+    throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
     
   _throw_unknown_expectation: (signature) ->
-    throw new Error("#{signature} does not match any expectations")
+    throw "#{signature} does not match any expectations"
     
   _throw_args_must_be_after_expects: ->
-    throw new Error(".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)") 
+    throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
     
   _throw_args_usage: ->
-    throw new Error("you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)") 
+    throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
     
   _throw_duplicate_expectation: (signature) ->
-    throw new Error("#{signature} is a duplicate expectation")
+    throw "#{signature} is a duplicate expectation"
     
   _throw_returns_must_be_after_expects_or_args: ->
-    throw new Error(".returns() must be called immediately after .expects() or .args()")
+    throw ".returns() must be called immediately after .expects() or .args()"
     
   _throw_returns_usage: ->
-    throw new Error("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
+    throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
 
     
 
@@ -140,7 +140,7 @@ mock = (fn) ->
       mock.check()
     catch ex
       messages += ex
-  throw new Error(messages) unless messages == ""
+  throw messages unless messages == ""
 
 
     
