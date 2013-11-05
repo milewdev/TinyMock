@@ -1,5 +1,4 @@
-# TODO: rename to MethodSignature?
-class Signature
+class MethodSignature
   
   constructor: (method_name) ->
     @method_name = method_name
@@ -23,7 +22,7 @@ class Mock
   
   expects: (method_name) ->
     @_check_expects_usage(method_name)
-    @current_signature = new Signature(method_name)
+    @current_signature = new MethodSignature(method_name)
     @method_calls.push(@current_signature)
     @[ method_name ] = @_define_expected_method(method_name)
     @_set_state("expects")
