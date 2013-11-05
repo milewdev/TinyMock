@@ -26,7 +26,7 @@ class Mock
   # TODO: add description
   expects: (method_name) ->
     @_check_expects_usage(method_name)
-    @signatures.unshift( new MethodSignature(method_name) )
+    @signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
     @[ method_name ] ?= @_define_expected_method(method_name)
     @_set_state("expects")
     @
@@ -90,7 +90,6 @@ class Mock
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
   _check_for_uncalled_signatures: ->
-    # TODO: use list comprehension?
     messages = ""
     for signature in @signatures when signature.called == false
       messages += "'#{signature.method_name}(#{signature.args})' was never called\n" 
@@ -135,8 +134,13 @@ class Mock
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
-  # TODO: wrap in try/catch: we want to capture all errors for all mocks.
-  mock.check() for mock in mocks
+  messages = ""
+  for mock in mocks
+    try
+      mock.check()
+    catch ex
+      messages += ex
+  throw new Error(messages) unless messages == ""
 
 
     

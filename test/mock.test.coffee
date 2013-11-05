@@ -196,3 +196,11 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       mock (my_mock) ->
         my_mock.expects("my_method")
     ).should.throw( "'my_method()' was never called" )
+
+  it "reports all mock object check failures", ->
+    (->
+      mock (my_mock1, my_mock2) ->
+        my_mock1.expects("my_method1").args(1,2,3)
+        my_mock2.expects("my_method2")
+    ).should.throw( "Error: 'my_method1(1,2,3)' was never called\nError: 'my_method2()' was never called\n" )
+    
