@@ -27,8 +27,7 @@ class Mock
   expects: (method_name) ->
     @_check_expects_usage(method_name)
     @signatures.unshift( new MethodSignature(method_name) )
-    # TODO: use ?=, not =
-    @[ method_name ] = @_define_expected_method(method_name)
+    @[ method_name ] ?= @_define_expected_method(method_name)
     @_set_state("expects")
     @
     
