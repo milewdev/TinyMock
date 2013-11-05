@@ -21,14 +21,13 @@ class Mock
   # TODO: add description
   constructor: ->
     @signatures = []
-    @current_signature = undefined    # TODO: not needed; use a method instead that returns: @signatures[0] ? undefined
     @state = undefined
   
   # TODO: add description
   expects: (method_name) ->
     @_check_expects_usage(method_name)
-    @current_signature = new MethodSignature(method_name)
-    @signatures.push(@current_signature)
+    @signatures.unshift(new MethodSignature(method_name))
+    # TODO: use ?=, not =
     @[ method_name ] = @_define_expected_method(method_name)
     @_set_state("expects")
     @
@@ -36,15 +35,15 @@ class Mock
   # TODO: add description
   args: (args...) ->
     @_check_args_usage(args...)
-    @_check_if_duplicate_signature(@current_signature.method_name, args...)
-    @current_signature.args = args
+    @_check_if_duplicate_signature(@_current_signature().method_name, args...)
+    @_current_signature().args = args
     @_set_state("args")
     @
     
   # TODO: add description
   returns: (value) ->
     @_check_returns_usage(value)
-    @current_signature.returns = value
+    @_current_signature().returns = value
     @_set_state("returns")
     @
     
@@ -57,6 +56,9 @@ class Mock
   # private
   
   # TODO: re-order methods below
+  
+  _current_signature: ->
+    @signatures[0]
   
   _find_signature: (method_name, args...) ->
     for signature in @signatures when signature.matches(method_name, args...)
