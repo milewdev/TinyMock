@@ -1,4 +1,18 @@
-# TODO: add description
+#
+# MethodSignature is an internal data structure that represents 
+# a method invocation.  Stores the method name, the expected
+# arguments, the value to return, and whether it has actually
+# been invoked.  For example, the following:
+#
+#   my_mock = (new Mock).expects("my_method").args(1,2,3).returns(42)
+#
+# would result in a MethodSignature with @method_name = "my_method",
+# @args = [1,2,3], @returns = 42, and @called = false.  Doing:
+#
+#   my_mock.my_method(1,2,3)
+#
+# would result in @called = true.
+#
 class MethodSignature
   
   constructor: (method_name) ->
@@ -7,7 +21,15 @@ class MethodSignature
     @returns = undefined
     @called = false
     
-  # TODO: add description
+  #
+  # Returns true if this invocation has the specified method
+  # name and arguments.  For example:
+  #
+  #   ms = new MethodSignature("my_method")
+  #   ms.args = [ 1, "a" ]
+  #   ...
+  #   ms.matches( "my_method", [ 1, "a" ] )   # returns true
+  #
   matches: (method_name, args...) ->
     ( @method_name == method_name ) and
       ( @args.length == args.length ) and
@@ -15,15 +37,46 @@ class MethodSignature
 
 
 
-# TODO: add description
+#
+# Mock represents the mock of a real object.  You use the expects()
+# method to tell an instance of Mock what methods it should expect
+# to receive and, once the SUT has been run, you use the check()
+# method to see whether all expected methods were actually called.
+# The args() method is used to specify the arguments (parameter 
+# values) the method is expected to be invoked with, and the
+# returns() method can be used to specify a value that the mocked
+# method should return to the caller.
+#
+# For example:
+#
+#   describe "Something", ->
+#     it "does something", ->
+#       m = (new Mock)
+#         .expects("add").args(1,2,3).returns(6)
+#         .expects("concat").args("a","b","c").returns("abc")
+#       sut.fn(m)   # Should invoke m.add(1,2,3) and m.concat("a","b","c")
+#       m.check()   # Throws an error if at least one expectation not met.
+#
+# Note: that you cannot do any of the following:
+#
+#   m.expects("expects")
+#   m.expects("args")
+#   m.expects("returns")
+#   m.expects("check")
+#
+# Note: see the mock() function later in this source file for a way
+# to avoid having to rememeber to call .check() at the end of a test.
+#
 class Mock
 
-  # TODO: add description
   constructor: ->
     @signatures = []
     @state = undefined
   
-  # TODO: add description
+  #
+  # my_mock = (new Mock).expects("my_method")
+  # my_mock.my_method()
+  #
   expects: (method_name) ->
     @_check_expects_usage(method_name)
     @signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
@@ -31,7 +84,10 @@ class Mock
     @_set_state("expects")
     @
     
-  # TODO: add description
+  #
+  # my_mock = (new Mock).expects("my_method").args(1,2,3)
+  # my_mock.my_method(1,2,3)
+  #
   args: (args...) ->
     @_check_args_usage(args...)
     @_check_if_duplicate_signature(@_current_method_name(), args...)
@@ -39,14 +95,21 @@ class Mock
     @_set_state("args")
     @
     
-  # TODO: add description
+  #
+  # my_mock = (new Mock).expects("my_method").returns(123)
+  # console.log my_mock.my_method()   # prints 123
+  #
   returns: (value) ->
     @_check_returns_usage(value)
     @_current_signature().returns = value
     @_set_state("returns")
     @
     
-  # TODO: add description
+  #
+  # my_mock = (new Mock).expects("my_method")
+  # my_mock.my_method()
+  # my_mock.check()
+  #
   check: ->
     @_check_for_uncalled_signatures()
     @_set_state("check")
@@ -130,7 +193,39 @@ class Mock
 
     
 
-# TODO: add description
+#
+# mock() is a shorthand function to ensure that .check() is called 
+# on mock objects.  For example, using Mock directly:
+#
+#   describe "Something", ->
+#     it "does something", ->
+#       my_mock = new Mock()            # Create a mock object.
+#       my_mock.expects("my_method")    # The mock should expect my_method to be invoked.
+#       ...                             # Do something that is supposed to invoke my_method.
+#       my_mock.check()                 # Need to remember to check that my_method was invoked.
+#
+#     it "does something else", ->
+#       ...
+#
+# Using the mock() function:
+#
+#   describe "Something", ->
+#     it "does something", ->
+#       mock (my_mock) ->               # my_mock is created automatically.
+#         my_mock.expects("my_method")  # The mock should expect my_method to be invoked.
+#         ...                           # Do something that is supposed to invoke my_method.
+#                                       # .check() is called automatically here by mock().
+#
+#     it "does something else", ->
+#       ...
+#
+# The mock() function provides up to five mock objects:
+#
+#   mock (m1, m2, m3, m4, m5) ->
+#     m1.expects("method1")
+#     m2.expects("method2")
+#     ...
+#
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
