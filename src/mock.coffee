@@ -20,15 +20,15 @@ class Mock
 
   # TODO: add description
   constructor: ->
-    @method_calls = []                # TODO: rename to @signatures
-    @current_signature = undefined    # TODO: not needed; use a method instead that returns: @method_calls[0] ? undefined
+    @signatures = []
+    @current_signature = undefined    # TODO: not needed; use a method instead that returns: @signatures[0] ? undefined
     @state = undefined
   
   # TODO: add description
   expects: (method_name) ->
     @_check_expects_usage(method_name)
     @current_signature = new MethodSignature(method_name)
-    @method_calls.push(@current_signature)
+    @signatures.push(@current_signature)
     @[ method_name ] = @_define_expected_method(method_name)
     @_set_state("expects")
     @
@@ -59,7 +59,7 @@ class Mock
   # TODO: re-order methods below
   
   _find_signature: (method_name, args...) ->
-    for signature in @method_calls when signature.matches(method_name, args...)
+    for signature in @signatures when signature.matches(method_name, args...)
       return signature
     undefined
   
@@ -89,7 +89,7 @@ class Mock
   _check_for_uncalled_signatures: ->
     # TODO: use list comprehension?
     messages = ""
-    for signature in @method_calls when signature.called == false
+    for signature in @signatures when signature.called == false
       messages += "'#{signature.method_name}(#{signature.args})' was never called\n" 
     throw new Error(messages) unless messages == ""
   
