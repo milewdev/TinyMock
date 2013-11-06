@@ -1,8 +1,8 @@
 #
 # MethodSignature is an internal data structure that represents 
-# a method invocation.  Stores the method name, the expected
-# arguments, the value to return, and whether it has actually
-# been invoked.  For example, the following:
+# a mocked method.  Stores the method name, the expected arguments,
+# the value to return, and whether it has actually been called.
+# For example, the following:
 #
 #   my_mock = (new Mock).expects("my_method").args(1,2,3).returns(42)
 #
@@ -22,13 +22,15 @@ class MethodSignature
     @called = false
     
   #
-  # Returns true if this invocation has the specified method
+  # Returns true if this signature has the specified method
   # name and arguments.  For example:
   #
   #   ms = new MethodSignature("my_method")
   #   ms.args = [ 1, "a" ]
   #   ...
-  #   ms.matches( "my_method", [ 1, "a" ] )   # returns true
+  #   ms.matches( "my_method", [ 1, "a" ] )     # returns true
+  #   ms.matches( "your_method", [ 1, "a" ] )   # returns false
+  #   ms.matches( "my_method", [ 2, "b" ] )     # returns false
   #
   matches: (method_name, args...) ->
     ( @method_name == method_name ) and
@@ -38,34 +40,34 @@ class MethodSignature
 
 
 #
-# Mock represents the mock of a real object.  You use the expects()
-# method to tell an instance of Mock what methods it should expect
-# to receive and, once the SUT has been run, you use the check()
-# method to see whether all expected methods were actually called.
-# The args() method is used to specify the arguments (parameter 
-# values) the method is expected to be invoked with, and the
-# returns() method can be used to specify a value that the mocked
-# method should return to the caller.
+# Mock represents the mock of some object.  @signatures is a list of
+# mocked methods, which are added with the .expects(), .args(), and 
+# .returns() functions.  These must be called in a specific order,
+# expects then args then returns, so:
 #
-# For example:
+#   my_mock.expects("my_method").args(123).returns(456)
 #
-#   describe "Something", ->
-#     it "does something", ->
-#       m = (new Mock)
-#         .expects("add").args(1,2,3).returns(6)
-#         .expects("concat").args("a","b","c").returns("abc")
-#       sut.fn(m)   # Should invoke m.add(1,2,3) and m.concat("a","b","c")
-#       m.check()   # Throws an error if at least one expectation not met.
+# is legal, whereas:
 #
-# Note: that you cannot do any of the following:
+#   my_mock.returns(456).args(123).expects("my_method")
 #
-#   m.expects("expects")
-#   m.expects("args")
-#   m.expects("returns")
-#   m.expects("check")
+# is not.  @state is used to remember the last function called so that
+# we can enforce this order.  Note that args and returns are optional.
 #
-# Note: see the mock() function later in this source file for a way
-# to avoid having to rememeber to call .check() at the end of a test.
+# @signatures is used as a stack only in so far as the method signature
+# at the front of the list is the most recently defined signature and is
+# the one to which args and returns would be applied.  For example:
+#
+#   my_mock = new Mock()    # @signatures = []
+#   my_mock.expects("m1")   # [ { "m1" } ]
+#   my_mock.args(1,2,3)     # [ { "m1", [1,2,3] } ]
+#   my_mock.returns(42)     # [ { "m1", [1,2,3], 42 } ]
+#   my_mock.expects("m2")   # [ { "m2" }, { "m1", [1,2,3], 42 } ]
+#   my_mock.args(4,5,6)     # [ { "m2", [4,5,6] }, { "m1", [1,2,3], 42 } ]
+#   my_mock.returns(43)     # [ { "m2", [4,5,6], 43 }, { "m1", [1,2,3], 42 } ]
+#
+# @signatures is just an array, not a hash.  It will not grow very large
+# so a linear search for a particular signature is fine.
 #
 class Mock
 
@@ -106,9 +108,9 @@ class Mock
     @
     
   #
-  # my_mock = (new Mock).expects("my_method")
+  # my_mock = (new Mock).expects("my_method").expects("your_method")
   # my_mock.my_method()
-  # my_mock.check()
+  # my_mock.check()       # throws an error because your_method() was not called
   #
   check: ->
     @_check_for_uncalled_signatures()
@@ -195,36 +197,9 @@ class Mock
 
 #
 # mock() is a shorthand function to ensure that .check() is called 
-# on mock objects.  For example, using Mock directly:
-#
-#   describe "Something", ->
-#     it "does something", ->
-#       my_mock = new Mock()            # Create a mock object.
-#       my_mock.expects("my_method")    # The mock should expect my_method to be invoked.
-#       ...                             # Do something that is supposed to invoke my_method.
-#       my_mock.check()                 # Need to remember to check that my_method was invoked.
-#
-#     it "does something else", ->
-#       ...
-#
-# Using the mock() function:
-#
-#   describe "Something", ->
-#     it "does something", ->
-#       mock (my_mock) ->               # my_mock is created automatically.
-#         my_mock.expects("my_method")  # The mock should expect my_method to be invoked.
-#         ...                           # Do something that is supposed to invoke my_method.
-#                                       # .check() is called automatically here by mock().
-#
-#     it "does something else", ->
-#       ...
-#
-# The mock() function provides up to five mock objects:
-#
-#   mock (m1, m2, m3, m4, m5) ->
-#     m1.expects("method1")
-#     m2.expects("method2")
-#     ...
+# on mock objects.  As such, it takes a function (the test code)
+# argument, creates five mock objects, invokes the function with
+# the five mocks, and then calls check() on the mocks.
 #
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
