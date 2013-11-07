@@ -196,10 +196,10 @@ class Mock
     
 
 #
-# mock() is a shorthand function to ensure that .check() is called 
+# mock() is a convenience function to ensure that .check() is called 
 # on mock objects.  As such, it takes a function (the test code)
 # argument, creates five mock objects, invokes the function with
-# the five mocks, and then calls check() on the mocks.
+# the five mocks, and then calls check() on those mocks.
 #
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
