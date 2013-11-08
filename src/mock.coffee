@@ -1,13 +1,14 @@
 #
 # MethodSignature is an internal data structure that represents 
 # a mocked method.  Stores the method name, the expected arguments,
-# the value to return, and whether it has actually been called.
-# For example, the following:
+# the value to return or raise, and whether it has actually been 
+# called.  For example, the following:
 #
 #   my_mock = (new Mock).expects("my_method").args(1,2,3).returns(42)
 #
 # would result in a MethodSignature with @method_name = "my_method",
-# @args = [1,2,3], @returns = 42, and @called = false.  Doing:
+# @args = [1,2,3], @returns = 42, @throws = undefined, and @called = 
+# false.  Doing:
 #
 #   my_mock.my_method(1,2,3)
 #
@@ -19,6 +20,7 @@ class MethodSignature
     @method_name = method_name
     @args = []
     @returns = undefined
+    @throws = undefined
     @called = false
     
   #
@@ -41,9 +43,9 @@ class MethodSignature
 
 #
 # Mock represents the mock of some object.  @signatures is a list of
-# mocked methods, which are added with the .expects(), .args(), and 
-# .returns() functions.  These must be called in a specific order,
-# expects then args then returns, so:
+# mocked methods, which are added with the .expects(), .args(), 
+# .returns(), and .throws() functions.  These must be called in a 
+# specific order, expects then args then returns or throws, so:
 #
 #   my_mock.expects("my_method").args(123).returns(456)
 #
@@ -52,7 +54,9 @@ class MethodSignature
 #   my_mock.returns(456).args(123).expects("my_method")
 #
 # is not.  @state is used to remember the last function called so that
-# we can enforce this order.  Note that args and returns are optional.
+# we can enforce this order.  Note that args, returns and throws are 
+# optional.  Also note that either returns or throws can be used, but
+# not both on the same signature.
 #
 # @signatures is used as a stack only in so far as the method signature
 # at the front of the list is the most recently defined signature and is
@@ -108,6 +112,20 @@ class Mock
     @
     
   #
+  # my_mock = (new Mock).expects("my_method").throws("an error")
+  # try
+  #   my_mock.my_method()
+  # catch error
+  #   console.log error               # prints "an error"
+  #
+  throws: (error) ->
+    throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')" unless error?
+    throw ".throws() must be called immediately after .expects() or .args()" unless @_is_state_in("expects", "args")
+    @_current_signature().throws = error
+    @_set_state("throws")
+    @
+    
+  #
   # my_mock = (new Mock).expects("my_method").expects("your_method")
   # my_mock.my_method()
   # my_mock.check()       # throws an error because your_method() was not called
@@ -135,6 +153,7 @@ class Mock
       signature = @_find_signature(method_name, args...)
       @_throw_unknown_expectation("#{method_name}(#{args})") unless signature?
       signature.called = true
+      throw signature.throws if signature.throws?
       signature.returns
   
   _build_errors: ->
@@ -157,12 +176,12 @@ class Mock
     @_throw_reserved_word(method_name) if @_is_reserved_word(method_name)
   
   _check_args_usage: (args...) ->
-    @_throw_args_must_be_after_expects() unless @_is_state_in("expects")
     @_throw_args_usage() if args.length == 0
+    @_throw_args_must_be_after_expects() unless @_is_state_in("expects")
   
   _check_returns_usage: (value) ->
-    @_throw_returns_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
     @_throw_returns_usage() unless value?
+    @_throw_returns_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
       
   _check_if_duplicate_signature: (method_name, args...) ->
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)

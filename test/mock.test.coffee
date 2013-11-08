@@ -62,6 +62,8 @@ describe "Mock.args( value [, value ...] )", ->
     (-> m.args(42) ).should.throw( ".args() must be called immediately after .expects()" )
     m.expects("my_method").args(42)
     (-> m.args(43) ).should.throw( ".args() must be called immediately after .expects()" )
+    m.expects("my_method").throws("an error")
+    (-> m.args(44) ).should.throw( ".args() must be called immediately after .expects()" )
     
   it "throws an exception when there is a duplicate expectation", ->
     m = new Mock()
@@ -94,6 +96,46 @@ describe "Mock.returns(value)", ->
   it "throws an error if it was not called immediately after either .expects() or .args()", ->
     m = new Mock()
     (-> m.returns(123) ).should.throw( ".returns() must be called immediately after .expects() or .args()" )
+    m.expects("my_method").returns(42)
+    (-> m.returns(123) ).should.throw( ".returns() must be called immediately after .expects() or .args()" )
+    m.expects("my_method").throws("an error")
+    (-> m.returns(123) ).should.throw( ".returns() must be called immediately after .expects() or .args()" )
+    
+  it "throws an error if an error (exception) value has been previously set", ->
+    m = (new Mock).expects("my_method").throws("an error")
+    (-> m.returns(42) ).should.throw # anything
+    
+    
+    
+describe "Mock.throws(error)", ->
+
+  it "returns the mock instance", ->
+    m = (new Mock).expects("my_method")
+    m.throws("an error").should.equal m
+
+  it "throws an error if a return value has been previously set", ->
+    m = (new Mock).expects("my_method").returns(42)
+    (-> m.throws("an error") ).should.throw # anything
+  
+  it "throws an error if no 'error' argument is specified", ->
+    m = (new Mock).expects("my_method")
+    (-> m.throws() ).should.throw( "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')" )
+  
+  it "can be called immediately after .expects()", ->
+    m = (new Mock).expects("my_method")
+    m.throws("an error")
+  
+  it "can be called immediately after .args()", ->
+    m = (new Mock).expects("my_method").args(1,2,3)
+    m.throws("an error")
+  
+  it "throws an error if it was not called immediately after either .expects() or .args()", ->
+    m = new Mock()
+    (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
+    m.expects("my_method").throws("an error")
+    (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
+    m.expects("my_method").returns(42)
+    (-> m.throws("am error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
   
   
   
@@ -124,6 +166,10 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
   it "returns undefined if no .returns() was specified", ->
     m = (new Mock).expects("my_method")
     should.not.exist m.my_method()
+    
+  it "throws the error specified in a .throws()", ->
+    m = (new Mock).expects("my_method").throws("an error")
+    (-> m.my_method() ).should.throw( "an error" )
 
 
   
