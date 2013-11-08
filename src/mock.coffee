@@ -113,8 +113,8 @@ class Mock
   # my_mock.check()       # throws an error because your_method() was not called
   #
   check: ->
-    @_check_for_uncalled_signatures()
     @_set_state("check")
+    @_check_for_errors()
     @
     
   # private
@@ -154,11 +154,15 @@ class Mock
   _check_if_duplicate_signature: (method_name, args...) ->
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
-  _check_for_uncalled_signatures: ->
-    messages = ""
+  _check_for_errors: ->
+    errors = @_errors()
+    throw errors unless errors == ""
+  
+  _errors: ->
+    errors = ""
     for signature in @signatures when signature.called == false
-      messages += "'#{signature.method_name}(#{signature.args})' was never called\n" 
-    throw messages unless messages == ""
+      errors += "'#{signature.method_name}(#{signature.args})' was never called\n" 
+    errors
   
   _set_state: (state) ->
     @state = state
@@ -204,13 +208,8 @@ class Mock
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
-  messages = ""
-  for mock in mocks
-    try
-      mock.check()
-    catch ex
-      messages += ex
-  throw messages unless messages == ""
+  errors = ( mock._errors() for mock in mocks ).join("")
+  throw errors unless errors == ""
 
 
     

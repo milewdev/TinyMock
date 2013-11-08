@@ -184,14 +184,8 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     mock (my_mock1, my_mock2) ->
       my_mock1.should.respondTo "expects"
       my_mock2.should.respondTo "expects"
-
-  it "invokes Mock.check on the mock object after invoking the function argument", ->
-    my_mock_reference = false
-    mock (my_mock) ->
-      my_mock.check = -> my_mock_reference = true     # Don't try this at home.
-    my_mock_reference.should.equal true
-    
-  it "does not eat expections thrown by Mock.check", ->
+      
+  it "checks the mocks for errors after invoking the function argument", ->
     (->
       mock (my_mock) ->
         my_mock.expects("my_method")
