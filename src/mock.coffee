@@ -1,7 +1,7 @@
 #
 # MethodSignature is an internal data structure that represents 
 # a mocked method.  Stores the method name, the expected arguments,
-# the value to return or raise, and whether it has actually been 
+# the value to return or throw, and whether it has actually been 
 # called.  For example, the following:
 #
 #   my_mock = (new Mock).expects("my_method").args(1,2,3).returns(42)
@@ -116,7 +116,7 @@ class Mock
   # try
   #   my_mock.my_method()
   # catch error
-  #   console.log error               # prints "an error"
+  #   console.log error   # prints "an error"
   #
   throws: (error) ->
     @_check_throws_usage(error)
@@ -226,10 +226,15 @@ class Mock
     
 
 #
-# mock() is a convenience function to ensure that .check() is called 
-# on mock objects.  As such, it takes a function (the test code)
-# argument, creates five mock objects, invokes the function with
-# the five mocks, and then calls check() on those mocks.
+# mock() is a convenience function to ensure that _build_errors() is
+# called on mock objects.  As such, it takes a function (the test code)
+# argument, creates five mock objects, invokes the function with the
+# five mocks, and then calls _build_errors() on those mocks, throw an
+# error if any errors are found.
+#
+# _build_errors() is a "private" method on Mocks; check() should really
+# be used but it results in a try/catch block an messier code.  Could
+# make _build_errors() public.
 #
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
