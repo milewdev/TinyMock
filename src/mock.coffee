@@ -82,7 +82,7 @@ class Mock
   expects: (method_name) ->
     @_check_expects_usage(method_name)
     @signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
-    @[ method_name ] ?= @_define_expected_method(method_name)
+    @[ method_name ] ?= @_build_mocked_method(method_name)
     @_set_state("expects")
     @
     
@@ -119,8 +119,6 @@ class Mock
     
   # private
   
-  # TODO: re-order methods below
-  
   _current_signature: ->
     @signatures[0]
     
@@ -132,16 +130,31 @@ class Mock
       return signature
     undefined
   
-  _define_expected_method: (method_name) ->
+  _build_mocked_method: (method_name) ->
     (args...) ->
       signature = @_find_signature(method_name, args...)
       @_throw_unknown_expectation("#{method_name}(#{args})") unless signature?
       signature.called = true
       signature.returns
   
+  _build_errors: ->
+    errors = ""
+    for signature in @signatures when signature.called == false
+      errors += "'#{signature.method_name}(#{signature.args})' was never called\n" 
+    errors
+  
+  _set_state: (state) ->
+    @state = state
+    
+  _is_state_in: (states...) ->
+    @state in states
+  
+  _is_reserved_word: (word) ->
+    word in [ "expects", "args", "returns", "check" ]
+  
   _check_expects_usage: (method_name) ->
     @_throw_expects_usage() unless method_name?
-    @_throw_reserved(method_name) if @_is_reserved(method_name)
+    @_throw_reserved_word(method_name) if @_is_reserved_word(method_name)
   
   _check_args_usage: (args...) ->
     @_throw_args_must_be_after_expects() unless @_is_state_in("expects")
@@ -155,47 +168,32 @@ class Mock
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
   _check_for_errors: ->
-    errors = @_errors()
+    errors = @_build_errors()
     throw errors unless errors == ""
-  
-  _errors: ->
-    errors = ""
-    for signature in @signatures when signature.called == false
-      errors += "'#{signature.method_name}(#{signature.args})' was never called\n" 
-    errors
-  
-  _set_state: (state) ->
-    @state = state
-    
-  _is_state_in: (states...) ->
-    @state in states
-  
-  _is_reserved: (word) ->
-    word in [ "expects", "args", "returns", "check" ]
   
   _throw_expects_usage: ->
     throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
   
-  _throw_reserved: (reserved) ->
+  _throw_reserved_word: (reserved) ->
     throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
-    
-  _throw_unknown_expectation: (signature) ->
-    throw "#{signature} does not match any expectations"
-    
-  _throw_args_must_be_after_expects: ->
-    throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
     
   _throw_args_usage: ->
     throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
     
+  _throw_args_must_be_after_expects: ->
+    throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
+    
   _throw_duplicate_expectation: (signature) ->
     throw "#{signature} is a duplicate expectation"
+    
+  _throw_returns_usage: ->
+    throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
     
   _throw_returns_must_be_after_expects_or_args: ->
     throw ".returns() must be called immediately after .expects() or .args()"
     
-  _throw_returns_usage: ->
-    throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
+  _throw_unknown_expectation: (signature) ->
+    throw "#{signature} does not match any expectations"
 
     
 
@@ -208,7 +206,7 @@ class Mock
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
-  errors = ( mock._errors() for mock in mocks ).join("")
+  errors = ( mock._build_errors() for mock in mocks ).join("")
   throw errors unless errors == ""
 
 
