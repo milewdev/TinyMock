@@ -119,8 +119,7 @@ class Mock
   #   console.log error               # prints "an error"
   #
   throws: (error) ->
-    throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')" unless error?
-    throw ".throws() must be called immediately after .expects() or .args()" unless @_is_state_in("expects", "args")
+    @_check_throws_usage(error)
     @_current_signature().throws = error
     @_set_state("throws")
     @
@@ -183,6 +182,10 @@ class Mock
     @_throw_returns_usage() unless value?
     @_throw_returns_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
       
+  _check_throws_usage: (error) ->
+    @_throw_throws_usage(error) unless error?
+    @_throw_throws_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
+      
   _check_if_duplicate_signature: (method_name, args...) ->
     @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
         
@@ -210,6 +213,12 @@ class Mock
     
   _throw_returns_must_be_after_expects_or_args: ->
     throw ".returns() must be called immediately after .expects() or .args()"
+    
+  _throw_throws_usage: ->
+    throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')"
+    
+  _throw_throws_must_be_after_expects_or_args: ->
+    throw ".throws() must be called immediately after .expects() or .args()"
     
   _throw_unknown_expectation: (signature) ->
     throw "#{signature} does not match any expectations"
