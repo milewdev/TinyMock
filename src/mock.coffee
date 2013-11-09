@@ -229,11 +229,11 @@ class Mock
 # mock() is a convenience function to ensure that _build_errors() is
 # called on mock objects.  As such, it takes a function (the test code)
 # argument, creates five mock objects, invokes the function with the
-# five mocks, and then calls _build_errors() on those mocks, throw an
+# five mocks, and then calls _build_errors() on those mocks, throwing an
 # error if any errors are found.
 #
 # _build_errors() is a "private" method on Mocks; check() should really
-# be used but it results in a try/catch block an messier code.  Could
+# be used but it results in a try/catch block and messier code.  Could
 # make _build_errors() public.
 #
 mock = (fn) ->
