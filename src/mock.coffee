@@ -12,7 +12,9 @@
 #
 #   my_mock.my_method(1,2,3)
 #
-# would result in @called = true.
+# would result in @called = true.  Note that a mocked function can 
+# either return a value or throw an error but not both, so either
+# @returns or @throws (or both) must be undefined.
 #
 class MethodSignature
   
