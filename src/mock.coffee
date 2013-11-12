@@ -138,7 +138,9 @@ class Mock
 
 
     
+#
 # Private Mock 'methods'; making them functions keeps the Mock object uncluttered.
+#
 
 _set_state = (mock, state) ->
   mock.state = state
