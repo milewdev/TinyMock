@@ -84,10 +84,10 @@ class Mock
   # my_mock.my_method()
   #
   expects: (method_name) ->
-    @_check_expects_usage(method_name)
+    _check_expects_usage(method_name)
     @signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
-    @[ method_name ] ?= @_build_mocked_method(method_name)
-    @_set_state("expects")
+    @[ method_name ] ?= _build_mocked_method(@, method_name)
+    _set_state(@, "expects")
     @
     
   #
@@ -95,10 +95,10 @@ class Mock
   # my_mock.my_method(1,2,3)
   #
   args: (args...) ->
-    @_check_args_usage(args...)
-    @_check_if_duplicate_signature(@_current_method_name(), args...)
-    @_current_signature().args = args
-    @_set_state("args")
+    _check_args_usage(@, args...)
+    _check_if_duplicate_signature(@, _current_method_name(@), args...)
+    _current_signature(@).args = args
+    _set_state(@, "args")
     @
     
   #
@@ -106,9 +106,9 @@ class Mock
   # console.log my_mock.my_method()   # prints 123
   #
   returns: (value) ->
-    @_check_returns_usage(value)
-    @_current_signature().returns = value
-    @_set_state("returns")
+    _check_returns_usage(@, value)
+    _current_signature(@).returns = value
+    _set_state(@, "returns")
     @
     
   #
@@ -119,9 +119,9 @@ class Mock
   #   console.log error   # prints "an error"
   #
   throws: (error) ->
-    @_check_throws_usage(error)
-    @_current_signature().throws = error
-    @_set_state("throws")
+    _check_throws_usage(@, error)
+    _current_signature(@).throws = error
+    _set_state(@, "throws")
     @
     
   #
@@ -130,100 +130,102 @@ class Mock
   # my_mock.check()       # throws an error because your_method() was not called
   #
   check: ->
-    @_set_state("check")
-    @_check_for_errors()
+    _set_state(@, "check")
+    _check_for_errors(@)
     @
-    
-  # private
-  
-  _current_signature: ->
-    @signatures[0]
-    
-  _current_method_name: ->
-    @_current_signature()?.method_name
-  
-  _find_signature: (method_name, args...) ->
-    for signature in @signatures when signature.matches(method_name, args...)
-      return signature
-    undefined
-  
-  _build_mocked_method: (method_name) ->
-    (args...) ->
-      signature = @_find_signature(method_name, args...)
-      @_throw_unknown_expectation("#{method_name}(#{args})") unless signature?
-      signature.called = true
-      throw signature.throws if signature.throws?
-      signature.returns
-  
-  _build_errors: ->
-    errors = ""
-    for signature in @signatures when signature.called == false
-      errors += "'#{signature.method_name}(#{signature.args})' was never called\n" 
-    errors
-  
-  _set_state: (state) ->
-    @state = state
-    
-  _is_state_in: (states...) ->
-    @state in states
-  
-  _is_reserved_word: (word) ->
-    word in [ "expects", "args", "returns", "check" ]
-  
-  _check_expects_usage: (method_name) ->
-    @_throw_expects_usage() unless method_name?
-    @_throw_reserved_word(method_name) if @_is_reserved_word(method_name)
-  
-  _check_args_usage: (args...) ->
-    @_throw_args_usage() if args.length == 0
-    @_throw_args_must_be_after_expects() unless @_is_state_in("expects")
-  
-  _check_returns_usage: (value) ->
-    @_throw_returns_usage() unless value?
-    @_throw_returns_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
-      
-  _check_throws_usage: (error) ->
-    @_throw_throws_usage(error) unless error?
-    @_throw_throws_must_be_after_expects_or_args() unless @_is_state_in("expects", "args")
-      
-  _check_if_duplicate_signature: (method_name, args...) ->
-    @_throw_duplicate_expectation("#{method_name}(#{args})") if @_find_signature(method_name, args...)
-        
-  _check_for_errors: ->
-    errors = @_build_errors()
-    throw errors unless errors == ""
-  
-  _throw_expects_usage: ->
-    throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
-  
-  _throw_reserved_word: (reserved) ->
-    throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
-    
-  _throw_args_usage: ->
-    throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
-    
-  _throw_args_must_be_after_expects: ->
-    throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
-    
-  _throw_duplicate_expectation: (signature) ->
-    throw "#{signature} is a duplicate expectation"
-    
-  _throw_returns_usage: ->
-    throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
-    
-  _throw_returns_must_be_after_expects_or_args: ->
-    throw ".returns() must be called immediately after .expects() or .args()"
-    
-  _throw_throws_usage: ->
-    throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')"
-    
-  _throw_throws_must_be_after_expects_or_args: ->
-    throw ".throws() must be called immediately after .expects() or .args()"
-    
-  _throw_unknown_expectation: (signature) ->
-    throw "#{signature} does not match any expectations"
+
 
     
+# Private Mock 'methods'; making them functions keeps the Mock object uncluttered.
+
+_set_state = (mock, state) ->
+  mock.state = state
+  
+_is_state_in = (mock, states...) ->
+  mock.state in states
+
+_is_reserved_word = (word) ->
+  word in [ "expects", "args", "returns", "check" ]
+
+_check_expects_usage = (method_name) ->
+  _throw_expects_usage() unless method_name?
+  _throw_reserved_word(method_name) if _is_reserved_word(method_name)
+
+_check_args_usage = (mock, args...) ->
+  _throw_args_usage() if args.length == 0
+  _throw_args_must_be_after_expects() unless _is_state_in(mock, "expects")
+
+_check_returns_usage = (mock, value) ->
+  _throw_returns_usage() unless value?
+  _throw_returns_must_be_after_expects_or_args() unless _is_state_in(mock, "expects", "args")
+    
+_check_throws_usage = (mock, error) ->
+  _throw_throws_usage(error) unless error?
+  _throw_throws_must_be_after_expects_or_args() unless _is_state_in(mock, "expects", "args")
+    
+_check_if_duplicate_signature = (mock, method_name, args...) ->
+  _throw_duplicate_expectation("#{method_name}(#{args})") if _find_signature(mock, method_name, args...)
+      
+_check_for_errors = (mock) ->
+  errors = _build_errors(mock)
+  throw errors unless errors == ""
+
+_current_signature = (mock) ->
+  mock.signatures[0]
+  
+_current_method_name = (mock) ->
+  _current_signature(mock)?.method_name
+
+_find_signature = (mock, method_name, args...) ->
+  for signature in mock.signatures when signature.matches(method_name, args...)
+    return signature
+  undefined
+
+_build_mocked_method = (mock, method_name) ->
+  (args...) ->
+    signature = _find_signature(mock, method_name, args...)
+    _throw_unknown_expectation("#{method_name}(#{args})") unless signature?
+    signature.called = true
+    throw signature.throws if signature.throws?
+    signature.returns
+
+_build_errors = (mock) ->
+  errors = ""
+  for signature in mock.signatures when signature.called == false
+    errors += "'#{signature.method_name}(#{signature.args})' was never called\n" 
+  errors
+
+_throw_expects_usage = ->
+  throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
+
+_throw_reserved_word = (reserved) ->
+  throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
+  
+_throw_args_usage = ->
+  throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
+  
+_throw_args_must_be_after_expects = ->
+  throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
+  
+_throw_duplicate_expectation = (signature) ->
+  throw "#{signature} is a duplicate expectation"
+  
+_throw_returns_usage = ->
+  throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
+  
+_throw_returns_must_be_after_expects_or_args = ->
+  throw ".returns() must be called immediately after .expects() or .args()"
+  
+_throw_throws_usage = ->
+  throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')"
+
+_throw_throws_must_be_after_expects_or_args = ->
+  throw ".throws() must be called immediately after .expects() or .args()"
+    
+_throw_unknown_expectation = (signature) ->
+  throw "#{signature} does not match any expectations"
+
+  
 
 #
 # mock() is a convenience function to ensure that _build_errors() is
@@ -239,7 +241,7 @@ class Mock
 mock = (fn) ->
   mocks = ( new Mock() for i in [1..5] )
   fn.apply(undefined, mocks)
-  errors = ( mock._build_errors() for mock in mocks ).join("")
+  errors = ( _build_errors(mock) for mock in mocks ).join("")
   throw errors unless errors == ""
 
 
