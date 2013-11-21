@@ -1,15 +1,28 @@
 {
-  "_comment":         "See http://package.json.nodejitsu.com for a description of the fields in this JSON file.",
-  "name":             "TinyMockJS",
-  "preferGlobal":     false,
-  "version":          "0.0.0",
-  "author":           "Michael Lewandowski <milewgit@gmail.com>",
-  "description":      "tiny coffeescript/javascript mocking library",
-  "contributors":     [ { "name": "Michael Lewandowski", "email": "milewgit@gmail.com" } ],
-  "scripts":          { "test": "cake test" },
-  "repository":       { "type": "git", "url": "https://github.com/milewgit/TinyMockJS.git" },
-  "keywords":         [ "test", "mock", "coffeescript", "javascript" ],
-  "devDependencies":  { "chai": "*", "mocha": "*" },
-  "license":          "MIT",
-  "engines":          { "node": ">=0.10" }
+  "name": "TinyMockJS",
+  "version": "0.0.0",
+  "description": "tiny coffeescript/javascript mocking library",
+  "main": "./lib/TinyMockJS.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "cake test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/milewgit/TinyMockJS.git"
+  },
+  "keywords": [
+    "test",
+    "mock",
+    "coffee-script",
+    "javascript"
+  ],
+  "author": "Michael Lewandowski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/milewgit/TinyMockJS/issues"
+  },
+  "dependencies": {}
 }
