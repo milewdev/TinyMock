@@ -1,4 +1,4 @@
-{mock, Mock} = require("../src/mock")
+{mock, Mock} = require("../src/TinyMockJS")
 
 
 
@@ -243,4 +243,4 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         my_mock1.expects("my_method1").args(1,2,3)
         my_mock2.expects("my_method2")
     ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
-    
+ 
