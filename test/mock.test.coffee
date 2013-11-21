@@ -2,17 +2,6 @@
 
 
 
-describe "Mock", ->
-
-  it "allows a method with args and the same method without args", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.expects("my_method").args(1,2,3)
-    m.my_method()
-    m.my_method(1,2,3)
-  
-  
-  
 describe "Mock.expects(method_name)", ->
   
   it "returns the mock instance", ->
@@ -152,7 +141,7 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
   it "throws an error if my_method is called with arguments but none were expected", ->
     m = (new Mock).expects("my_method")
     (-> m.my_method(1,2,3) ).should.throw( "my_method(1,2,3) does not match any expectations" )
-    
+
   it "throws an error if the args do not match any expectations", ->
     m = (new Mock)
       .expects("my_method").args(1,2,3)
@@ -171,6 +160,18 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     m = (new Mock).expects("my_method").throws("an error")
     (-> m.my_method() ).should.throw( "an error" )
 
+  it "allows a method with args and the same method without args", ->
+    m = new Mock()
+    m.expects("my_method")
+    m.expects("my_method").args(1,2,3)
+    m.my_method()
+    m.my_method(1,2,3)
+    
+  it "throws an error if a method requires args but is called with none", ->
+    m = new Mock()
+    m.expects("my_method").args(1,2,3)
+    (-> m.my_method() ).should.throw( "my_method() does not match any expectations" )
+    
 
   
 describe "Mock.check()", ->
