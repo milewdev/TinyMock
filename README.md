@@ -1,4 +1,4 @@
-### TinyMockJS - A very small CoffeeScript/JavaScript mocking library
+### TinyMockJS - A very small CoffeeScript mocking library
 
 
 
@@ -164,23 +164,23 @@ TODO
     ```
   throws() must be called immediately after either expects() or args():
     ```CoffeeScript
-    mocked_object.expects("my_method").throws("an error")             # ok
-    mocked_object.expects("my_method").args(1,2,3).throws("an error") # ok
-    mocked_object.throws("an error").expects("my_method")             # incorrect
+    mocked_object.expects("my_method").throws("an error")                 # ok
+    mocked_object.expects("my_method").args(1,2,3).throws("an error")     # ok
+    mocked_object.throws("an error").expects("my_method")                 # incorrect
     ```
   If a mocked method should not throw anything, do not use throws():
     ```CoffeeScript
-    mocked_object.expects("my_method")                                # ok
-    mocked_object.expects("my_method").throws()                       # incorrect
+    mocked_object.expects("my_method")                                    # ok
+    mocked_object.expects("my_method").throws()                           # incorrect
     ```
   returns() and throws() cannot be used at the same time on the same signature:
     ```CoffeeScript
-    mocked_object.expects("method1").returns(123)                     # ok
-    mocked_object.expects("method1").throws("an error")               # ok
-    mocked_object.expects("method1").returns(123).throws("an error")  # incorrect
+    mocked_object.expects("my_method").returns(123)                       # ok
+    mocked_object.expects("my_method").throws("an error")                 # ok
+    mocked_object.expects("my_method").returns(123).throws("an error")    # incorrect
     
-    mocked_object.expects("method2").args(1,2,3).returns(42)          # ok
-    mocked_onject.expects("method2").args(4,5,6).throws("an error")   # ok (different signature)
+    mocked_object.expects("your_method").args(1,2,3).returns(42)          # ok
+    mocked_onject.expects("your_method").args(4,5,6).throws("an error")   # ok
     ```
   <br>
 
