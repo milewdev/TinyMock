@@ -1,4 +1,4 @@
-# TinyMockJS - A very small CoffeeScript/JavaScript mocking library
+### TinyMockJS - A very small CoffeeScript/JavaScript mocking library
 
 
 
@@ -63,7 +63,8 @@ TODO
     describe "Chat.local_ip_address", ->
       it "returns the ip address of the local end of the chat", ->
         mock (socket) ->
-          socket.expects("address").returns( { port: 1234, family: "IPv4", address: "127.0.0.1" } )
+          socket.expects("address")
+            .returns( { port: 1234, family: "IPv4", address: "127.0.0.1" } )
           chat = new Chat(socket)
           chat.local_ip_address().should.equal "127.0.0.1"
     ```
@@ -101,7 +102,7 @@ TODO
 - #### args( arg1 [, arg2 ... ] )<br>
   Specifies the arguments (parameter values) that a mocked method should expect.  It takes one or more values:
     ```CoffeeScript
-    mocked_object.expects("my_method").args("name", 42, { street: "Main Ave.", city: "Big Town" } )
+    mocked_object.expects("my_method").args("name", 42)
     ```
   The same method can be specified with different values or different numbers of values:
     ```CoffeeScript
@@ -163,23 +164,23 @@ TODO
     ```
   throws() must be called immediately after either expects() or args():
     ```CoffeeScript
-    mocked_object.expects("my_method").throws("an error")                 # ok
-    mocked_object.expects("my_method").args(1,2,3).throws("an error")     # ok
-    mocked_object.throws("an error").expects("my_method")                 # incorrect
+    mocked_object.expects("my_method").throws("an error")             # ok
+    mocked_object.expects("my_method").args(1,2,3).throws("an error") # ok
+    mocked_object.throws("an error").expects("my_method")             # incorrect
     ```
   If a mocked method should not throw anything, do not use throws():
     ```CoffeeScript
-    mocked_object.expects("my_method")                                    # ok
-    mocked_object.expects("my_method").throws()                           # incorrect
+    mocked_object.expects("my_method")                                # ok
+    mocked_object.expects("my_method").throws()                       # incorrect
     ```
   returns() and throws() cannot be used at the same time on the same signature:
     ```CoffeeScript
-    mocked_object.expects("my_method").returns(123)                       # ok
-    mocked_object.expects("my_method").throws("an error")                 # ok
-    mocked_object.expects("my_method").returns(123).throws("an error")    # incorrect
+    mocked_object.expects("method1").returns(123)                     # ok
+    mocked_object.expects("method1").throws("an error")               # ok
+    mocked_object.expects("method1").returns(123).throws("an error")  # incorrect
     
-    mocked_object.expects("your_method").args(1,2,3).returns(42)          # ok
-    mocked_onject.expects("your_method").args(4,5,6).throws("an error")   # ok (different method signature)
+    mocked_object.expects("method2").args(1,2,3).returns(42)          # ok
+    mocked_onject.expects("method2").args(4,5,6).throws("an error")   # ok (different signature)
     ```
   <br>
 
@@ -223,9 +224,8 @@ TODO
 
 
 ### Thanks
-- [CoffeeScript](http://coffeescript.org)
+- [CoffeeScript](http://coffeescript.org), [NodeJS](http://nodejs.org), [Markdown](http://daringfireball.net/projects/markdown/)
 - [mocha](http://visionmedia.github.io/mocha/), [chai](http://chaijs.com)
-- [NodeJS](http://nodejs.org)
 - [brackets](http://brackets.io)
 - [git](http://git-scm.com), [GitHub](https://github.com)
 - [Apple Inc.](http://www.apple.com)
