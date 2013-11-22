@@ -1,5 +1,3 @@
-{Chat} = require("../src/Chat")
-
 describe "Chat.goodbye", ->
   it "ends the conversation", ->
     mock (socket) ->
