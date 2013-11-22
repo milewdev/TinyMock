@@ -2,6 +2,10 @@
 
 
 
+# test that expects("my_method").args(1,2,3).returns(42) and expects("my_method").args(4,5,6).throws("an error") is ok
+
+
+
 describe "Mock.expects(method_name)", ->
   
   it "returns the mock instance", ->
@@ -174,57 +178,6 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     
 
   
-describe "Mock.check()", ->
-
-  it "returns the mock instance", ->
-    m = new Mock()
-    m.check().should.equal m
-    
-  it "does not throw an error if no expectations have been defined", ->
-    m = new Mock()
-    m.check()
-  
-  it "can be called many times (meaningless but harmless)", ->
-    m = new Mock()
-    m.check()
-    m.check()
-
-  it "can be called many times in any order (meaningless but harmless)", ->
-    m = (new Mock).expects("my_method1")
-    m.my_method1()
-    m.check()
-    m.expects("my_method2")
-    m.my_method2()
-    m.check()
-
-  it "does not throw an error if an expected method without args was called", ->
-    m = (new Mock).expects("my_method")
-    m.my_method()
-    m.check()
-
-  it "does not throw an error if an expected method with args was called", ->
-    m = (new Mock).expects("my_method").args(1,2,3)
-    m.my_method(1,2,3)
-    m.check()
-  
-  it "throws an error if an expected method without args was not called", ->
-    m = (new Mock).expects("my_method")
-    (-> m.check() ).should.throw( "'my_method()' was never called" )
-  
-  it "throws an error if an expected method with args was not called", ->
-    m = (new Mock)
-      .expects("my_method").args(1,2,3)
-      .expects("my_method").args(4,5,6)
-    m.my_method(1,2,3)
-    (-> m.check() ).should.throw( "'my_method(4,5,6)' was never called" )
-    
-  it "allows an expected method to be called any number of times", ->
-    m = (new Mock).expects("my_method").args(1,2,3)
-    m.my_method(1,2,3)
-    m.my_method(1,2,3)
-    
-    
-    
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
   
   it "passes mock objects to the function argument", ->
