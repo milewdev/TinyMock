@@ -2,7 +2,7 @@
 
 
 
-# test that expects("my_method").args(1,2,3).returns(42) and expects("my_method").args(4,5,6).throws("an error") is ok
+# TODO: test that expects("my_method").args(1,2,3).returns(42) and expects("my_method").args(4,5,6).throws("an error") is ok
 
 
 
@@ -109,6 +109,12 @@ describe "Mock.throws(error)", ->
   it "throws an error if a return value has been previously set", ->
     m = (new Mock).expects("my_method").returns(42)
     (-> m.throws("an error") ).should.throw # anything
+    
+  it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
+    m = new Mock()
+    m.expects("my_method").args(1,2,3).returns(42)
+    m.expects("my_method").args(4,5,6)
+    (-> m.throws("an error") ).should.not.throw
   
   it "throws an error if no 'error' argument is specified", ->
     m = (new Mock).expects("my_method")
