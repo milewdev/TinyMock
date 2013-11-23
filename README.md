@@ -30,7 +30,7 @@ TODO
 
 
 ### Quick Start
-- Use mock() to create mock objects:
+- Use the mock function to create mock objects and run a test:
     ```CoffeeScript
     describe "Something", ->
       it "does something", ->
@@ -90,9 +90,7 @@ TODO
           chat.say_with_logging("a message")
     ```
 
-- Source code for this Quick Start can be found here:
-
-    TODO
+- Source code and supporting files for this Quick Start can be found in the [quick_start](quick_start/) directory.
 <br>
 
 
@@ -100,7 +98,7 @@ TODO
 ### API Reference
 
 - #### args( arg1 [, arg2 ... ] )<br>
-  Specifies the arguments (parameter values) that a mocked method should expect.  It takes one or more values:
+  Specifies the arguments that a mocked method should expect.  It takes one or more values:
     ```CoffeeScript
     mocked_object.expects("my_method").args("name", 42)
     ```
@@ -126,10 +124,6 @@ TODO
     mocked_object.expects("my_method").args(1,2,3)    # ok    
     mocked_object.expects("my_method").args(1,2,3)    # incorrect (duplicate signature)
     ```
-  <br>
-
-- #### check()<br>
-  TODO
   <br>
 
 - #### expects( method_name )<br>
@@ -184,8 +178,38 @@ TODO
     ```
   <br>
 
-- #### mock( mock1 [, mock2 [, mock3 [, mock4 [, mock5 ] ] ] ] )<br>
-  TODO
+- #### mock ( mock1 [, mock2 [, mock3 [, mock4 [, mock5 ] ] ] ] ) -><br>
+  The mock function takes another function representing a test and runs it, passing it up to five mock objects.  When the function completes, mock checks each of the mock objects to ensure that their expectations were met, throwing an error if this is not the case:
+    ```CoffeeScript
+    mock (my_mock, your_mock) ->
+      my_mock.expects("my_method")
+      your_mock.expects("your_method")
+      sut = new Sut(my_mock, your_mock)
+      sut.do_something_that_uses_the_mocks()
+    ```
+  Note that mock is a function whose one argument is another function that accepts up to five arguments.  The mock function's parentheses have been omitted for clarity but it does mean that you have to be careful to leave at least one space between 'mock' and the opening parenthesis of the anonymous function argument:
+    ```CoffeeScript
+    # a strictly correct way
+    mock( (m1) ->
+      m1.expects("method")
+      sut.do_something(m1) )
+      
+    # can also use a non-anonymous function
+    fn = (m1) ->
+      m1.expects("method")
+      sut.do_something(m1)
+    mock(fn)
+      
+    # a clearer way
+    mock (m1) ->
+      m1.expects("method")
+      sut.do_something(m1)
+      
+    # but beware
+    mock(m1) ->                 # missing a space between 'mock' and '('
+      m1.expects("method")
+      sut.do_something(m1)
+    ```
   <br>
 
 - #### Miscellaneous<br>
@@ -207,7 +231,7 @@ TODO
     ```CoffeeScript
     mock.expects("my_method").args(1,2,3)
     
-    # Of course, it would be the system under test that makes these calls:
+    # Of course, it would be the system under test that actually makes these calls:
     mock.my_method(1,2,3)   # ok: first time called
     mock.my_method(1,2,3)   # ok: second time called
     mock.my_method(1,2,3)   # and so on
@@ -224,8 +248,9 @@ TODO
 
 
 ### Thanks
-- [CoffeeScript](http://coffeescript.org), [NodeJS](http://nodejs.org), [Markdown](http://daringfireball.net/projects/markdown/)
+- [CoffeeScript](http://coffeescript.org), [Markdown](http://daringfireball.net/projects/markdown/)
 - [mocha](http://visionmedia.github.io/mocha/), [chai](http://chaijs.com)
 - [brackets](http://brackets.io)
+- [NodeJS](http://nodejs.org)
 - [git](http://git-scm.com), [GitHub](https://github.com)
 - [Apple Inc.](http://www.apple.com)
