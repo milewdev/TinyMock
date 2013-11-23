@@ -16,15 +16,25 @@ TinyMockJS is a very small mocking library for use in CoffeeScript and JavaScrip
 
 
 ### Installation
-TODO
-download TinyMockJS from github
-cd path/to/TinyMockJS
-npm link
-cd path/to/MyProject
-npm link TinyMockJS
-
+```bash
+$ git clone https://github.com/milewgit/TinyMockJS.git /Users/you/work/TinyMockJS
+Cloning into '/Users/you/work/TinyMockJS'...
+...
+$ cd /Users/you/work/TinyMockJS
+$ cake build
+$ npm link
+/usr/local/lib/node_modules/TinyMockJS -> /Users/you/work/TinyMockJS
+$
+```
 To uninstall:
-TODO
+```bash
+$ pushd /usr/local/lib/node_modules
+/usr/local/lib/node_modules ~/work/TinyMockJS
+$ npm unlink TinyMockJS
+$ popd
+~/work/TinyMockJS
+$
+```
 <br>
 
 
