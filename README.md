@@ -33,6 +33,8 @@ $ pushd /usr/local/lib/node_modules
 $ npm unlink TinyMockJS
 $ popd
 ~/work/TinyMockJS
+$ cd ..
+$ rm -rf TinyMockJS
 $
 ```
 <br>
