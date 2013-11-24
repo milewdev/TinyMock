@@ -24,6 +24,23 @@ class MethodSignature
     @returns = undefined
     @throws = undefined
     @called = false
+
+  #
+  # Returns true if this signature equals (has the same values
+  # as) another.  For example:
+  #
+  #   ms1 = new MethodSignature("my_method")
+  #   ms1.args = [ 1, "a" ]
+  #
+  #   ms2 = new MethodSignature("my_method")
+  #   ms2.args = [ 1, "a" ]
+  #
+  #   ms1.equals(ms2)       # returns true
+  #
+  equals: (other) ->
+    ( @method_name == other.method_name ) and
+      ( @args.length == other.args.length ) and
+      ( @args.every ( element, i ) -> element == other.args[ i ] )
     
   #
   # Returns true if this signature has the specified method
@@ -98,8 +115,8 @@ class Mock
   #
   args: (args...) ->
     _check_args_usage(@, args...)
-    _check_if_duplicate_signature(@, _current_method_name(@), args...)
     _current_signature(@).args = args
+    _check_for_duplicate_signatures(@)
     _set_state(@, "args")
     @
     
@@ -109,6 +126,7 @@ class Mock
   #
   returns: (value) ->
     _check_returns_usage(@, value)
+    _check_for_duplicate_signatures(@)
     _current_signature(@).returns = value
     _set_state(@, "returns")
     @
@@ -157,8 +175,13 @@ _check_throws_usage = (mock, error) ->
   _throw_throws_usage(error) unless error?
   _throw_throws_must_be_after_expects_or_args() unless _is_state_in(mock, "expects", "args")
     
-_check_if_duplicate_signature = (mock, method_name, args...) ->
-  _throw_duplicate_expectation("#{method_name}(#{args})") if _find_signature(mock, method_name, args...)
+_check_for_duplicate_signatures = (mock) ->
+  # TODO: use each with index and slice to avoid last element
+  signatures = mock.signatures
+  return if signatures.length < 2
+  for outer in [0..signatures.length-2]
+    for inner in [outer+1..signatures.length-1]
+      _throw_duplicate_expectation("#{signatures[outer].method_name}(#{signatures[outer].args})") if signatures[outer].equals( signatures[inner] )
       
 _check_for_errors = (mock) ->
   errors = _build_errors(mock)

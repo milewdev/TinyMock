@@ -98,6 +98,11 @@ describe "Mock.returns(value)", ->
     m = (new Mock).expects("my_method").throws("an error")
     (-> m.returns(42) ).should.throw # anything
     
+  it "throws an exception when the same method is expected to return different values", ->
+    m = (new Mock).expects("my_method").returns(1)
+    m.expects("my_method")
+    (-> m.returns(2) ).should.throw( "my_method() is a duplicate expectation" )
+    
     
     
 describe "Mock.throws(error)", ->
@@ -131,10 +136,6 @@ describe "Mock.throws(error)", ->
   it "throws an error if it was not called immediately after either .expects() or .args()", ->
     m = new Mock()
     (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
-    m.expects("my_method").throws("an error")
-    (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
-    m.expects("my_method").returns(42)
-    (-> m.throws("am error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
   
   
   
