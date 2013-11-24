@@ -140,6 +140,7 @@ class Mock
   #
   throws: (error) ->
     _check_throws_usage(@, error)
+    _check_for_duplicate_signatures(@)
     _current_signature(@).throws = error
     _set_state(@, "throws")
     @
