@@ -183,10 +183,6 @@ _check_for_duplicate_signatures = (mock) ->
   for outer in [0..signatures.length-2]
     for inner in [outer+1..signatures.length-1]
       _throw_duplicate_expectation("#{signatures[outer].method_name}(#{signatures[outer].args})") if signatures[outer].equals( signatures[inner] )
-      
-_check_for_errors = (mock) ->
-  errors = _build_errors(mock)
-  throw errors unless errors == ""
 
 _current_signature = (mock) ->
   mock.signatures[0]
