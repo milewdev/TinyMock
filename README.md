@@ -21,16 +21,18 @@ TinyMockJS is a very small mocking library for use in CoffeeScript and JavaScrip
 
 ### Installation
 ```
+Install:
 $ git clone https://github.com/milewgit/TinyMockJS.git /Users/you/work/TinyMockJS
 Cloning into '/Users/you/work/TinyMockJS'...
 ...
 $ cd /Users/you/work/TinyMockJS
-$ cake build
+$ npm test
+$ npm build
 $ npm link
 /usr/local/lib/node_modules/TinyMockJS -> /Users/you/work/TinyMockJS
 $
 ```
-To uninstall:
+Uninstall:
 ```
 $ pushd /usr/local/lib/node_modules
 /usr/local/lib/node_modules ~/work/TinyMockJS
@@ -105,7 +107,11 @@ $
           chat.say_with_logging("a message")
     ```
 
-- Source code and supporting files for this Quick Start can be found in the [quick_start](quick_start/) directory.
+- Source code and supporting files for this Quick Start can be found in the [quick_start](quick_start/) directory.  Do the following to run the examples:
+    ```
+    cd /Users/you/work/TinyMockJS/quick_start
+    npm test
+    ```
 <br>
 
 
