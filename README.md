@@ -54,7 +54,7 @@ $ rm -rf TinyMockJS
     root.mock = require("TinyMockJS").mock
     ```
 
-- Use the mock function to create mock objects and run a test:
+- In general, use the mock function to create mock objects:
     ```CoffeeScript
     describe "Something", ->
       it "does something", ->
