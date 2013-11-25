@@ -37,7 +37,6 @@ $ cd ..
 $ rm -rf TinyMockJS
 $
 ```
-<br>
 
 
 
