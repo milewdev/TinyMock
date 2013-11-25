@@ -1,3 +1,7 @@
+TODO: build badge goes here
+
+
+
 ### TinyMockJS - A very small CoffeeScript mocking library
 
 
