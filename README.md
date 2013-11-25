@@ -1,4 +1,4 @@
-TODO: build badge goes here
+[![Build Status](https://travis-ci.org/milewgit/TinyMockJS.png?branch=master)](https://travis-ci.org/milewgit/TinyMockJS)
 
 
 

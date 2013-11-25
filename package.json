@@ -3,11 +3,9 @@
   "version": "0.0.0",
   "description": "tiny coffeescript/javascript mocking library",
   "main": "./lib/TinyMockJS.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
-    "test": "cake test"
+    "test": "./node_modules/.bin/cake test",
+    "build": "./node_modules/.bin/cake build"
   },
   "repository": {
     "type": "git",
@@ -24,9 +22,9 @@
   "bugs": {
     "url": "https://github.com/milewgit/TinyMockJS/issues"
   },
-  "dependencies": {
+  "devDependencies": {
     "mocha": "*",
     "chai": "*",
-    "coffee-script": "~1.6.3"
+    "coffee-script": "~1.6"
   }
 }
