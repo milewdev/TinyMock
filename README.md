@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/milewgit/TinyMockJS.png?branch=master)](https://travis-ci.org/milewgit/TinyMockJS)
+<!-- [![Build Status](https://travis-ci.org/milewgit/TinyMockJS.png?branch=master)](https://travis-ci.org/milewgit/TinyMockJS)
 
 
-
+ -->
 ### TinyMockJS - A very small CoffeeScript mocking library
 
 
@@ -30,7 +30,6 @@ $ npm test
 $ npm build
 $ npm link
 /usr/local/lib/node_modules/TinyMockJS -> /Users/you/work/TinyMockJS
-$
 ```
 
 Uninstall:
@@ -42,7 +41,6 @@ $ popd
 ~/work/TinyMockJS
 $ cd ..
 $ rm -rf TinyMockJS
-$
 ```
 
 
