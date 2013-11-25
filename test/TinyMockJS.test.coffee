@@ -2,10 +2,6 @@
 
 
 
-# TODO: test that expects("my_method").args(1,2,3).returns(42) and expects("my_method").args(4,5,6).throws("an error") is ok
-
-
-
 describe "Mock.expects(method_name)", ->
   
   it "returns the mock instance", ->
@@ -133,11 +129,11 @@ describe "Mock.throws(error)", ->
     m = new Mock()
     (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
 
-  it "throws an exception when the same method is expected to return different values", ->
+  it "throws an exception when the same method is expected to throw different values", ->
     m = (new Mock).expects("my_method").throws("an error")
     m.expects("my_method")
     (-> m.throws("another error") ).should.throw( "my_method() is a duplicate expectation" )
-
+    
   
   
 describe "Mock.my_method( [ value [, value ... ] ] )", ->
