@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "mocha": "*",
-    "chai": "*"
+    "chai": "*",
+    "coffee-script": "~1.6.3"
   }
 }
