@@ -1,6 +1,4 @@
 {
-  "name": "xyz",
-  "version": "0.0.0",
   "description": "TinyMockJS quick start",
   "scripts": {
     "test": "../node_modules/.bin/cake test"
