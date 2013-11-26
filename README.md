@@ -49,8 +49,7 @@ $ rm -rf TinyMockJS
 - Require TinyMockJS in e.g. test_helper.js:
     ```CoffeeScript
     root = global ? window
-    root.chai = require('chai')
-    root.should = chai.should()
+    root.should = require('chai').should()
     root.mock = require("TinyMockJS").mock
     ```
 

@@ -1,6 +1,5 @@
 root = global ? window
-root.chai = require('chai')
-root.should = chai.should()
+root.should = require('chai').should()
 root.mock = require("TinyMockJS").mock
 
 # The system under test.

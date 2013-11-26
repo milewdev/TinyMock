@@ -1,3 +1,2 @@
 root = global ? window
-root.chai = require('chai')
-root.should = chai.should()
+root.should = require('chai').should()
