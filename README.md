@@ -27,7 +27,7 @@ Cloning into '/Users/you/work/TinyMockJS'...
 ...
 $ cd /Users/you/work/TinyMockJS
 $ npm test
-$ npm build
+$ npm run prepublish
 $ npm link
 /usr/local/lib/node_modules/TinyMockJS -> /Users/you/work/TinyMockJS
 ```

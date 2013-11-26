@@ -4,8 +4,8 @@
   "description": "tiny coffeescript/javascript mocking library",
   "main": "./lib/TinyMockJS.js",
   "scripts": {
-    "test": "./node_modules/.bin/cake test",
-    "build": "./node_modules/.bin/cake build"
+    "test": "cake test",
+    "prepublish": "cake build"
   },
   "repository": {
     "type": "git",
