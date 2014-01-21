@@ -15,7 +15,7 @@ class Chat
     @socket.write(message)
     
   say_with_logging: (message) ->
-    @socket.write(message)
+    @socket.write(message)   # TODO: replace with: say(message)
     @fs.appendFileSync("log.txt", message)
 
 
