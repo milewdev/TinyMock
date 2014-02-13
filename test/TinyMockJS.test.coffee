@@ -30,6 +30,7 @@ describe "Mock.expects(method_name)", ->
     for reserved in [ "expects", "args", "returns", "check" ]
       (-> m.expects("#{reserved}") ).should.throw( "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name" )
     
+  # TODO: remove this test; it duplicates one case from the test above.
   it "throws an error if method_name is 'check'", ->
     m = new Mock()
     (-> m.expects("check") ).should.throw( "you cannot do my_mock.expects('check'); 'check' is a reserved method name" )
