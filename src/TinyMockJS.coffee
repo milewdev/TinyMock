@@ -114,7 +114,6 @@ class Mock
   args: (args...) ->
     _check_args_usage(@, args...)
     _set_args_for_current_signature(@, args)
-    _check_for_duplicate_signatures(@)                          # check after setting args as args are part of the signature
     _set_state(@, "args")
     @
 
@@ -124,7 +123,6 @@ class Mock
   #
   returns: (value) ->
     _check_returns_usage(@, value)
-    _check_for_duplicate_signatures(@)                          # args() may not be used so need to check for dups here as well
     _set_return_for_current_signature(@, value)
     _set_state(@, "returns")
     @
@@ -138,7 +136,6 @@ class Mock
   #
   throws: (error) ->
     _check_throws_usage(@, error)
-    _check_for_duplicate_signatures(@)                          # args() may not be used so need to check for dups here as well
     _set_throws_for_current_signature(@, error)
     _set_state(@, "throws")
     @
@@ -197,6 +194,7 @@ _build_mocked_method = (mock, method_name) ->
   (args...) ->
     signature = _find_signature(mock, method_name, args...)
     _throw_unknown_expectation("#{method_name}(#{args})") unless signature?
+    _check_for_duplicate_signatures(mock)
     signature.called = true
     throw signature.throws if signature.throws?
     signature.returns
