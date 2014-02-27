@@ -38,9 +38,7 @@ class MethodSignature
   #   ms1.equals(ms2)       # returns true
   #
   equals: (other) ->
-    ( @method_name == other.method_name ) and
-      ( @args.length == other.args.length ) and
-      ( @args.every ( element, i ) -> element == other.args[ i ] )
+    @matches(other.method_name, other.args...)
     
   #
   # Returns true if this signature has the specified method
