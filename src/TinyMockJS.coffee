@@ -103,7 +103,7 @@ class Mock
   expects: (method_name) ->
     _check_expects_usage(method_name)
     _start_new_signature(@, method_name)
-    @[ method_name ] ?= _build_mocked_method(@, method_name)
+    _add_method_to_mock(@, method_name)
     _set_state(@, "expects")
     @
 
@@ -204,9 +204,12 @@ _build_errors = (mock) ->
   for signature in mock.signatures when signature.called == false
     errors += "'#{signature.method_name}(#{signature.args})' was never called\n"
   errors
-
+    
 _start_new_signature = (mock, method_name) ->
-    mock.signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
+  mock.signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
+
+_add_method_to_mock = (mock, method_name) ->
+  mock[ method_name ] ?= _build_mocked_method(mock, method_name)
 
 _set_args_for_current_signature = (mock, args) ->
   _current_signature(mock).args = args
