@@ -125,7 +125,7 @@ class Mock
   returns: (value) ->
     _check_returns_usage(@, value)
     _check_for_duplicate_signatures(@)
-    _current_signature(@).returns = value
+    _set_return_for_current_signature(@, value)
     _set_state(@, "returns")
     @
 
@@ -209,6 +209,9 @@ _build_errors = (mock) ->
 
 _set_args_for_current_signature = (mock, args) ->
   _current_signature(mock).args = args
+
+_set_return_for_current_signature = (mock, value) ->
+  _current_signature(mock).returns = value
 
 _throw_expects_usage = ->
   throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
