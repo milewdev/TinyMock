@@ -37,6 +37,9 @@ class MethodSignature
   #
   #   ms1.equals(ms2)       # returns true
   #
+  # Note: this method is similar to matches() but is used to
+  # find duplicate MethodSignatures.
+  #
   equals: (other) ->
     @matches(other.method_name, other.args...)
 
@@ -50,6 +53,9 @@ class MethodSignature
   #   ms.matches( "my_method", [ 1, "a" ] )     # returns true
   #   ms.matches( "your_method", [ 1, "a" ] )   # returns false
   #   ms.matches( "my_method", [ 2, "b" ] )     # returns false
+  #
+  # Note: this method is similar to equals() but is used to 
+  # search for a MethodSignature with a given name and args.
   #
   matches: (method_name, args...) ->
     ( @method_name == method_name ) and
