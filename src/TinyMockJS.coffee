@@ -96,11 +96,12 @@ class MethodSignature
 # @signatures is just an array, not a hash.  It will not grow very large
 # so a linear search for a particular signature is fine.
 #
+# @signatures and @state are added to the mock object by the various mock 
+# methods when needed (i.e. lazily); if we mock an existing class then we
+# only need to worry about adding the mock methods to that class, not 
+# monkeying with its contructor to also add @signatures and @state.
+#
 class Mock
-
-  constructor: ->
-    @signatures = []
-    @state = undefined
 
   #
   # my_mock = (new Mock).expects("my_method")
@@ -152,6 +153,9 @@ class Mock
 # Private Mock 'methods'; making them functions keeps the Mock object uncluttered.
 #
 
+_signatures = (mock) ->
+  mock.signatures ?= []
+
 _set_state = (mock, state) ->
   mock.state = state
 
@@ -179,20 +183,20 @@ _check_throws_usage = (mock, error) ->
 
 _check_for_duplicate_signatures = (mock) ->
   # TODO: use each with index and slice to avoid last element
-  signatures = mock.signatures
+  signatures = _signatures(mock)
   return if signatures.length < 2
   for outer in [0..signatures.length-2]
     for inner in [outer+1..signatures.length-1]
       _throw_duplicate_expectation("#{signatures[outer].method_name}(#{signatures[outer].args})") if signatures[outer].equals( signatures[inner] )
 
 _current_signature = (mock) ->
-  mock.signatures[0]
+  _signatures(mock)[0]
 
 _current_method_name = (mock) ->
   _current_signature(mock)?.method_name
 
 _find_signature = (mock, method_name, args...) ->
-  for signature in mock.signatures when signature.matches(method_name, args...)
+  for signature in _signatures(mock) when signature.matches(method_name, args...)
     return signature
   undefined
 
@@ -207,12 +211,12 @@ _build_mocked_method = (mock, method_name) ->
 
 _build_errors = (mock) ->
   errors = ""
-  for signature in mock.signatures when signature.called == false
+  for signature in _signatures(mock) when signature.called == false
     errors += "'#{signature.method_name}(#{signature.args})' was never called\n"
   errors
     
 _start_new_signature = (mock, method_name) ->
-  mock.signatures.unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
+  _signatures(mock).unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
 
 _add_method_to_mock = (mock, method_name) ->
   mock[ method_name ] ?= _build_mocked_method(mock, method_name)
