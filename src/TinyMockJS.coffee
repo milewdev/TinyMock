@@ -1,22 +1,23 @@
 #
-# MethodSignature is an internal data structure that represents
-# a mocked method.  Stores the method name, the expected arguments,
-# the value to return or throw, and whether it has actually been
-# called.  For example, the following:
+# Expectation is an internal data structure that represents a
+# mocked method that we expect to be called.  Stores the method 
+# name, the arguments that we expect to be called with, the value 
+# to return or throw, and whether it has actually been called.  
+# For example, the following:
 #
-#   my_mock = (new Mock).expects("my_method").args(1,2,3).returns(42)
+#   my_mock = (new Mock()).expects("my_method").args(1,2,3).returns(42)
 #
-# would result in a MethodSignature with @method_name = "my_method",
+# would result in a Expectation with @method_name = "my_method",
 # @args = [1,2,3], @returns = 42, @throws = undefined, and @called =
 # false.  Doing:
 #
 #   my_mock.my_method(1,2,3)
 #
-# would result in @called = true.  Note that a mocked function can
+# would result in @called = true.  Note that a mocked method can
 # either return a value or throw an error but not both, so either
 # @returns or @throws (or both) must be undefined.
 #
-class MethodSignature
+class Expectation
 
   constructor: (method_name) ->
     @method_name = method_name
@@ -26,36 +27,36 @@ class MethodSignature
     @called = false
 
   #
-  # Returns true if this signature equals (has the same values
+  # Returns true if this exectation equals (has the same values
   # as) another.  For example:
   #
-  #   ms1 = new MethodSignature("my_method")
-  #   ms1.args = [ 1, "a" ]
+  #   exp1 = new Expectation("my_method")
+  #   exp1.args = [ 1, "a" ]
   #
-  #   ms2 = new MethodSignature("my_method")
-  #   ms2.args = [ 1, "a" ]
+  #   exp2 = new Expectation("my_method")
+  #   exp2.args = [ 1, "a" ]
   #
-  #   ms1.equals(ms2)       # returns true
+  #   exp1.equals(exp2)           # returns true
   #
   # Note: this method is similar to matches() but is used to
-  # find duplicate MethodSignatures.
+  # find duplicate expectations.
   #
   equals: (other) ->
     @matches(other.method_name, other.args...)
 
   #
-  # Returns true if this signature has the specified method
+  # Returns true if this expectation has the specified method
   # name and arguments.  For example:
   #
-  #   ms = new MethodSignature("my_method")
-  #   ms.args = [ 1, "a" ]
+  #   exp = new Expectation("my_method")
+  #   exp.args = [ 1, "a" ]
   #   ...
-  #   ms.matches( "my_method", [ 1, "a" ] )     # returns true
-  #   ms.matches( "your_method", [ 1, "a" ] )   # returns false
-  #   ms.matches( "my_method", [ 2, "b" ] )     # returns false
+  #   exp.matches( "my_method", [ 1, "a" ] )     # returns true
+  #   exp.matches( "your_method", [ 1, "a" ] )   # returns false
+  #   exp.matches( "my_method", [ 2, "b" ] )     # returns false
   #
   # Note: this method is similar to equals() but is used to 
-  # search for a MethodSignature with a given name and args.
+  # search for a expectation with a given name and args.
   #
   matches: (method_name, args...) ->
     ( @method_name == method_name ) and
@@ -65,7 +66,7 @@ class MethodSignature
 
 
 #
-# Mock represents the mock of some object.  @signatures is a list of
+# Mock represents the mock of some object. @expectations is a list of
 # mocked methods, which are added with the .expects(), .args(),
 # .returns(), and .throws() functions.  These must be called in a
 # specific order, expects then args then returns or throws, so:
@@ -79,13 +80,13 @@ class MethodSignature
 # is not.  @state is used to remember the last function called so that
 # we can enforce this order.  Note that args, returns and throws are
 # optional.  Also note that either returns or throws can be used, but
-# not both on the same signature.
+# not both on the same expectation.
 #
-# @signatures is used as a stack only in so far as the method signature
-# at the front of the list is the most recently defined signature and is
+# @expectations is used as a stack only in so far as the method expectation
+# at the front of the list is the most recently defined expectation and is
 # the one to which args and returns would be applied.  For example:
 #
-#   my_mock = new Mock()    # @signatures = []
+#   my_mock = new Mock()    # @expectations = []
 #   my_mock.expects("m1")   # [ { "m1" } ]
 #   my_mock.args(1,2,3)     # [ { "m1", [1,2,3] } ]
 #   my_mock.returns(42)     # [ { "m1", [1,2,3], 42 } ]
@@ -93,13 +94,13 @@ class MethodSignature
 #   my_mock.args(4,5,6)     # [ { "m2", [4,5,6] }, { "m1", [1,2,3], 42 } ]
 #   my_mock.returns(43)     # [ { "m2", [4,5,6], 43 }, { "m1", [1,2,3], 42 } ]
 #
-# @signatures is just an array, not a hash.  It will not grow very large
-# so a linear search for a particular signature is fine.
+# @expectations is just an array, not a hash.  It will not grow very large
+# so a linear search for a particular expectation is fine.
 #
-# @signatures and @state are added to the mock object by the various mock 
+# @expectations and @state are added to the mock object by the various mock 
 # methods when needed (i.e. lazily); if we mock an existing class then we
 # only need to worry about adding the mock methods to that class, not 
-# monkeying with its contructor to also add @signatures and @state.
+# monkeying with its contructor to also add @expectations and @state.
 #
 class Mock
 
@@ -109,7 +110,7 @@ class Mock
   #
   expects: (method_name) ->
     _check_expects_usage(method_name)
-    _start_new_signature(@, method_name)
+    _start_new_expectation(@, method_name)
     _add_method_to_mock(@, method_name)
     _set_state(@, "expects")
     @
@@ -120,7 +121,7 @@ class Mock
   #
   args: (args...) ->
     _check_args_usage(@, args...)
-    _set_args_for_current_signature(@, args)
+    _set_args_for_current_expectation(@, args)
     _set_state(@, "args")
     @
 
@@ -130,7 +131,7 @@ class Mock
   #
   returns: (value) ->
     _check_returns_usage(@, value)
-    _set_return_for_current_signature(@, value)
+    _set_return_for_current_expectation(@, value)
     _set_state(@, "returns")
     @
 
@@ -143,7 +144,7 @@ class Mock
   #
   throws: (error) ->
     _check_throws_usage(@, error)
-    _set_throws_for_current_signature(@, error)
+    _set_throws_for_current_expectation(@, error)
     _set_state(@, "throws")
     @
 
@@ -153,8 +154,8 @@ class Mock
 # Private Mock 'methods'; making them functions keeps the Mock object uncluttered.
 #
 
-_signatures = (mock) ->
-  mock.signatures ?= []
+_expectations = (mock) ->
+  mock.expectations ?= []
 
 _set_state = (mock, state) ->
   mock.state = state
@@ -181,54 +182,54 @@ _check_throws_usage = (mock, error) ->
   _throw_throws_usage(error) unless error?
   _throw_throws_must_be_after_expects_or_args() unless _is_state_in(mock, "expects", "args")
 
-_check_for_duplicate_signatures = (mock) ->
+_check_for_duplicate_expectations = (mock) ->
   # TODO: use each with index and slice to avoid last element
-  signatures = _signatures(mock)
-  return if signatures.length < 2
-  for outer in [0..signatures.length-2]
-    for inner in [outer+1..signatures.length-1]
-      _throw_duplicate_expectation("#{signatures[outer].method_name}(#{signatures[outer].args})") if signatures[outer].equals( signatures[inner] )
+  expectations = _expectations(mock)
+  return if expectations.length < 2
+  for outer in [0..expectations.length-2]
+    for inner in [outer+1..expectations.length-1]
+      _throw_duplicate_expectation("#{expectations[outer].method_name}(#{expectations[outer].args})") if expectations[outer].equals( expectations[inner] )
 
-_current_signature = (mock) ->
-  _signatures(mock)[0]
+_current_expectation = (mock) ->
+  _expectations(mock)[0]
 
 _current_method_name = (mock) ->
-  _current_signature(mock)?.method_name
+  _current_expectation(mock)?.method_name
 
-_find_signature = (mock, method_name, args...) ->
-  for signature in _signatures(mock) when signature.matches(method_name, args...)
-    return signature
+_find_expectation = (mock, method_name, args...) ->
+  for expectation in _expectations(mock) when expectation.matches(method_name, args...)
+    return expectation
   undefined
 
 _build_mocked_method = (mock, method_name) ->
   (args...) ->
-    signature = _find_signature(mock, method_name, args...)
-    _throw_unknown_expectation("#{method_name}(#{args})") unless signature?
-    _check_for_duplicate_signatures(mock)
-    signature.called = true
-    throw signature.throws if signature.throws?
-    signature.returns
+    expectation = _find_expectation(mock, method_name, args...)
+    _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
+    _check_for_duplicate_expectations(mock)
+    expectation.called = true
+    throw expectation.throws if expectation.throws?
+    expectation.returns
 
 _build_errors = (mock) ->
   errors = ""
-  for signature in _signatures(mock) when signature.called == false
-    errors += "'#{signature.method_name}(#{signature.args})' was never called\n"
+  for expectation in _expectations(mock) when expectation.called == false
+    errors += "'#{expectation.method_name}(#{expectation.args})' was never called\n"
   errors
     
-_start_new_signature = (mock, method_name) ->
-  _signatures(mock).unshift( new MethodSignature(method_name) )     # .unshift pushes to front of array
+_start_new_expectation = (mock, method_name) ->
+  _expectations(mock).unshift( new Expectation(method_name) )     # .unshift pushes to front of array
 
 _add_method_to_mock = (mock, method_name) ->
   mock[ method_name ] ?= _build_mocked_method(mock, method_name)
 
-_set_args_for_current_signature = (mock, args) ->
-  _current_signature(mock).args = args
+_set_args_for_current_expectation = (mock, args) ->
+  _current_expectation(mock).args = args
 
-_set_return_for_current_signature = (mock, value) ->
-  _current_signature(mock).returns = value
+_set_return_for_current_expectation = (mock, value) ->
+  _current_expectation(mock).returns = value
 
-_set_throws_for_current_signature = (mock, error) ->
-  _current_signature(mock).throws = error
+_set_throws_for_current_expectation = (mock, error) ->
+  _current_expectation(mock).throws = error
 
 _throw_expects_usage = ->
   throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
@@ -242,8 +243,8 @@ _throw_args_usage = ->
 _throw_args_must_be_after_expects = ->
   throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
 
-_throw_duplicate_expectation = (signature) ->
-  throw "#{signature} is a duplicate expectation"
+_throw_duplicate_expectation = (expectation) ->
+  throw "#{expectation} is a duplicate expectation"
 
 _throw_returns_usage = ->
   throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
@@ -257,8 +258,8 @@ _throw_throws_usage = ->
 _throw_throws_must_be_after_expects_or_args = ->
   throw ".throws() must be called immediately after .expects() or .args()"
 
-_throw_unknown_expectation = (signature) ->
-  throw "#{signature} does not match any expectations"
+_throw_unknown_expectation = (expectation) ->
+  throw "#{expectation} does not match any expectations"
 
 
 
