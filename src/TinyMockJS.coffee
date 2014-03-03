@@ -265,9 +265,6 @@ _throw_returns_usage = ->
 _throw_returns_called_more_than_once = ->
   throw new Error("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
 
-_throw_returns_must_be_after_expects_or_args = ->
-  throw ".returns() must be called immediately after .expects() or .args()"
-
 _throw_throws_usage = ->
   throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')"
 
