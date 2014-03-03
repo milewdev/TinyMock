@@ -249,9 +249,6 @@ _save_returns = (expectation, value) ->
 _save_throws = (expectation, error) ->
   expectation._throws = error
 
-_set_throws_for_current_expectation = (mock, error) ->
-  _current_expectation(mock)._throws = error
-
 _throw_expects_usage = ->
   throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
 
