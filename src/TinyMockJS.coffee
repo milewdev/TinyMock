@@ -213,18 +213,18 @@ _throw_returns_and_throws_both_called = ->
 # worry about adding the mock methods to that class, not monkeying with its
 # contructor to also add @expectations.
 #
-class Mock
+#class Mock
 
-  #
-  # my_mock = new Mock()
-  # my_mock.expects("my_method")
-  # my_mock.my_method()
-  #
-  expects: (method_name) ->
-    _check_expects_usage(method_name)
-    _start_new_expectation(@, method_name)
-    _add_method_to_mock(@, method_name)
-    _current_expectation(@)
+#
+# my_mock = new Mock()
+# my_mock.expects("my_method")
+# my_mock.my_method()
+#
+expects = (method_name) ->
+  _check_expects_usage(method_name)
+  _start_new_expectation(@, method_name)
+  _add_method_to_mock(@, method_name)
+  _current_expectation(@)
 
 
 
@@ -304,7 +304,7 @@ _throw_unknown_expectation = (expectation) ->
 #
 mock = (fn) ->
   try
-    Object.prototype.expects = Mock.prototype.expects
+    Object.prototype.expects = expects
     mocks = ( new Object() for i in [1..5] )
     fn.apply(undefined, mocks)
     errors = ( _build_errors(mock) for mock in mocks ).join("")
@@ -317,5 +317,4 @@ mock = (fn) ->
 
 root = exports ? window
 root.mock = mock
-root.Mock = Mock
 root.Expectation = Expectation

@@ -1,4 +1,4 @@
-{mock, Mock, Expectation} = require("../src/TinyMockJS")
+{mock, Expectation} = require("../src/TinyMockJS")
 
 
 describe "Expectation.args( value [, value ... ] )", ->
@@ -39,10 +39,14 @@ describe "Expectation.returns(value)", ->
     (-> exp.returns(42) ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
     
   it "can be called after args()", ->
-    (new Mock()).expects("my_method").args(1,2,3).returns(42)
+    mock (m) ->
+      m.expects("my_method").args(1,2,3).returns(42)
+      m.my_method(1,2,3)
 
   it "can be called before args() (but likely not good style)", ->
-    (new Mock()).expects("my_method").returns(42).args(1,2,3)
+    mock (m) ->
+      m.expects("my_method").returns(42).args(1,2,3)
+      m.my_method(1,2,3)
     
     
 describe "Expectation.throws(error)", ->
@@ -69,132 +73,160 @@ describe "Expectation.throws(error)", ->
     exp2 = new Expectation("my_method").args(4,5,6).throws(new Error("an error"))
     
   it "can be called after args()", ->
-    (new Mock()).expects("my_method").args(1,2,3).throws(new Error("an error"))
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3).throws(new Error("an error"))
+        m.my_method(1,2,3)
+    ).should.throw("an error")
 
-  it "can be called before args() (but likely not good style)", ->
-    (new Mock()).expects("my_method").throws(new Error("an error")).args(1,2,3)
+  it "can be called before args() (but not good style)", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
+        m.my_method(1,2,3)
+    ).should.throw("an error")
 
 
-describe "Mock.my_method( [ value [, value ... ] ] )", ->
+describe ".my_method( [ value [, value ... ] ] )", ->
 
   it "does not throw an error if my_method is called and was expected", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.my_method()
+    mock (m) ->
+      m.expects("my_method")
+      m.my_method()
 
   it "throws an error if my_method is called but was not expected", ->
-    m = new Mock()
-    (-> m.my_method() ).should.throw("has no method 'my_method'")
+    (->
+      mock (m) ->
+        m.my_method()
+    ).should.throw("has no method 'my_method'")
 
   it "throws an error if my_method is called with arguments but none were expected", ->
-    m = new Mock()
-    m.expects("my_method")
-    (-> m.my_method(1,2,3) ).should.throw("my_method(1,2,3) does not match any expectations")
+    (->
+      mock (m) ->
+        m.expects("my_method")
+        m.my_method(1,2,3) 
+    ).should.throw("my_method(1,2,3) does not match any expectations")
 
   it "throws an error if the args do not match any expectations", ->
-    m = new Mock()
-    m.expects("my_method").args(1,2,3)
-    m.expects("my_method").args(4,5,6)
-    (-> m.my_method(7,8,9) ).should.throw("my_method(7,8,9) does not match any expectations")
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3)
+        m.my_method(4,5,6) 
+    ).should.throw("my_method(4,5,6) does not match any expectations")
 
   it "returns the value specified in a .returns()", ->
-    m = new Mock()
-    m.expects("my_method").returns(123)
-    m.my_method().should.equal(123)
+    mock (m) ->
+      m.expects("my_method").returns(123)
+      m.my_method().should.equal(123)
 
   it "returns undefined if no .returns() was specified", ->
-    m = new Mock()
-    m.expects("my_method")
-    should.not.exist(m.my_method())
+    mock (m) ->
+      m.expects("my_method")
+      should.not.exist(m.my_method())
 
   it "throws the error specified in a .throws()", ->
-    m = new Mock()
-    m.expects("my_method").throws("an error")
-    (-> m.my_method() ).should.throw("an error")
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error")
+        m.my_method() 
+    ).should.throw("an error")
 
   it "allows a method with args and the same method without args", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.expects("my_method").args(1,2,3)
-    m.my_method()
-    m.my_method(1,2,3)
+    mock (m) ->
+      m.expects("my_method").args(1,2,3)
+      m.expects("my_method")
+      m.my_method(1,2,3)
+      m.my_method()
 
   it "throws an error if a method requires args but is called with none", ->
-    m = new Mock()
-    m.expects("my_method").args(1,2,3)
-    (-> m.my_method() ).should.throw("my_method() does not match any expectations")
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3)
+        m.my_method() 
+    ).should.throw("my_method() does not match any expectations")
 
   it "throws an error if a method signature with no args is duplicated", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.expects("my_method")
-    (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
+    (->
+      mock (m) ->
+        m.expects("my_method")
+        m.expects("my_method")
+        m.my_method()
+    ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an error if a method signature with args is duplicated", ->
-    m = new Mock()
-    m.expects("my_method").args(1,2,3)
-    m.expects("my_method").args(1,2,3)
-    (-> m.my_method(1,2,3) ).should.throw("my_method(1,2,3) is a duplicate expectation")
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3)
+        m.expects("my_method").args(1,2,3)
+        m.my_method(1,2,3)
+    ).should.throw("my_method(1,2,3) is a duplicate expectation")
 
   it "throws an exception when the same method returns the same values", ->
-    m = new Mock()
-    m.expects("my_method").returns(1)
-    m.expects("my_method").returns(1)
-    (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(1)
+        m.expects("my_method").returns(1)
+        m.my_method()
+    ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an exception when the same method returns different values", ->
-    m = new Mock()
-    m.expects("my_method").returns(1)
-    m.expects("my_method").returns(2)
-    (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(1)
+        m.expects("my_method").returns(2)
+        m.my_method()
+    ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an exception when the same method throws the same values", ->
-    m = new Mock()
-    m.expects("my_method").throws("an error")
-    m.expects("my_method").throws("an error")
-    (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error")
+        m.expects("my_method").throws("an error")
+        m.my_method()
+    ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an exception when the same method throws different values", ->
-    m = new Mock()
-    m.expects("my_method").throws("an error")
-    m.expects("my_method").throws("another error")
-    (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error")
+        m.expects("my_method").throws("another error")
+        m.my_method()
+    ).should.throw("my_method() is a duplicate expectation")
 
 
-describe "Mock.expects(method_name)", ->
+describe ".expects(method_name)", ->
 
   it "returns an instance of Expectation", ->
-    obj = new Object()
-    mock ->
-      obj.expects("my_method").should.be.instanceOf(Expectation)
-      obj.my_method()             # otherwise we'll get an 'expectation not satisfied' error
+    mock (m) ->
+      m.expects("my_method").should.be.instanceOf(Expectation)
+      m.my_method()               # otherwise we'll get a 'my_method not called' error
 
   it "can be called many times to expect different methods", ->
-    obj = new Object()
-    mock ->
-      obj.expects("my_method1")
-      obj.expects("my_method2")
-      obj.my_method1()            # otherwise we'll get an 'expectation not satisfied' error
-      obj.my_method2()            # -- ditto --
+    mock (m) ->
+      m.expects("my_method1")
+      m.expects("my_method2")
+      m.my_method1()              # otherwise we'll get a 'my_method1 not called' error
+      m.my_method2()              # -- ditto --
 
   it "can be called after expected methods have been called (harmless but likely bad form)", ->
-    obj = new Object()
-    mock ->
-      obj.expects("my_method1")
-      obj.my_method1()
-      obj.expects("my_method2")
-      obj.my_method2()            # otherwise we'll get an 'expectation not satisfied' error
+    mock (m) ->
+      m.expects("my_method1")
+      m.my_method1()
+      m.expects("my_method2")
+      m.my_method2()              # otherwise we'll get a 'my_method2 not called' error
 
   it "throws an error if method_name is missing", ->
-    obj = new Object()
-    mock ->
-      (-> obj.expects() ).should.throw("you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')")
+    (->
+      mock (m) ->
+        m.expects() 
+    ).should.throw("you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')")
 
   it "throws an error if method_name is reserved", ->
-    obj = new Object()
-    mock ->
-      for reserved in [ "expects", "args", "returns", "check" ]
-        (-> obj.expects("#{reserved}") ).should.throw("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
+    for reserved in [ "expects", "args", "returns", "check" ]
+      (->
+        mock (m) ->
+          m.expects("#{reserved}")
+      ).should.throw("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
 
 
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
@@ -223,28 +255,27 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     ).should.throw("an error")
     
   it.skip "checks expectations for errors", ->
-    obj = new Object()
     (->
-      mock ->
-        obj.expects("my_method")
+      mock (m) ->
+        m.expects("my_method")
     ).should.throw("'my_method()' was never called")
     
   it "passes mock objects to the function argument", ->
-    mock (my_mock1, my_mock2) ->
-      my_mock1.should.respondTo "expects"
-      my_mock2.should.respondTo "expects"
+    mock (m1, m2) ->
+      m1.should.respondTo "expects"
+      m2.should.respondTo "expects"
 
   # OLD
 
   it "checks the mocks for errors after invoking the function argument", ->
     (->
-      mock (my_mock) ->
-        my_mock.expects("my_method")
+      mock (m) ->
+        m.expects("my_method")
     ).should.throw( "'my_method()' was never called" )
 
   it "reports all mock object check failures", ->
     (->
-      mock (my_mock1, my_mock2) ->
-        my_mock1.expects("my_method1").args(1,2,3)
-        my_mock2.expects("my_method2")
+      mock (m1, m2) ->
+        m1.expects("my_method1").args(1,2,3)
+        m2.expects("my_method2")
     ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
