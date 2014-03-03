@@ -4,3 +4,4 @@ Check the ordering of the unit tests - are they listed logically?
 Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
 Check that spacing around '(' and ')' is consistent.
 Ensure that all 'private' attributes have a leading underscore (e.g. _name).
+Ensure that all 'throws' statements throw Error's, not Strings, etc.
