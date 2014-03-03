@@ -22,7 +22,7 @@ class Expectation
   constructor: (method_name) ->
     @method_name = method_name
     @_args = []
-    @returns = undefined
+    @_returns = undefined
     @throws = undefined
     @called = false
 
@@ -40,6 +40,22 @@ class Expectation
   args: (args...) ->
     _check_args_usage(@, args...)
     _save_args(@, args)
+    @
+    
+  #
+  # my_mock = new Mock()
+  # expectation = my_mock.expects("my_method")
+  # expectation.returns(42)
+  #
+  # Or more usually:
+  #
+  # mock (my_mock) ->
+  #   my_mock.expects("my_method").returns(42)
+  #   ...
+  #
+  returns: (value) ->
+    _check_returns_usage(@, value)
+    @_returns = value
     @
 
   #
@@ -133,16 +149,6 @@ class Mock
     _current_expectation(@)
 
   #
-  # my_mock = (new Mock).expects("my_method").returns(123)
-  # console.log my_mock.my_method()   # prints 123
-  #
-  returns: (value) ->
-    _check_returns_usage(@, value)
-    _set_return_for_current_expectation(@, value)
-    _set_state(@, "returns")
-    @
-
-  #
   # my_mock = (new Mock).expects("my_method").throws("an error")
   # try
   #   my_mock.my_method()
@@ -181,9 +187,9 @@ _check_args_usage = (expectation, args...) ->
   _throw_args_usage() if args.length == 0
   _throw_args_called_more_than_once() unless expectation._args.length == 0
 
-_check_returns_usage = (mock, value) ->
+_check_returns_usage = (expectation, value) ->
   _throw_returns_usage() unless value?
-  _throw_returns_must_be_after_expects_or_args() unless _is_state_in(mock, "expects", "args")
+  _throw_returns_called_more_than_once() if expectation._returns?
 
 _check_throws_usage = (mock, error) ->
   _throw_throws_usage(error) unless error?
@@ -215,7 +221,7 @@ _build_mocked_method = (mock, method_name) ->
     _check_for_duplicate_expectations(mock)
     expectation.called = true
     throw expectation.throws if expectation.throws?
-    expectation.returns
+    expectation._returns
 
 _build_errors = (mock) ->
   errors = ""
@@ -233,7 +239,7 @@ _save_args = (expectation, args) ->
   expectation._args = args
 
 _set_return_for_current_expectation = (mock, value) ->
-  _current_expectation(mock).returns = value
+  _current_expectation(mock)._returns = value
 
 _set_throws_for_current_expectation = (mock, error) ->
   _current_expectation(mock).throws = error
@@ -255,6 +261,9 @@ _throw_duplicate_expectation = (expectation) ->
 
 _throw_returns_usage = ->
   throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
+  
+_throw_returns_called_more_than_once = ->
+  throw new Error("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
 
 _throw_returns_must_be_after_expects_or_args = ->
   throw ".returns() must be called immediately after .expects() or .args()"

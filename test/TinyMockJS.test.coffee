@@ -3,7 +3,7 @@
 
 describe "Expectation.args( value [, value ... ] )", ->
   
-  it "returns itself", ->
+  it "returns the Expectation instance", ->
     exp = new Expectation("my_method")
     exp.args(42).should.equal(exp)
     
@@ -17,6 +17,28 @@ describe "Expectation.args( value [, value ... ] )", ->
     (-> exp.args("a", "b", "c") ).should.throw("you called args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); call it just once")
 
   it "wraps strings with quotes in expection messages"
+  
+  
+describe "Expectation.returns(value)", ->
+
+  it "returns the Expectation instance", ->
+    exp = new Expectation("my_method")
+    exp.returns(123).should.equal(exp)
+
+  it "throws an error if no 'value' argument is specified", ->
+    exp = new Expectation("my_method")
+    (-> exp.returns() ).should.throw("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
+    
+  it "throws an error if returns() has already been called on the expectation", ->
+    exp = new Expectation("my_method")
+    exp.returns(42)
+    (-> exp.returns("abc") ).should.throw("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
+    
+  it "can be called after args()", ->
+    (new Mock()).expects("my_method").args(1,2,3).returns(42)
+
+  it "can be called before args() (but likely not good style)", ->
+    (new Mock()).expects("my_method").returns(42).args(1,2,3)
 
 
 describe "Mock.expects(method_name)", ->
@@ -52,30 +74,6 @@ describe "Mock.expects(method_name)", ->
 
 describe "Mock.returns(value)", ->
 
-  it "returns the mock instance", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.returns(123).should.equal m
-
-  it "throws an error if no 'value' argument is specified", ->
-    m = new Mock()
-    m.expects("my_method")
-    (-> m.returns() ).should.throw("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
-
-  it "can be called immediately after .expects()", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.returns(123)
-
-  it "can be called immediate after .args()", ->
-    m = new Mock()
-    m.expects("my_method").args(1,2,3)
-    m.returns(123)
-
-  it "throws an error if it was not called immediately after either .expects() or .args()", ->
-    m = new Mock()
-    (-> m.returns(123) ).should.throw(".returns() must be called immediately after .expects() or .args()")
-
   it "throws an error if an error (exception) value has been previously set", ->
     m = new Mock()
     m.expects("my_method")
@@ -92,14 +90,12 @@ describe "Mock.throws(error)", ->
 
   it "throws an error if a return value has been previously set", ->
     m = new Mock()
-    m.expects("my_method")
-    m.returns(42)
+    m.expects("my_method").returns(42)
     (-> m.throws("an error") ).should.throw # anything
 
   it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
     m = new Mock()
-    m.expects("my_method").args(1,2,3)
-    m.returns(42)
+    m.expects("my_method").args(1,2,3).returns(42)
     m.expects("my_method").args(4,5,6)
     (-> m.throws("an error") ).should.not.throw
 
@@ -147,8 +143,7 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
 
   it "returns the value specified in a .returns()", ->
     m = new Mock()
-    m.expects("my_method")
-    m.returns(123)
+    m.expects("my_method").returns(123)
     m.my_method().should.equal(123)
 
   it "returns undefined if no .returns() was specified", ->
@@ -188,18 +183,14 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
 
   it "throws an exception when the same method returns the same values", ->
     m = new Mock()
-    m.expects("my_method")
-    m.returns(1)
-    m.expects("my_method")
-    m.returns(1)
+    m.expects("my_method").returns(1)
+    m.expects("my_method").returns(1)
     (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an exception when the same method returns different values", ->
     m = new Mock()
-    m.expects("my_method")
-    m.returns(1)
-    m.expects("my_method")
-    m.returns(2)
+    m.expects("my_method").returns(1)
+    m.expects("my_method").returns(2)
     (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an exception when the same method throws the same values", ->
