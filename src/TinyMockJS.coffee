@@ -229,9 +229,6 @@ _start_new_expectation = (mock, method_name) ->
 _add_method_to_mock = (mock, method_name) ->
   mock[ method_name ] ?= _build_mocked_method(mock, method_name)
 
-_set_args_for_current_expectation = (mock, args) ->
-  _current_expectation(mock)._args = args
-  
 _save_args = (expectation, args) ->
   expectation._args = args
 
