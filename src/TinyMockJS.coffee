@@ -55,7 +55,7 @@ class Expectation
   #
   returns: (value) ->
     _check_returns_usage(@, value)
-    @_returns = value
+    _save_returns(@, value)
     @
 
   #
@@ -240,6 +240,9 @@ _save_args = (expectation, args) ->
 
 _set_return_for_current_expectation = (mock, value) ->
   _current_expectation(mock)._returns = value
+  
+_save_returns = (expectation, value) ->
+  expectation._returns = value
 
 _set_throws_for_current_expectation = (mock, error) ->
   _current_expectation(mock).throws = error
