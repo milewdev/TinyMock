@@ -1,7 +1,6 @@
 {mock, Mock} = require("../src/TinyMockJS")
 
 
-
 describe "Mock.expects(method_name)", ->
 
   it "returns the mock instance", ->
@@ -31,7 +30,6 @@ describe "Mock.expects(method_name)", ->
       (-> m.expects("#{reserved}") ).should.throw( "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name" )
 
 
-
 describe "Mock.args( value [, value ...] )", ->
 
   it "returns the mock instance", ->
@@ -51,7 +49,6 @@ describe "Mock.args( value [, value ...] )", ->
     (-> m.args(44) ).should.throw( ".args() must be called immediately after .expects()" )
 
   it "wraps strings with quotes in expection messages"
-
 
 
 describe "Mock.returns(value)", ->
@@ -79,7 +76,6 @@ describe "Mock.returns(value)", ->
   it "throws an error if an error (exception) value has been previously set", ->
     m = (new Mock).expects("my_method").throws("an error")
     (-> m.returns(42) ).should.throw # anything
-
 
 
 describe "Mock.throws(error)", ->
@@ -113,7 +109,6 @@ describe "Mock.throws(error)", ->
   it "throws an error if it was not called immediately after either .expects() or .args()", ->
     m = new Mock()
     (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
-
 
 
 describe "Mock.my_method( [ value [, value ... ] ] )", ->
@@ -197,7 +192,6 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
 
 
-
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
 
   it "passes mock objects to the function argument", ->
@@ -217,4 +211,3 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         my_mock1.expects("my_method1").args(1,2,3)
         my_mock2.expects("my_method2")
     ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
-
