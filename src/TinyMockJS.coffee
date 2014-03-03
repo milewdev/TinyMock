@@ -23,7 +23,7 @@ class Expectation
     @method_name = method_name
     @_args = []
     @_returns = undefined
-    @throws = undefined
+    @_throws = undefined
     @called = false
 
   #
@@ -56,6 +56,22 @@ class Expectation
   returns: (value) ->
     _check_returns_usage(@, value)
     _save_returns(@, value)
+    @
+    
+  #
+  # my_mock = new Mock()
+  # expectation = my_mock.expects("my_method")
+  # expectation.throws(new Error("an error"))
+  #
+  # Or more usually:
+  #
+  # mock (my_mock) ->
+  #   my_mock.expects("my_method").throws(new Error("an error"))
+  #   ...
+  #
+  throws: (error) ->
+    _check_throws_usage(@, error)
+    @_throws = error
     @
 
   #
@@ -148,19 +164,6 @@ class Mock
     _set_state(@, "expects")
     _current_expectation(@)
 
-  #
-  # my_mock = (new Mock).expects("my_method").throws("an error")
-  # try
-  #   my_mock.my_method()
-  # catch error
-  #   console.log error   # prints "an error"
-  #
-  throws: (error) ->
-    _check_throws_usage(@, error)
-    _set_throws_for_current_expectation(@, error)
-    _set_state(@, "throws")
-    @
-
 
 
 #
@@ -190,10 +193,12 @@ _check_args_usage = (expectation, args...) ->
 _check_returns_usage = (expectation, value) ->
   _throw_returns_usage() unless value?
   _throw_returns_called_more_than_once() if expectation._returns?
+  _throw_returns_and_throws_both_called() if expectation._throws?
 
-_check_throws_usage = (mock, error) ->
+_check_throws_usage = (expectation, error) ->
   _throw_throws_usage(error) unless error?
-  _throw_throws_must_be_after_expects_or_args() unless _is_state_in(mock, "expects", "args")
+  _throw_throws_called_more_than_once() if expectation._throws?
+  _throw_returns_and_throws_both_called() if expectation._returns?
 
 _check_for_duplicate_expectations = (mock) ->
   # TODO: use each with index and slice to avoid last element
@@ -220,7 +225,7 @@ _build_mocked_method = (mock, method_name) ->
     _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
     _check_for_duplicate_expectations(mock)
     expectation.called = true
-    throw expectation.throws if expectation.throws?
+    throw expectation._throws if expectation._throws?
     expectation._returns
 
 _build_errors = (mock) ->
@@ -242,7 +247,7 @@ _save_returns = (expectation, value) ->
   expectation._returns = value
 
 _set_throws_for_current_expectation = (mock, error) ->
-  _current_expectation(mock).throws = error
+  _current_expectation(mock)._throws = error
 
 _throw_expects_usage = ->
   throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
@@ -267,6 +272,12 @@ _throw_returns_called_more_than_once = ->
 
 _throw_throws_usage = ->
   throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')"
+  
+_throw_throws_called_more_than_once = ->
+  throw new Error("you called throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); call it just once")
+
+_throw_returns_and_throws_both_called = ->
+  throw new Error("you called returns() and throws() on the same expectation; use one or the other but not both")
 
 _throw_throws_must_be_after_expects_or_args = ->
   throw ".throws() must be called immediately after .expects() or .args()"

@@ -33,12 +33,46 @@ describe "Expectation.returns(value)", ->
     exp = new Expectation("my_method")
     exp.returns(42)
     (-> exp.returns("abc") ).should.throw("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
+
+  it "throws an error if a throws error has been previously set", ->
+    exp = new Expectation("my_method").throws(new Error("an error"))
+    (-> exp.returns(42) ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
     
   it "can be called after args()", ->
     (new Mock()).expects("my_method").args(1,2,3).returns(42)
 
   it "can be called before args() (but likely not good style)", ->
     (new Mock()).expects("my_method").returns(42).args(1,2,3)
+    
+    
+describe "Expectation.throws(error)", ->
+  
+  it "returns the Expectation instance", ->
+    exp = new Expectation("my_method")
+    exp.throws(new Error("an error")).should.equal(exp)
+
+  it "throws an error if no 'error' argument is specified", ->
+    exp = new Expectation("my_method")
+    (-> exp.throws() ).should.throw("you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')")
+    
+  it "throws an error if throws() has already been called on the expectation", ->
+    exp = new Expectation("my_method")
+    exp.throws(new Error("an error"))
+    (-> exp.throws(new Error("another error")) ).should.throw("you called throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); call it just once")
+
+  it "throws an error if a return value has been previously set", ->
+    exp = new Expectation("my_method").returns(42)
+    (-> exp.throws(new Error("an error")) ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
+
+  it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
+    exp1 = new Expectation("my_method").args(1,2,3).returns(42)
+    exp2 = new Expectation("my_method").args(4,5,6).throws(new Error("an error"))
+    
+  it "can be called after args()", ->
+    (new Mock()).expects("my_method").args(1,2,3).throws(new Error("an error"))
+
+  it "can be called before args() (but likely not good style)", ->
+    (new Mock()).expects("my_method").throws(new Error("an error")).args(1,2,3)
 
 
 describe "Mock.expects(method_name)", ->
@@ -70,53 +104,6 @@ describe "Mock.expects(method_name)", ->
     m = new Mock()
     for reserved in [ "expects", "args", "returns", "check" ]
       (-> m.expects("#{reserved}") ).should.throw("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
-
-
-describe "Mock.returns(value)", ->
-
-  it "throws an error if an error (exception) value has been previously set", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.throws("an error")
-    (-> m.returns(42) ).should.throw # anything
-
-
-describe "Mock.throws(error)", ->
-
-  it "returns the mock instance", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.throws("an error").should.equal m
-
-  it "throws an error if a return value has been previously set", ->
-    m = new Mock()
-    m.expects("my_method").returns(42)
-    (-> m.throws("an error") ).should.throw # anything
-
-  it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
-    m = new Mock()
-    m.expects("my_method").args(1,2,3).returns(42)
-    m.expects("my_method").args(4,5,6)
-    (-> m.throws("an error") ).should.not.throw
-
-  it "throws an error if no 'error' argument is specified", ->
-    m = new Mock()
-    m.expects("my_method")
-    (-> m.throws() ).should.throw("you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')")
-
-  it "can be called immediately after .expects()", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.throws("an error")
-
-  it "can be called immediately after .args()", ->
-    m = new Mock()
-    m.expects("my_method").args(1,2,3)
-    m.throws("an error")
-
-  it "throws an error if it was not called immediately after either .expects() or .args()", ->
-    m = new Mock()
-    (-> m.throws("an error") ).should.throw(".throws() must be called immediately after .expects() or .args()")
 
 
 describe "Mock.my_method( [ value [, value ... ] ] )", ->
@@ -153,8 +140,7 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
 
   it "throws the error specified in a .throws()", ->
     m = new Mock()
-    m.expects("my_method")
-    m.throws("an error")
+    m.expects("my_method").throws("an error")
     (-> m.my_method() ).should.throw("an error")
 
   it "allows a method with args and the same method without args", ->
@@ -195,18 +181,14 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
 
   it "throws an exception when the same method throws the same values", ->
     m = new Mock()
-    m.expects("my_method")
-    m.throws("an error")
-    m.expects("my_method")
-    m.throws("an error")
+    m.expects("my_method").throws("an error")
+    m.expects("my_method").throws("an error")
     (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
 
   it "throws an exception when the same method throws different values", ->
     m = new Mock()
-    m.expects("my_method")
-    m.throws("an error")
-    m.expects("my_method")
-    m.throws("another error")
+    m.expects("my_method").throws("an error")
+    m.expects("my_method").throws("another error")
     (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
 
 
