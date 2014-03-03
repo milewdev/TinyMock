@@ -164,7 +164,6 @@ class Mock
     _check_expects_usage(method_name)
     _start_new_expectation(@, method_name)
     _add_method_to_mock(@, method_name)
-    _set_state(@, "expects")
     _current_expectation(@)
 
 
@@ -175,12 +174,6 @@ class Mock
 
 _expectations = (mock) ->
   mock.expectations ?= []
-
-_set_state = (mock, state) ->
-  mock.state = state
-
-_is_state_in = (mock, states...) ->
-  mock.state in states
 
 _is_reserved_word = (word) ->
   word in [ "expects", "args", "returns", "check" ]
