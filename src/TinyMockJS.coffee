@@ -18,6 +18,18 @@
 # @returns or @throws (or both) must be undefined.
 #
 class Expectation
+  
+  @_all_expectations: []
+  
+  #
+  @verify: ->
+    errors = ""
+    for expectation in @_all_expectations when expectation.called == false
+      errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
+    # TODO: extract @_reset() method
+    # TODO: is it the responsibility of @verify() to also reset @_all_expectations?
+    @_all_expectations.length = 0
+    throw new Error(errors) unless errors == ""
 
   constructor: (method_name) ->
     @method_name = method_name
@@ -25,6 +37,7 @@ class Expectation
     @_returns = undefined
     @_throws = undefined
     @called = false
+    Expectation._all_expectations.push(@)
 
   #
   # my_mock = new Mock()
@@ -290,11 +303,16 @@ _throw_unknown_expectation = (expectation) ->
 # on those mocks, throwing an error if any errors are found.
 #
 mock = (fn) ->
-  mocks = ( new Mock() for i in [1..5] )
-  fn.apply(undefined, mocks)
-  errors = ( _build_errors(mock) for mock in mocks ).join("")
-  throw errors unless errors == ""
-
+  try
+    Object.prototype.expects = Mock.prototype.expects
+    mocks = ( new Mock() for i in [1..5] )
+    fn.apply(undefined, mocks)
+    errors = ( _build_errors(mock) for mock in mocks ).join("")
+    throw errors unless errors == ""
+    #Expectation.verify()
+  finally
+    Object.prototype.expects = undefined
+    
 
 
 root = exports ? window

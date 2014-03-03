@@ -75,37 +75,6 @@ describe "Expectation.throws(error)", ->
     (new Mock()).expects("my_method").throws(new Error("an error")).args(1,2,3)
 
 
-describe "Mock.expects(method_name)", ->
-
-  it "returns an instance of Expectation", ->
-    m = (new Mock()).expects("my_method").should.be.instanceOf(Expectation)
-
-  it "can be called many times to expect the same method", ->
-    m = new Mock()
-    m.expects("my_method")
-    m.expects("my_method")
-
-  it "can be called many times to expect different methods", ->
-    m = new Mock()
-    m.expects("my_method1")
-    m.expects("my_method2")
-
-  it "can be called after expected methods have been called (harmless but likely bad form)", ->
-    m = new Mock()
-    m.expects("my_method1")
-    m.my_method1()
-    m.expects("my_method2")
-
-  it "throws an error if method_name is missing", ->
-    m = new Mock()
-    (-> m.expects() ).should.throw("you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')")
-
-  it "throws an error if method_name is reserved", ->
-    m = new Mock()
-    for reserved in [ "expects", "args", "returns", "check" ]
-      (-> m.expects("#{reserved}") ).should.throw("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
-
-
 describe "Mock.my_method( [ value [, value ... ] ] )", ->
 
   it "does not throw an error if my_method is called and was expected", ->
@@ -192,7 +161,75 @@ describe "Mock.my_method( [ value [, value ... ] ] )", ->
     (-> m.my_method() ).should.throw("my_method() is a duplicate expectation")
 
 
+describe "Mock.expects(method_name)", ->
+
+  it "returns an instance of Expectation", ->
+    obj = new Object()
+    mock ->
+      obj.expects("my_method").should.be.instanceOf(Expectation)
+      obj.my_method()             # otherwise we'll get an 'expectation not satisfied' error
+
+  it "can be called many times to expect different methods", ->
+    obj = new Object()
+    mock ->
+      obj.expects("my_method1")
+      obj.expects("my_method2")
+      obj.my_method1()            # otherwise we'll get an 'expectation not satisfied' error
+      obj.my_method2()            # -- ditto --
+
+  it "can be called after expected methods have been called (harmless but likely bad form)", ->
+    obj = new Object()
+    mock ->
+      obj.expects("my_method1")
+      obj.my_method1()
+      obj.expects("my_method2")
+      obj.my_method2()            # otherwise we'll get an 'expectation not satisfied' error
+
+  it "throws an error if method_name is missing", ->
+    obj = new Object()
+    mock ->
+      (-> obj.expects() ).should.throw("you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')")
+
+  it "throws an error if method_name is reserved", ->
+    obj = new Object()
+    mock ->
+      for reserved in [ "expects", "args", "returns", "check" ]
+        (-> obj.expects("#{reserved}") ).should.throw("you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
+
+
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
+  
+  it "Adds .expects() to Object so that it is available on all objects", ->
+    mock ->
+      should.exist(Object.prototype.expects)
+      
+  it "Removes .expects() from Object after running the passed function", ->
+    mock ->
+      # empty
+    should.not.exist(Object.prototype.expects)
+    
+  it "Removes .expects() from Object when the passed function throws an exception", ->
+    try
+      mock ->
+        throw new Error("an error")
+    catch error
+      # ignore
+    should.not.exist(Object.prototype.expects)
+    
+  it "does not eat exceptions thrown by the passed function", ->
+    (->
+      mock ->
+        throw new Error("an error")
+    ).should.throw("an error")
+    
+  it.skip "checks expectations for errors", ->
+    obj = new Object()
+    (->
+      mock ->
+        obj.expects("my_method")
+    ).should.throw("'my_method()' was never called")
+    
+  # OLD
 
   it "passes mock objects to the function argument", ->
     mock (my_mock1, my_mock2) ->
