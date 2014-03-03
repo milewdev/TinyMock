@@ -1,14 +1,14 @@
 #
-# Expectation is an internal data structure that represents a
-# mocked method that we expect to be called.  Stores the method 
-# name, the arguments that we expect to be called with, the value 
-# to return or throw, and whether it has actually been called.  
-# For example, the following:
+# Expectation represents a mocked method that we expect to be called.  
+# It stores the method name, the arguments that we expect to be called 
+# with, a value to return or throw, and whether it has actually been 
+# called.  For example, the following:
 #
-#   my_mock = (new Mock()).expects("my_method").args(1,2,3).returns(42)
+#   my_mock = new Mock()
+#   expectation = my_mock.expects("my_method").args(1,2,3).returns(42)
 #
 # would result in a Expectation with @method_name = "my_method",
-# @_args = [1,2,3], @returns = 42, @throws = undefined, and @called =
+# @_args = [1,2,3], @_returns = 42, @_throws = undefined, and @called =
 # false.  Doing:
 #
 #   my_mock.my_method(1,2,3)
@@ -30,6 +30,7 @@ class Expectation
   # my_mock = new Mock()
   # expectation = my_mock.expects("my_method")
   # expectation.args(1,2,3)
+  # ...
   #
   # Or more usually:
   #
@@ -46,6 +47,7 @@ class Expectation
   # my_mock = new Mock()
   # expectation = my_mock.expects("my_method")
   # expectation.returns(42)
+  # ...
   #
   # Or more usually:
   #
@@ -62,6 +64,7 @@ class Expectation
   # my_mock = new Mock()
   # expectation = my_mock.expects("my_method")
   # expectation.throws(new Error("an error"))
+  # ...
   #
   # Or more usually:
   #
@@ -126,10 +129,9 @@ class Expectation
 #
 #   my_mock.returns(456).args(123).expects("my_method")
 #
-# is not.  @state is used to remember the last function called so that
-# we can enforce this order.  Note that args, returns and throws are
-# optional.  Also note that either returns or throws can be used, but
-# not both on the same expectation.
+# is not.  Note that args, returns and throws are optional.  Also 
+# note that either returns or throws can be used, but not both on 
+# the same expectation.
 #
 # @expectations is used as a stack only in so far as the method expectation
 # at the front of the list is the most recently defined expectation and is
@@ -146,15 +148,16 @@ class Expectation
 # @expectations is just an array, not a hash.  It will not grow very large
 # so a linear search for a particular expectation is fine.
 #
-# @expectations and @state are added to the mock object by the various mock 
-# methods when needed (i.e. lazily); if we mock an existing class then we
-# only need to worry about adding the mock methods to that class, not 
-# monkeying with its contructor to also add @expectations and @state.
+# @expectations is added to the mock object by the various mock methods when 
+# needed (i.e. lazily); if we mock an existing class then we only need to 
+# worry about adding the mock methods to that class, not monkeying with its 
+# contructor to also add @expectations.
 #
 class Mock
 
   #
-  # my_mock = (new Mock).expects("my_method")
+  # my_mock = new Mock()
+  # my_mock.expects("my_method")
   # my_mock.my_method()
   #
   expects: (method_name) ->
@@ -167,7 +170,7 @@ class Mock
 
 
 #
-# Private Mock 'methods'; making them functions keeps the Mock object uncluttered.
+# private
 #
 
 _expectations = (mock) ->
