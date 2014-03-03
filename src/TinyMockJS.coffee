@@ -8,7 +8,7 @@
 #   my_mock = (new Mock()).expects("my_method").args(1,2,3).returns(42)
 #
 # would result in a Expectation with @method_name = "my_method",
-# @args = [1,2,3], @returns = 42, @throws = undefined, and @called =
+# @_args = [1,2,3], @returns = 42, @throws = undefined, and @called =
 # false.  Doing:
 #
 #   my_mock.my_method(1,2,3)
@@ -21,20 +21,36 @@ class Expectation
 
   constructor: (method_name) ->
     @method_name = method_name
-    @args = []
+    @_args = []
     @returns = undefined
     @throws = undefined
     @called = false
+
+  #
+  # my_mock = new Mock()
+  # expectation = my_mock.expects("my_method")
+  # expectation.args(1,2,3)
+  #
+  # Or more usually:
+  #
+  # mock (my_mock) ->
+  #   my_mock.expects("my_method").args(1,2,3)
+  #   ...
+  #
+  args: (args...) ->
+    _check_args_usage(@, args...)
+    @_args = args
+    @
 
   #
   # Returns true if this exectation equals (has the same values
   # as) another.  For example:
   #
   #   exp1 = new Expectation("my_method")
-  #   exp1.args = [ 1, "a" ]
+  #   exp1.args( 1, "a" )
   #
   #   exp2 = new Expectation("my_method")
-  #   exp2.args = [ 1, "a" ]
+  #   exp2.args( 1, "a" )
   #
   #   exp1.equals(exp2)           # returns true
   #
@@ -42,14 +58,14 @@ class Expectation
   # find duplicate expectations.
   #
   equals: (other) ->
-    @matches(other.method_name, other.args...)
+    @matches(other.method_name, other._args...)
 
   #
   # Returns true if this expectation has the specified method
   # name and arguments.  For example:
   #
   #   exp = new Expectation("my_method")
-  #   exp.args = [ 1, "a" ]
+  #   exp.args( 1, "a" )
   #   ...
   #   exp.matches( "my_method", [ 1, "a" ] )     # returns true
   #   exp.matches( "your_method", [ 1, "a" ] )   # returns false
@@ -58,10 +74,11 @@ class Expectation
   # Note: this method is similar to equals() but is used to 
   # search for a expectation with a given name and args.
   #
+  # TODO: refactor: should @_args be undefined or []?
   matches: (method_name, args...) ->
     ( @method_name == method_name ) and
-      ( @args.length == args.length ) and
-      ( @args.every ( element, i ) -> element == args[ i ] )
+      ( @_args.length == args.length ) and
+      ( @_args.every ( element, i ) -> element == args[ i ] )
 
 
 
@@ -113,17 +130,7 @@ class Mock
     _start_new_expectation(@, method_name)
     _add_method_to_mock(@, method_name)
     _set_state(@, "expects")
-    @
-
-  #
-  # my_mock = (new Mock).expects("my_method").args(1,2,3)
-  # my_mock.my_method(1,2,3)
-  #
-  args: (args...) ->
-    _check_args_usage(@, args...)
-    _set_args_for_current_expectation(@, args)
-    _set_state(@, "args")
-    @
+    _current_expectation(@)
 
   #
   # my_mock = (new Mock).expects("my_method").returns(123)
@@ -170,9 +177,9 @@ _check_expects_usage = (method_name) ->
   _throw_expects_usage() unless method_name?
   _throw_reserved_word(method_name) if _is_reserved_word(method_name)
 
-_check_args_usage = (mock, args...) ->
+_check_args_usage = (expectation, args...) ->
   _throw_args_usage() if args.length == 0
-  _throw_args_must_be_after_expects() unless _is_state_in(mock, "expects")
+  _throw_args_called_more_than_once() unless expectation._args.length == 0
 
 _check_returns_usage = (mock, value) ->
   _throw_returns_usage() unless value?
@@ -188,7 +195,7 @@ _check_for_duplicate_expectations = (mock) ->
   return if expectations.length < 2
   for outer in [0..expectations.length-2]
     for inner in [outer+1..expectations.length-1]
-      _throw_duplicate_expectation("#{expectations[outer].method_name}(#{expectations[outer].args})") if expectations[outer].equals( expectations[inner] )
+      _throw_duplicate_expectation("#{expectations[outer].method_name}(#{expectations[outer]._args})") if expectations[outer].equals( expectations[inner] )
 
 _current_expectation = (mock) ->
   _expectations(mock)[0]
@@ -213,7 +220,7 @@ _build_mocked_method = (mock, method_name) ->
 _build_errors = (mock) ->
   errors = ""
   for expectation in _expectations(mock) when expectation.called == false
-    errors += "'#{expectation.method_name}(#{expectation.args})' was never called\n"
+    errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
   errors
     
 _start_new_expectation = (mock, method_name) ->
@@ -223,7 +230,7 @@ _add_method_to_mock = (mock, method_name) ->
   mock[ method_name ] ?= _build_mocked_method(mock, method_name)
 
 _set_args_for_current_expectation = (mock, args) ->
-  _current_expectation(mock).args = args
+  _current_expectation(mock)._args = args
 
 _set_return_for_current_expectation = (mock, value) ->
   _current_expectation(mock).returns = value
@@ -240,8 +247,8 @@ _throw_reserved_word = (reserved) ->
 _throw_args_usage = ->
   throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
 
-_throw_args_must_be_after_expects = ->
-  throw ".args() must be called immediately after .expects(), e.g. my_mock.expects('my_method').args(42)"
+_throw_args_called_more_than_once = ->
+  throw new Error("you called args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); call it just once")
 
 _throw_duplicate_expectation = (expectation) ->
   throw "#{expectation} is a duplicate expectation"
@@ -277,5 +284,7 @@ mock = (fn) ->
 
 
 
-(exports ? window).mock = mock
-(exports ? window).Mock = Mock
+root = exports ? window
+root.mock = mock
+root.Mock = Mock
+root.Expectation = Expectation
