@@ -39,7 +39,7 @@ class Expectation
   #
   args: (args...) ->
     _check_args_usage(@, args...)
-    @_args = args
+    _save_args(@, args)
     @
 
   #
@@ -231,6 +231,9 @@ _add_method_to_mock = (mock, method_name) ->
 
 _set_args_for_current_expectation = (mock, args) ->
   _current_expectation(mock)._args = args
+  
+_save_args = (expectation, args) ->
+  expectation._args = args
 
 _set_return_for_current_expectation = (mock, value) ->
   _current_expectation(mock).returns = value
