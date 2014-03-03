@@ -305,7 +305,7 @@ _throw_unknown_expectation = (expectation) ->
 mock = (fn) ->
   try
     Object.prototype.expects = Mock.prototype.expects
-    mocks = ( new Mock() for i in [1..5] )
+    mocks = ( new Object() for i in [1..5] )
     fn.apply(undefined, mocks)
     errors = ( _build_errors(mock) for mock in mocks ).join("")
     throw errors unless errors == ""

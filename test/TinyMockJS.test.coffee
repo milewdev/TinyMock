@@ -229,12 +229,12 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         obj.expects("my_method")
     ).should.throw("'my_method()' was never called")
     
-  # OLD
-
   it "passes mock objects to the function argument", ->
     mock (my_mock1, my_mock2) ->
       my_mock1.should.respondTo "expects"
       my_mock2.should.respondTo "expects"
+
+  # OLD
 
   it "checks the mocks for errors after invoking the function argument", ->
     (->
