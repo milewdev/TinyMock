@@ -71,7 +71,7 @@ class Expectation
   #
   throws: (error) ->
     _check_throws_usage(@, error)
-    @_throws = error
+    _save_throws(@, error)
     @
 
   #
@@ -245,6 +245,9 @@ _save_args = (expectation, args) ->
 
 _save_returns = (expectation, value) ->
   expectation._returns = value
+  
+_save_throws = (expectation, error) ->
+  expectation._throws = error
 
 _set_throws_for_current_expectation = (mock, error) ->
   _current_expectation(mock)._throws = error
