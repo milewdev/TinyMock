@@ -238,9 +238,6 @@ _add_method_to_mock = (mock, method_name) ->
 _save_args = (expectation, args) ->
   expectation._args = args
 
-_set_return_for_current_expectation = (mock, value) ->
-  _current_expectation(mock)._returns = value
-  
 _save_returns = (expectation, value) ->
   expectation._returns = value
 
