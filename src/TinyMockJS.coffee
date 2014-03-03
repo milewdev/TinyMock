@@ -279,9 +279,6 @@ _throw_throws_called_more_than_once = ->
 _throw_returns_and_throws_both_called = ->
   throw new Error("you called returns() and throws() on the same expectation; use one or the other but not both")
 
-_throw_throws_must_be_after_expects_or_args = ->
-  throw ".throws() must be called immediately after .expects() or .args()"
-
 _throw_unknown_expectation = (expectation) ->
   throw "#{expectation} does not match any expectations"
 
