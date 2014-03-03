@@ -1,76 +1,80 @@
-{mock, Expectation} = require("../src/TinyMockJS")
+{mock} = require("../src/TinyMockJS")
 
 
-describe "Expectation.args( value [, value ... ] )", ->
+describe ".args( value [, value ... ] )", ->
   
-  it "returns the Expectation instance", ->
-    exp = new Expectation("my_method")
-    exp.args(42).should.equal(exp)
-    
   it "throws an error if no 'value' arguments are specified", ->
-    exp = new Expectation("my_method")
-    (-> exp.args() ).should.throw("you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)")
+    (->
+      mock (m) ->
+        m.expects("my_method").args()
+    ).should.throw("you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)")
     
   it "throws an error if args() has already been called on the expectation", ->
-    exp = new Expectation("my_method")
-    exp.args(1,2,3)
-    (-> exp.args("a", "b", "c") ).should.throw("you called args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); call it just once")
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3).args("a","b","c")
+    ).should.throw("you called args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); call it just once")
 
   it "wraps strings with quotes in expection messages"
   
   
-describe "Expectation.returns(value)", ->
-
-  it "returns the Expectation instance", ->
-    exp = new Expectation("my_method")
-    exp.returns(123).should.equal(exp)
+describe ".returns(value)", ->
 
   it "throws an error if no 'value' argument is specified", ->
-    exp = new Expectation("my_method")
-    (-> exp.returns() ).should.throw("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
+    (->
+      mock (m) ->
+        m.expects("my_method").returns()
+    ).should.throw("you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)")
     
   it "throws an error if returns() has already been called on the expectation", ->
-    exp = new Expectation("my_method")
-    exp.returns(42)
-    (-> exp.returns("abc") ).should.throw("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(42).returns("abc")
+    ).should.throw("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
 
   it "throws an error if a throws error has been previously set", ->
-    exp = new Expectation("my_method").throws(new Error("an error"))
-    (-> exp.returns(42) ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error")).returns(42)
+    ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
     
   it "can be called after args()", ->
     mock (m) ->
       m.expects("my_method").args(1,2,3).returns(42)
       m.my_method(1,2,3)
 
-  it "can be called before args() (but likely not good style)", ->
+  it "can be called before args() (but not good style)", ->
     mock (m) ->
       m.expects("my_method").returns(42).args(1,2,3)
       m.my_method(1,2,3)
     
     
-describe "Expectation.throws(error)", ->
+describe ".throws(error)", ->
   
-  it "returns the Expectation instance", ->
-    exp = new Expectation("my_method")
-    exp.throws(new Error("an error")).should.equal(exp)
-
   it "throws an error if no 'error' argument is specified", ->
-    exp = new Expectation("my_method")
-    (-> exp.throws() ).should.throw("you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')")
+    (->
+      mock (m) ->
+        m.expects("my_method").throws()
+    ).should.throw("you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')")
     
   it "throws an error if throws() has already been called on the expectation", ->
-    exp = new Expectation("my_method")
-    exp.throws(new Error("an error"))
-    (-> exp.throws(new Error("another error")) ).should.throw("you called throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); call it just once")
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error").throws("another error")
+    ).should.throw("you called throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); call it just once")
 
   it "throws an error if a return value has been previously set", ->
-    exp = new Expectation("my_method").returns(42)
-    (-> exp.throws(new Error("an error")) ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(42).throws(new Error("an error"))
+    ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
 
   it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
-    exp1 = new Expectation("my_method").args(1,2,3).returns(42)
-    exp2 = new Expectation("my_method").args(4,5,6).throws(new Error("an error"))
+    mock (m) ->
+      m.expects("my_method").args(1,2,3).returns(42)
+      m.expects("my_method").args(4,5,6).throws(new Error("an error"))
+      m.my_method(1,2,3)
+      (-> m.my_method(4,5,6) ).should.throw("an error")
     
   it "can be called after args()", ->
     (->
@@ -195,11 +199,6 @@ describe ".my_method( [ value [, value ... ] ] )", ->
 
 
 describe ".expects(method_name)", ->
-
-  it "returns an instance of Expectation", ->
-    mock (m) ->
-      m.expects("my_method").should.be.instanceOf(Expectation)
-      m.my_method()               # otherwise we'll get a 'my_method not called' error
 
   it "can be called many times to expect different methods", ->
     mock (m) ->

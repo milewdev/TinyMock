@@ -317,4 +317,3 @@ mock = (fn) ->
 
 root = exports ? window
 root.mock = mock
-root.Expectation = Expectation
