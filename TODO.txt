@@ -1,0 +1,6 @@
+Extract all error messages and make sure they are consistent.
+Ensure that we use should.respondTo in unit tests to check for existence of methods on an object.
+Check the ordering of the unit tests - are they listed logically?
+Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
+Check that spacing around '(' and ')' is consistent.
+Ensure that all 'private' attributes have a leading underscore (e.g. _name).
