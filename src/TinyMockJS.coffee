@@ -23,9 +23,7 @@ class Expectation
   
   #
   @verify: ->
-    errors = ""
-    for expectation in @_all_expectations when expectation.called == false
-      errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
+    errors = _build_errors(@)
     throw new Error(errors) unless errors == ""
     
   #
@@ -155,6 +153,13 @@ _save_returns = (expectation, value) ->
 _save_throws = (expectation, error) ->
   expectation._throws = error
 
+_build_errors = (expectation) ->
+  # TODO: use a mapping function?
+  errors = ""
+  for expectation in expectation._all_expectations when expectation.called == false
+    errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
+  errors
+
 _throw_args_usage = ->
   throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
 
@@ -270,12 +275,6 @@ _build_mocked_method = (mock, method_name) ->
     expectation.called = true
     throw expectation._throws if expectation._throws?
     expectation._returns
-
-_build_errors = (mock) ->
-  errors = ""
-  for expectation in _expectations(mock) when expectation.called == false
-    errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
-  errors
 
 _start_new_expectation = (mock, method_name) ->
   _expectations(mock).unshift( new Expectation(method_name) )     # .unshift pushes to front of array
