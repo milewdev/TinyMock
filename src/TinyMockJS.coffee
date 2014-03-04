@@ -39,13 +39,6 @@ class Expectation
     Expectation._all_expectations.push(@)
 
   #
-  # my_mock = new Mock()
-  # expectation = my_mock.expects("my_method")
-  # expectation.args(1,2,3)
-  # ...
-  #
-  # Or more usually:
-  #
   # mock (my_mock) ->
   #   my_mock.expects("my_method").args(1,2,3)
   #   ...
@@ -56,13 +49,6 @@ class Expectation
     @
 
   #
-  # my_mock = new Mock()
-  # expectation = my_mock.expects("my_method")
-  # expectation.returns(42)
-  # ...
-  #
-  # Or more usually:
-  #
   # mock (my_mock) ->
   #   my_mock.expects("my_method").returns(42)
   #   ...
@@ -72,13 +58,6 @@ class Expectation
     _save_returns(@, value)
     @
 
-  #
-  # my_mock = new Mock()
-  # expectation = my_mock.expects("my_method")
-  # expectation.throws(new Error("an error"))
-  # ...
-  #
-  # Or more usually:
   #
   # mock (my_mock) ->
   #   my_mock.expects("my_method").throws(new Error("an error"))
@@ -161,19 +140,19 @@ _build_errors = (expectation) ->
   errors
 
 _throw_args_usage = ->
-  throw "you need to supply at least one argument to .args(), e.g. my_mock.expects('my_method').args(42)"
+  throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
 
 _throw_args_called_more_than_once = ->
   throw new Error("you called args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); call it just once")
 
 _throw_returns_usage = ->
-  throw "you need to supply an argument to .returns(), e.g. my_mock.expects('my_method').returns(123)"
+  throw "you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)"
 
 _throw_returns_called_more_than_once = ->
   throw new Error("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
 
 _throw_throws_usage = ->
-  throw "you need to supply an argument to .throws(), e.g. my_mock.expects('my_method').throws('an error')"
+  throw "you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')"
 
 _throw_throws_called_more_than_once = ->
   throw new Error("you called throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); call it just once")
@@ -185,8 +164,8 @@ _throw_returns_and_throws_both_called = ->
 
 #
 # Mock represents the mock of some object. @expectations is a list of
-# mocked methods, which are added with the .expects(), .args(),
-# .returns(), and .throws() functions.  These must be called in a
+# mocked methods, which are added with the expects(), args(),
+# returns(), and throws() functions.  These must be called in a
 # specific order, expects then args then returns or throws, so:
 #
 #   my_mock.expects("my_method").args(123).returns(456)
@@ -277,13 +256,13 @@ _build_mocked_method = (mock, method_name) ->
     expectation._returns
 
 _start_new_expectation = (mock, method_name) ->
-  _expectations(mock).unshift( new Expectation(method_name) )     # .unshift pushes to front of array
+  _expectations(mock).unshift( new Expectation(method_name) )     # unshift pushes to front of array
 
 _add_method_to_mock = (mock, method_name) ->
   mock[ method_name ] ?= _build_mocked_method(mock, method_name)
 
 _throw_expects_usage = ->
-  throw "you need to supply a method name to .expects(), e.g. my_mock.expects('my_method')"
+  throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
 
 _throw_reserved_word = (reserved) ->
   throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
