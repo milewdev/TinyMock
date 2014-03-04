@@ -26,10 +26,11 @@ class Expectation
     errors = ""
     for expectation in @_all_expectations when expectation.called == false
       errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
-    # TODO: extract @_reset() method
-    # TODO: is it the responsibility of @verify() to also reset @_all_expectations?
-    @_all_expectations.length = 0
     throw new Error(errors) unless errors == ""
+    
+  #
+  @reset: ->
+    @_all_expectations.length = 0
 
   constructor: (method_name) ->
     @method_name = method_name
@@ -307,11 +308,10 @@ mock = (fn) ->
     Object.prototype.expects = expects
     mocks = ( new Object() for i in [1..5] )
     fn.apply(undefined, mocks)
-    errors = ( _build_errors(mock) for mock in mocks ).join("")
-    throw errors unless errors == ""
-    #Expectation.verify()
+    Expectation.verify()
   finally
     Object.prototype.expects = undefined
+    Expectation.reset()
     
 
 

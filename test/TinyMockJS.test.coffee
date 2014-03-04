@@ -253,26 +253,18 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         throw new Error("an error")
     ).should.throw("an error")
     
-  it.skip "checks expectations for errors", ->
+  it "checks expectations for errors", ->
     (->
       mock (m) ->
         m.expects("my_method")
     ).should.throw("'my_method()' was never called")
     
-  it "passes mock objects to the function argument", ->
+  it "passes objects to the function argument", ->
     mock (m1, m2) ->
       m1.should.respondTo "expects"
       m2.should.respondTo "expects"
 
-  # OLD
-
-  it "checks the mocks for errors after invoking the function argument", ->
-    (->
-      mock (m) ->
-        m.expects("my_method")
-    ).should.throw( "'my_method()' was never called" )
-
-  it "reports all mock object check failures", ->
+  it "reports all unmet expectations", ->
     (->
       mock (m1, m2) ->
         m1.expects("my_method1").args(1,2,3)
