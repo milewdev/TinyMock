@@ -5,3 +5,4 @@ Search for 'signature' in code and tests and replace with 'expectation' as appro
 Check that spacing around '(' and ')' is consistent.
 Ensure that all 'private' attributes have a leading underscore (e.g. _name).
 Ensure that all 'throws' statements throw Error's, not Strings, etc.
+Use either the word 'exception' or the work 'error' (pick one and be consistent).
