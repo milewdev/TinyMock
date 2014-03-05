@@ -1,6 +1,7 @@
+all_expectations = []
+
+
 class Expectation
-  
-  @_all_expectations: []
   
   #
   @verify: ->
@@ -9,7 +10,7 @@ class Expectation
     
   #
   @reset: ->
-    @_all_expectations.length = 0
+    all_expectations.length = 0
 
   constructor: (object, method_name) ->
     @_object = object
@@ -20,7 +21,7 @@ class Expectation
     @called = false
     @_original_method = undefined
     _install_mock_method(@, object, method_name)
-    Expectation._all_expectations.push(@)
+    all_expectations.push(@)
 
   #
   # mock (my_mock) ->
@@ -113,23 +114,22 @@ _build_mocked_method = (object, method_name) ->
     expectation._returns
 
 _find_expectation = (object, method_name, args...) ->
-  for expectation in Expectation._all_expectations when expectation.matches(object, method_name, args...)
+  for expectation in all_expectations when expectation.matches(object, method_name, args...)
     return expectation
   undefined
 
 _check_for_duplicate_expectations = (mock) ->
   # TODO: use each with index and slice to avoid last element
-  expectations = Expectation._all_expectations
-  return if expectations.length < 2
-  for outer in [0..expectations.length-2]
-    for inner in [outer+1..expectations.length-1]
-      if expectations[outer].equals( expectations[inner] )
-        _throw_duplicate_expectation("#{expectations[outer].method_name}(#{expectations[outer]._args})") 
+  return if all_expectations.length < 2
+  for outer in [0..all_expectations.length-2]
+    for inner in [outer+1..all_expectations.length-1]
+      if all_expectations[outer].equals( all_expectations[inner] )
+        _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})") 
 
 _build_errors = (expectation) ->
   # TODO: use a mapping function?
   errors = ""
-  for expectation in expectation._all_expectations when expectation.called == false
+  for expectation in all_expectations when expectation.called == false
     errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
   errors
 
@@ -202,7 +202,7 @@ mock = (fn) ->
     Expectation.verify()
   finally
     delete Object.prototype.expects
-    for expectation in Expectation._all_expectations     # TODO: do this in reverse
+    for expectation in all_expectations     # TODO: do this in reverse
       object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
       if expectation._original_method?
         object[ expectation.method_name ] = expectation._original_method
