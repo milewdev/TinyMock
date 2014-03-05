@@ -200,12 +200,7 @@ mock = (fn) ->
     verify_all_expectations()
   finally
     uninstall_expects_method()
-    for expectation in all_expectations     # TODO: do this in reverse
-      object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
-      if expectation._original_method?
-        object[ expectation.method_name ] = expectation._original_method
-      else
-        delete object[ expectation.method_name ]
+    uninstall_all_mocked_methods()
     clear_all_expectations()
     
     
@@ -217,6 +212,14 @@ uninstall_expects_method = ->
   
 build_convenience_mock_objects = ->
   ( new Object() for i in [1..5] )
+  
+uninstall_all_mocked_methods = ->
+  for expectation in all_expectations     # TODO: do this in reverse
+    object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
+    if expectation._original_method?
+      object[ expectation.method_name ] = expectation._original_method
+    else
+      delete object[ expectation.method_name ]
 
 
 root = exports ? window
