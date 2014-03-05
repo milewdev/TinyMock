@@ -9,11 +9,10 @@ verify_all_expectations = ->
   throw new Error(errors) unless errors == ""
 
 build_errors = ->
-  # TODO: use a mapping function?
-  errors = ""
-  for expectation in all_expectations when expectation.called == false
-    errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
-  errors
+  (build_not_called_error(expectation) for expectation in all_expectations when not expectation.called).join("")
+  
+build_not_called_error = (expectation) ->
+  "'#{expectation.method_name}(#{expectation._args})' was never called\n"
 
 
 class Expectation
