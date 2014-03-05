@@ -5,8 +5,15 @@ clear_all_expectations = ->
   all_expectations.length = 0
 
 verify_all_expectations = ->
-  errors = _build_errors(@)
+  errors = build_errors()
   throw new Error(errors) unless errors == ""
+
+build_errors = ->
+  # TODO: use a mapping function?
+  errors = ""
+  for expectation in all_expectations when expectation.called == false
+    errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
+  errors
 
 
 class Expectation
@@ -124,13 +131,6 @@ _check_for_duplicate_expectations = (mock) ->
     for inner in [outer+1..all_expectations.length-1]
       if all_expectations[outer].equals( all_expectations[inner] )
         _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})") 
-
-_build_errors = (expectation) ->
-  # TODO: use a mapping function?
-  errors = ""
-  for expectation in all_expectations when expectation.called == false
-    errors += "'#{expectation.method_name}(#{expectation._args})' was never called\n"
-  errors
 
 _throw_args_usage = ->
   throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
