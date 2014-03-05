@@ -19,8 +19,8 @@ class Expectation
     @_throws = undefined
     @called = false
     @_original_method = undefined
-    Expectation._all_expectations.push(@)
     _install_mock_method(@, object, method_name)
+    Expectation._all_expectations.push(@)
 
   #
   # mock (my_mock) ->
@@ -53,39 +53,12 @@ class Expectation
     @
 
   #
-  # TODO: Expectation() constructor takes an object parameter;
-  # fix the examples below to show this.
-  #
-  # Returns true if this exectation equals (has the same values
-  # as) another.  For example:
-  #
-  #   exp1 = new Expectation("my_method")
-  #   exp1.args( 1, "a" )
-  #
-  #   exp2 = new Expectation("my_method")
-  #   exp2.args( 1, "a" )
-  #
-  #   exp1.equals(exp2)           # returns true
-  #
   # Note: this method is similar to matches() but is used to
   # find duplicate expectations.
   #
   equals: (other) ->
     @matches(other._object, other.method_name, other._args...)
 
-  #
-  # TODO: Expectation() constructor takes an object parameter;
-  # fix the examples below to show this.
-  #
-  # Returns true if this expectation has the specified method
-  # name and arguments.  For example:
-  #
-  #   exp = new Expectation("my_method")
-  #   exp.args( 1, "a" )
-  #   ...
-  #   exp.matches( "my_method", [ 1, "a" ] )     # returns true
-  #   exp.matches( "your_method", [ 1, "a" ] )   # returns false
-  #   exp.matches( "my_method", [ 2, "b" ] )     # returns false
   #
   # Note: this method is similar to equals() but is used to
   # search for a expectation with a given name and args.
