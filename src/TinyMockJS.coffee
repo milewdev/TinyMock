@@ -1,22 +1,3 @@
-#
-# Expectation represents a mocked method that we expect to be called.
-# It stores the method name, the arguments that we expect to be called
-# with, a value to return or throw, and whether it has actually been
-# called.  For example, the following:
-#
-#   my_mock = new Mock()
-#   expectation = my_mock.expects("my_method").args(1,2,3).returns(42)
-#
-# would result in a Expectation with @method_name = "my_method",
-# @_args = [1,2,3], @_returns = 42, @_throws = undefined, and @called =
-# false.  Doing:
-#
-#   my_mock.my_method(1,2,3)
-#
-# would result in @called = true.  Note that a mocked method can
-# either return a value or throw an error but not both, so either
-# @returns or @throws (or both) must be undefined.
-#
 class Expectation
   
   @_all_expectations: []
@@ -158,6 +139,20 @@ _build_mocked_method = (object, method_name) ->
     throw expectation._throws if expectation._throws?
     expectation._returns
 
+_find_expectation = (object, method_name, args...) ->
+  for expectation in Expectation._all_expectations when expectation.matches(object, method_name, args...)
+    return expectation
+  undefined
+
+_check_for_duplicate_expectations = (mock) ->
+  # TODO: use each with index and slice to avoid last element
+  expectations = Expectation._all_expectations
+  return if expectations.length < 2
+  for outer in [0..expectations.length-2]
+    for inner in [outer+1..expectations.length-1]
+      if expectations[outer].equals( expectations[inner] )
+        _throw_duplicate_expectation("#{expectations[outer].method_name}(#{expectations[outer]._args})") 
+
 _build_errors = (expectation) ->
   # TODO: use a mapping function?
   errors = ""
@@ -186,51 +181,14 @@ _throw_throws_called_more_than_once = ->
 _throw_returns_and_throws_both_called = ->
   throw new Error("you called returns() and throws() on the same expectation; use one or the other but not both")
 
+_throw_duplicate_expectation = (expectation) ->
+  throw "#{expectation} is a duplicate expectation"
+
+_throw_unknown_expectation = (expectation) ->
+  throw "#{expectation} does not match any expectations"
 
 
-#
-# Mock represents the mock of some object. @expectations is a list of
-# mocked methods, which are added with the expects(), args(),
-# returns(), and throws() functions.  These must be called in a
-# specific order, expects then args then returns or throws, so:
-#
-#   my_mock.expects("my_method").args(123).returns(456)
-#
-# is legal, whereas:
-#
-#   my_mock.returns(456).args(123).expects("my_method")
-#
-# is not.  Note that args, returns and throws are optional.  Also
-# note that either returns or throws can be used, but not both on
-# the same expectation.
-#
-# @expectations is used as a stack only in so far as the method expectation
-# at the front of the list is the most recently defined expectation and is
-# the one to which args and returns would be applied.  For example:
-#
-#   my_mock = new Mock()    # @expectations = []
-#   my_mock.expects("m1")   # [ { "m1" } ]
-#   my_mock.args(1,2,3)     # [ { "m1", [1,2,3] } ]
-#   my_mock.returns(42)     # [ { "m1", [1,2,3], 42 } ]
-#   my_mock.expects("m2")   # [ { "m2" }, { "m1", [1,2,3], 42 } ]
-#   my_mock.args(4,5,6)     # [ { "m2", [4,5,6] }, { "m1", [1,2,3], 42 } ]
-#   my_mock.returns(43)     # [ { "m2", [4,5,6], 43 }, { "m1", [1,2,3], 42 } ]
-#
-# @expectations is just an array, not a hash.  It will not grow very large
-# so a linear search for a particular expectation is fine.
-#
-# @expectations is added to the mock object by the various mock methods when
-# needed (i.e. lazily); if we mock an existing class then we only need to
-# worry about adding the mock methods to that class, not monkeying with its
-# contructor to also add @expectations.
-#
-#class Mock
 
-#
-# my_mock = new Mock()
-# my_mock.expects("my_method")
-# my_mock.my_method()
-#
 expects = (method_name) ->
   _check_expects_usage(method_name)
   if @[ method_name ]? and typeof @[ method_name ] != 'function'
@@ -239,35 +197,12 @@ expects = (method_name) ->
     throw new Error("'#{method_name}' is not an existing method; you can only mock existing methods on classes")
   _start_new_expectation(@, method_name)
 
-
-
-#
-# private
-#
-
-_is_reserved_word = (word) ->
-  word in [ "expects", "args", "returns", "check" ]
-
 _check_expects_usage = (method_name) ->
   _throw_expects_usage() unless method_name?
   _throw_reserved_word(method_name) if _is_reserved_word(method_name)
 
-_check_for_duplicate_expectations = (mock) ->
-  # TODO: use each with index and slice to avoid last element
-  expectations = Expectation._all_expectations
-  return if expectations.length < 2
-  for outer in [0..expectations.length-2]
-    for inner in [outer+1..expectations.length-1]
-      if expectations[outer].equals( expectations[inner] )
-        _throw_duplicate_expectation("#{expectations[outer].method_name}(#{expectations[outer]._args})") 
-
-_find_expectation = (object, method_name, args...) ->
-  for expectation in Expectation._all_expectations when expectation.matches(object, method_name, args...)
-    return expectation
-  undefined
-
-_start_new_expectation = (object, method_name) ->
-  new Expectation(object, method_name)
+_is_reserved_word = (word) ->
+  word in [ "expects", "args", "returns", "check" ]
 
 _throw_expects_usage = ->
   throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
@@ -275,11 +210,8 @@ _throw_expects_usage = ->
 _throw_reserved_word = (reserved) ->
   throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
 
-_throw_duplicate_expectation = (expectation) ->
-  throw "#{expectation} is a duplicate expectation"
-
-_throw_unknown_expectation = (expectation) ->
-  throw "#{expectation} does not match any expectations"
+_start_new_expectation = (object, method_name) ->
+  new Expectation(object, method_name)
 
 
 
