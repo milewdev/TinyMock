@@ -194,12 +194,12 @@ _start_new_expectation = (object, method_name) ->
 #
 mock = (fn) ->
   try
-    Object.prototype.expects = expects
+    install_expects_method()
     mocks = ( new Object() for i in [1..5] )
     fn.apply(undefined, mocks)
     verify_all_expectations()
   finally
-    delete Object.prototype.expects
+    uninstall_expects_method()
     for expectation in all_expectations     # TODO: do this in reverse
       object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
       if expectation._original_method?
@@ -208,6 +208,12 @@ mock = (fn) ->
         delete object[ expectation.method_name ]
     clear_all_expectations()
     
+    
+install_expects_method = ->
+  Object.prototype.expects = expects
+  
+uninstall_expects_method = ->    
+  delete Object.prototype.expects
 
 
 root = exports ? window
