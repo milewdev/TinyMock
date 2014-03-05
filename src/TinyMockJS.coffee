@@ -4,13 +4,12 @@ all_expectations = []
 clear_all_expectations = ->
   all_expectations.length = 0
 
+verify_all_expectations = ->
+  errors = _build_errors(@)
+  throw new Error(errors) unless errors == ""
+
 
 class Expectation
-  
-  #
-  @verify: ->
-    errors = _build_errors(@)
-    throw new Error(errors) unless errors == ""
 
   constructor: (object, method_name) ->
     @_object = object
@@ -199,7 +198,7 @@ mock = (fn) ->
     Object.prototype.expects = expects
     mocks = ( new Object() for i in [1..5] )
     fn.apply(undefined, mocks)
-    Expectation.verify()
+    verify_all_expectations()
   finally
     delete Object.prototype.expects
     for expectation in all_expectations     # TODO: do this in reverse
