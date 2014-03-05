@@ -3,28 +3,45 @@ should = chai.should()
 mock   = require("../src/TinyMockJS").mock
 
 
+describe "test pre-conditions", ->
+
+  it "Object does not have the property or method 'expects'", ->
+    should.not.exist(Object.prototype.expects)
+    
+  it "instances of Object do not have the property or method 'my_method'", ->
+    m = new Object()
+    should.not.exist(m.my_method)
+    
+  it "Object does not have the property or method 'my_method'", ->
+    should.not.exist(Object.prototype.my_method)
+    
+  it "mock() passes in objects that do not have the property or method 'my_method'", ->
+    mock (m) ->
+      should.not.exist(m.my_method)
+  
+  
 describe "expects(method_name)", ->
   
   it "adds method_name to instances that do not already have a method method_name", ->
-    obj = new Object()
+    m = new Object()
     mock ->
-      obj.expects("my_method")
-      (typeof obj.my_method).should.equal('function')
-      obj.my_method()               # otherwise we'll get a 'my_method not called' error
+      m.expects("my_method")
+      (typeof m.my_method).should.equal('function')
+      m.my_method()                 # otherwise we'll get a 'my_method not called' error
       
   it "adds method_name to instances that already have a method method_name", ->
-    obj = new Object()
-    obj.my_method = -> "existing method"
+    m = new Object()
+    m.my_method = -> "existing method"
     mock ->
-      obj.expects("my_method").returns("mocked method")
-      obj.my_method().should.equal("mocked method")
+      m.expects("my_method").returns("mocked method")
+      m.my_method().should.equal("mocked method")
     
   it "throws an error if method_name is already a property on an instance", ->
-    obj = new Object()
-    obj.my_method = "a property"
+    m = new Object()
+    m.my_method = "a property"
     (->
       mock ->
-        obj.expects("my_method")
+        m.expects("my_method")
     ).should.throw("'my_method' is an existing property; you can only mock functions")
   
   # TODO: expects() should throw an error, stubs() should not?
@@ -329,9 +346,9 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
 
   it "restores the original method on class prototypes", ->
+    original_method = -> "anything"
     class Klass
-      my_method: -> "anything"
-    original_method = Klass.prototype.my_method
+      my_method: original_method
     mock ->
       Klass.expects("my_method")
       (new Klass()).my_method()       # otherwise we'll get a 'my_method not called' error
