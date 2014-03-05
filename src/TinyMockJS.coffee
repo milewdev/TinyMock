@@ -20,7 +20,7 @@ class Expectation
     @called = false
     @_original_method = undefined
     Expectation._all_expectations.push(@)
-    _add_mock_method(@, object, method_name)
+    _install_mock_method(@, object, method_name)
 
   #
   # mock (my_mock) ->
@@ -122,7 +122,7 @@ _save_returns = (expectation, value) ->
 _save_throws = (expectation, error) ->
   expectation._throws = error
 
-_add_mock_method = (expectation, object, method_name) ->
+_install_mock_method = (expectation, object, method_name) ->
   if typeof object == 'function'
     expectation._original_method = object.prototype[ method_name ]
     object.prototype[ method_name ] = _build_mocked_method(object, method_name)
