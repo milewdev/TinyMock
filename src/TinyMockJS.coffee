@@ -195,7 +195,7 @@ _start_new_expectation = (object, method_name) ->
 mock = (fn) ->
   try
     install_expects_method()
-    mocks = ( new Object() for i in [1..5] )
+    mocks = build_convenience_mock_objects()
     fn.apply(undefined, mocks)
     verify_all_expectations()
   finally
@@ -214,6 +214,9 @@ install_expects_method = ->
   
 uninstall_expects_method = ->    
   delete Object.prototype.expects
+  
+build_convenience_mock_objects = ->
+  ( new Object() for i in [1..5] )
 
 
 root = exports ? window
