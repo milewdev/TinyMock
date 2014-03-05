@@ -1,4 +1,8 @@
 all_expectations = []
+  
+
+clear_all_expectations = ->
+  all_expectations.length = 0
 
 
 class Expectation
@@ -7,10 +11,6 @@ class Expectation
   @verify: ->
     errors = _build_errors(@)
     throw new Error(errors) unless errors == ""
-    
-  #
-  @reset: ->
-    all_expectations.length = 0
 
   constructor: (object, method_name) ->
     @_object = object
@@ -208,7 +208,7 @@ mock = (fn) ->
         object[ expectation.method_name ] = expectation._original_method
       else
         delete object[ expectation.method_name ]
-    Expectation.reset()
+    clear_all_expectations()
     
 
 
