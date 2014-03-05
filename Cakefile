@@ -4,7 +4,6 @@ task 'test', 'Run unit tests', ->
   exec 'mocha
       --compilers coffee:coffee-script
       --require coffee-script
-      --require test/test_helper
       --reporter spec
       --colors', (err, stdout, stderr) ->
     throw err if err

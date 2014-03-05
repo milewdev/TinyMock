@@ -1,4 +1,6 @@
-{mock} = require("../src/TinyMockJS")
+chai   = require("chai")
+should = chai.should()
+mock   = require("../src/TinyMockJS").mock
 
 
 describe "expects(method_name)", ->
