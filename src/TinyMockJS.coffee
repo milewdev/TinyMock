@@ -41,14 +41,14 @@ run_test_function = (test_function, convenience_mocks) ->
 #
 expects = (method_name) ->
   check_expects_usage(@, method_name)
-  if typeof @ == 'function' and not @.prototype[ method_name ]?
-    throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on classes" )
   start_new_expectation(@, method_name)
 
 check_expects_usage = (object, method_name) ->
   throw_expects_usage() unless method_name?
   throw_reserved_word(method_name) if is_reserved_word(method_name)
   throw_pre_existing_property(method_name) if is_pre_existing_property(object, method_name)
+  if typeof object == 'function' and not object.prototype[ method_name ]?
+    throw_not_an_existing_method(method_name)
 
 is_reserved_word = (word) ->
   word in [ "expects", "args", "returns", "check" ]
@@ -67,6 +67,9 @@ throw_reserved_word = (reserved_word) ->
   
 throw_pre_existing_property = (property_name) ->
   throw new Error( "'#{property_name}' is an existing property; you can only mock functions" )
+  
+throw_not_an_existing_method = (method_name) ->
+  throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on classes" )
 
 
 #
