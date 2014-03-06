@@ -86,10 +86,10 @@ clear_all_expectations = ->
   all_expectations.length = 0
 
 verify_all_expectations = ->
-  errors = build_errors()
+  errors = build_all_errors()
   throw new Error( errors ) unless errors == ""
 
-build_errors = ->
+build_all_errors = ->
   (build_not_called_error(expectation) for expectation in all_expectations when not expectation.called).join("")
 
 build_not_called_error = (expectation) ->
