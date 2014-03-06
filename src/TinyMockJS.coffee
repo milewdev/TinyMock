@@ -60,10 +60,10 @@ start_new_expectation = (object, method_name) ->
   new Expectation(object, method_name)
 
 throw_expects_usage = ->
-  throw "you need to supply a method name to expects(), e.g. mock.expects('my_method')"
+  throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
 
 throw_reserved_word = (reserved_word) ->
-  throw "you cannot use mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name"
+  throw "you cannot use my_mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name"
   
 throw_pre_existing_property = (property_name) ->
   throw new Error("'#{property_name}' is an existing property; you can only mock functions")
@@ -137,7 +137,7 @@ class Expectation
     all_expectations.push(@)
 
   #
-  # mock (my_mock) ->
+  # mock (mock) ->
   #   my_mock.expects("my_method").args(1,2,3)
   #   ...
   #

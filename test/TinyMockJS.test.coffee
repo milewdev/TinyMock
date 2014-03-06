@@ -88,14 +88,14 @@ describe "expects(method_name)", ->
     (->
       mock (m) ->
         m.expects() 
-    ).should.throw("you need to supply a method name to expects(), e.g. mock.expects('my_method')")
+    ).should.throw("you need to supply a method name to expects(), e.g. my_mock.expects('my_method')")
 
   it "throws an error if method_name is reserved", ->
     for reserved in [ "expects", "args", "returns", "check" ]
       (->
         mock (m) ->
           m.expects("#{reserved}")
-      ).should.throw("you cannot use mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
+      ).should.throw("you cannot use my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name")
 
 
 describe "args(value [, value ... ])", ->
