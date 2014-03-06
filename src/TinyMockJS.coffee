@@ -84,11 +84,11 @@ clear_all_expectations = ->
   all_expectations.length = 0
 
 verify_all_expectations = ->
-  errors = build_all_errors()
+  errors = find_all_errors()
   throw new Error( errors ) unless errors == ""
 
-build_all_errors = ->
-  ( expectation.build_errors() for expectation in all_expectations ).join("")
+find_all_errors = ->
+  ( expectation.find_errors() for expectation in all_expectations ).join("")
   
   
 #
@@ -185,7 +185,7 @@ class Expectation
       ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
 
-  build_errors: ->
+  find_errors: ->
     if not @_called then "'#{@_method_name}(#{@_args})' was never called\n" else ""
 
   # private
