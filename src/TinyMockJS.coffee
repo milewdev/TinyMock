@@ -86,27 +86,33 @@ build_not_called_error = (expectation) ->
 #
 # mocked_method
 #
-_build_mocked_method = (method_name) ->
+build_mocked_method = (method_name) ->
   (args...) ->
-    expectation = _find_expectation(@, method_name, args...)
-    _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
-    _check_for_duplicate_expectations()
+    expectation = find_expectation(@, method_name, args...)
+    throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
+    check_for_duplicate_expectations()
     expectation.called = true
     throw expectation._throws if expectation._throws?
     expectation._returns
 
-_find_expectation = (object, method_name, args...) ->
+find_expectation = (object, method_name, args...) ->
   for expectation in all_expectations when expectation.matches(object, method_name, args...)
     return expectation
   undefined
 
-_check_for_duplicate_expectations = ->
+check_for_duplicate_expectations = ->
   # TODO: use each with index and slice to avoid last element
   return if all_expectations.length < 2
   for outer in [0..all_expectations.length-2]
     for inner in [outer+1..all_expectations.length-1]
       if all_expectations[outer].equals( all_expectations[inner] )
-        _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
+        throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
+
+throw_unknown_expectation = (expectation) ->
+  throw "#{expectation} does not match any expectations"
+
+throw_duplicate_expectation = (expectation) ->
+  throw "#{expectation} is a duplicate expectation"
 
 
 #
@@ -201,10 +207,10 @@ _save_throws = (expectation, error) ->
 _install_mock_method = (expectation, object, method_name) ->
   if typeof object == 'function'
     expectation._original_method = object.prototype[ method_name ]
-    object.prototype[ method_name ] = _build_mocked_method(method_name)
+    object.prototype[ method_name ] = build_mocked_method(method_name)
   else
     expectation._original_method = object[ method_name ]
-    object[ method_name ] = _build_mocked_method(method_name)
+    object[ method_name ] = build_mocked_method(method_name)
 
 _throw_args_usage = ->
   throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
@@ -226,9 +232,3 @@ _throw_throws_called_more_than_once = ->
 
 _throw_returns_and_throws_both_called = ->
   throw new Error("you called returns() and throws() on the same expectation; use one or the other but not both")
-
-_throw_duplicate_expectation = (expectation) ->
-  throw "#{expectation} is a duplicate expectation"
-
-_throw_unknown_expectation = (expectation) ->
-  throw "#{expectation} does not match any expectations"
