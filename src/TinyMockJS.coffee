@@ -1,5 +1,40 @@
+publish = exports ? window
+
+
+publish.mock = (test_function) ->
+  try
+    install_expects_method()
+    convenience_mocks = build_convenience_mock_objects()
+    run_test_function(test_function, convenience_mocks)
+    verify_all_expectations()
+  finally
+    uninstall_expects_method()
+    uninstall_all_mocked_methods()
+    clear_all_expectations()
+
+install_expects_method = ->
+  Object.prototype.expects = expects
+
+uninstall_expects_method = ->
+  delete Object.prototype.expects
+
+uninstall_all_mocked_methods = ->
+  for expectation in all_expectations     # TODO: do this in reverse
+    object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
+    if expectation._original_method?
+      object[ expectation.method_name ] = expectation._original_method
+    else
+      delete object[ expectation.method_name ]
+
+build_convenience_mock_objects = ->
+  ( new Object() for i in [1..5] )
+
+run_test_function = (test_function, convenience_mocks) ->
+  test_function.apply(undefined, convenience_mocks)
+
+
 all_expectations = []
-  
+
 
 clear_all_expectations = ->
   all_expectations.length = 0
@@ -10,7 +45,7 @@ verify_all_expectations = ->
 
 build_errors = ->
   (build_not_called_error(expectation) for expectation in all_expectations when not expectation.called).join("")
-  
+
 build_not_called_error = (expectation) ->
   "'#{expectation.method_name}(#{expectation._args})' was never called\n"
 
@@ -129,7 +164,7 @@ _check_for_duplicate_expectations = (mock) ->
   for outer in [0..all_expectations.length-2]
     for inner in [outer+1..all_expectations.length-1]
       if all_expectations[outer].equals( all_expectations[inner] )
-        _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})") 
+        _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
 
 _throw_args_usage = ->
   throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
@@ -183,44 +218,3 @@ _throw_reserved_word = (reserved) ->
 
 _start_new_expectation = (object, method_name) ->
   new Expectation(object, method_name)
-
-
-
-#
-# mock() ensures that _build_errors() is called on mock objects.  It
-# takes a function (the test code) argument, creates five mock objects,
-# invokes the function with the five mocks, and then calls _build_errors()
-# on those mocks, throwing an error if any errors are found.
-#
-mock = (fn) ->
-  try
-    install_expects_method()
-    mocks = build_convenience_mock_objects()
-    fn.apply(undefined, mocks)
-    verify_all_expectations()
-  finally
-    uninstall_expects_method()
-    uninstall_all_mocked_methods()
-    clear_all_expectations()
-    
-    
-install_expects_method = ->
-  Object.prototype.expects = expects
-  
-uninstall_expects_method = ->    
-  delete Object.prototype.expects
-  
-build_convenience_mock_objects = ->
-  ( new Object() for i in [1..5] )
-  
-uninstall_all_mocked_methods = ->
-  for expectation in all_expectations     # TODO: do this in reverse
-    object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
-    if expectation._original_method?
-      object[ expectation.method_name ] = expectation._original_method
-    else
-      delete object[ expectation.method_name ]
-
-
-root = exports ? window
-root.mock = mock
