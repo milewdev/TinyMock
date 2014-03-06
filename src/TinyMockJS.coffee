@@ -91,7 +91,7 @@ build_mocked_method = (method_name) ->
     expectation = find_expectation(@, method_name, args...)
     throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
     check_for_duplicate_expectations()
-    expectation.called = true
+    expectation.called = yes
     throw expectation._throws if expectation._throws?
     expectation._returns
 
