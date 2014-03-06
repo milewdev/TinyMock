@@ -42,7 +42,7 @@ run_test_function = (test_function, convenience_mocks) ->
 expects = (method_name) ->
   check_expects_usage(@, method_name)
   if typeof @ == 'function' and not @.prototype[ method_name ]?
-    throw new Error("'#{method_name}' is not an existing method; you can only mock existing methods on classes")
+    throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on classes" )
   start_new_expectation(@, method_name)
 
 check_expects_usage = (object, method_name) ->
@@ -60,13 +60,13 @@ start_new_expectation = (object, method_name) ->
   new Expectation(object, method_name)
 
 throw_expects_usage = ->
-  throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
+  throw new Error( "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')" )
 
 throw_reserved_word = (reserved_word) ->
-  throw "you cannot use my_mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name"
+  throw new Error( "you cannot use my_mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name" )
   
 throw_pre_existing_property = (property_name) ->
-  throw new Error("'#{property_name}' is an existing property; you can only mock functions")
+  throw new Error( "'#{property_name}' is an existing property; you can only mock functions" )
 
 
 #
@@ -79,7 +79,7 @@ clear_all_expectations = ->
 
 verify_all_expectations = ->
   errors = build_errors()
-  throw new Error(errors) unless errors == ""
+  throw new Error( errors ) unless errors == ""
 
 build_errors = ->
   (build_not_called_error(expectation) for expectation in all_expectations when not expectation.called).join("")
@@ -114,10 +114,10 @@ check_for_duplicate_expectations = ->
         throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
 
 throw_unknown_expectation = (expectation) ->
-  throw "#{expectation} does not match any expectations"
+  throw new Error( "#{expectation} does not match any expectations" )
 
 throw_duplicate_expectation = (expectation) ->
-  throw "#{expectation} is a duplicate expectation"
+  throw new Error( "#{expectation} is a duplicate expectation" )
 
 
 #
@@ -218,22 +218,22 @@ _install_mock_method = (expectation, object, method_name) ->
     object[ method_name ] = build_mocked_method(method_name)
 
 _throw_args_usage = ->
-  throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
+  throw new Error( "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)" )
 
 _throw_args_used_more_than_once = ->
-  throw new Error("you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation")
+  throw new Error( "you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation" )
 
 _throw_returns_usage = ->
-  throw "you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)"
+  throw new Error( "you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)" )
 
 _throw_returns_used_more_than_once = ->
-  throw new Error("you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation")
+  throw new Error( "you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation" )
 
 _throw_throws_usage = ->
-  throw "you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')"
+  throw new Error( "you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')" )
 
 _throw_throws_used_more_than_once = ->
-  throw new Error("you specified throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); use it once per expectation")
+  throw new Error( "you specified throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); use it once per expectation" )
 
 _throw_returns_and_throws_both_used = ->
-  throw new Error("you specified both returns() and throws() on the same expectation; use one or the other on an expectation")
+  throw new Error( "you specified both returns() and throws() on the same expectation; use one or the other on an expectation" )
