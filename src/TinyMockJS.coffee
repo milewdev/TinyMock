@@ -137,7 +137,7 @@ class Expectation
     @_args = []
     @_returns = undefined
     @_throws = undefined
-    @_called = false
+    @_called = no
     @_install_mock_method()
     all_expectations.push(@)
 
