@@ -40,28 +40,33 @@ run_test_function = (test_function, convenience_mocks) ->
 # expects
 #
 expects = (method_name) ->
-  _check_expects_usage(method_name)
-  if @[ method_name ]? and typeof @[ method_name ] != 'function'
-    throw new Error("'#{method_name}' is an existing property; you can only mock functions")
+  check_expects_usage(@, method_name)
   if typeof @ == 'function' and not @.prototype[ method_name ]?
     throw new Error("'#{method_name}' is not an existing method; you can only mock existing methods on classes")
-  _start_new_expectation(@, method_name)
+  start_new_expectation(@, method_name)
 
-_check_expects_usage = (method_name) ->
-  _throw_expects_usage() unless method_name?
-  _throw_reserved_word(method_name) if _is_reserved_word(method_name)
+check_expects_usage = (object, method_name) ->
+  throw_expects_usage() unless method_name?
+  throw_reserved_word(method_name) if is_reserved_word(method_name)
+  throw_pre_existing_property(method_name) if is_pre_existing_property(object, method_name)
 
-_is_reserved_word = (word) ->
+is_reserved_word = (word) ->
   word in [ "expects", "args", "returns", "check" ]
+  
+is_pre_existing_property = (object, method_name) ->
+  object[ method_name ]? and (typeof object[ method_name ]) != 'function'
 
-_throw_expects_usage = ->
-  throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
-
-_throw_reserved_word = (reserved) ->
-  throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
-
-_start_new_expectation = (object, method_name) ->
+start_new_expectation = (object, method_name) ->
   new Expectation(object, method_name)
+
+throw_expects_usage = ->
+  throw "you need to supply a method name to expects(), e.g. mock.expects('my_method')"
+
+throw_reserved_word = (reserved_word) ->
+  throw "you cannot use mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name"
+  
+throw_pre_existing_property = (property_name) ->
+  throw new Error("'#{property_name}' is an existing property; you can only mock functions")
 
 
 #
