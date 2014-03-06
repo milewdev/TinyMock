@@ -23,11 +23,7 @@ uninstall_expects_method = ->
 
 uninstall_all_mocked_methods = ->
   for expectation in all_expectations     # TODO: do this in reverse
-    object = if typeof expectation._object == 'function' then expectation._object.prototype else expectation._object
-    if expectation._original_method?
-      object[ expectation.method_name ] = expectation._original_method
-    else
-      delete object[ expectation.method_name ]
+    expectation.uninstall_mocked_method()
 
 build_convenience_mock_objects = ->
   ( new Object() for i in [1..5] )
@@ -80,6 +76,8 @@ throw_not_an_existing_method = (method_name) ->
 #
 # all_expectations
 #
+
+# TODO: note about there not being that many expectations (i.e. typically fewer than 10?)
 all_expectations = []
 
 clear_all_expectations = ->
@@ -140,7 +138,6 @@ class Expectation
     @_returns = undefined
     @_throws = undefined
     @called = false
-    @_original_method = undefined
     _install_mock_method(@, object, method_name)
     all_expectations.push(@)
 
@@ -218,12 +215,13 @@ _save_throws = (expectation, error) ->
   expectation._throws = error
 
 _install_mock_method = (expectation, object, method_name) ->
-  if typeof object == 'function'
-    expectation._original_method = object.prototype[ method_name ]
-    object.prototype[ method_name ] = build_mocked_method(method_name)
+  object = object.prototype if is_class(object)
+  original_method = object[ method_name ]
+  object[ method_name ] = build_mocked_method(method_name)
+  if original_method?
+    expectation.uninstall_mocked_method = -> object[ method_name ] = original_method
   else
-    expectation._original_method = object[ method_name ]
-    object[ method_name ] = build_mocked_method(method_name)
+    expectation.uninstall_mocked_method = -> delete object[ method_name ]
 
 _throw_args_usage = ->
   throw new Error( "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)" )
