@@ -70,14 +70,14 @@ describe "expects(method_name)", ->
     finally
       delete Object.prototype.my_method
     
-  it "can be called many times to expect different methods", ->
+  it "can be used many times to expect different methods", ->
     mock (m) ->
       m.expects("my_method1")
       m.expects("my_method2")
       m.my_method1()                # otherwise we'll get a 'my_method1 not called' error
       m.my_method2()                # -- ditto --
 
-  it "can be called after expected methods have been called (harmless but likely bad form)", ->
+  it "can be used after expected methods have been used (harmless but bad form)", ->
     mock (m) ->
       m.expects("my_method1")
       m.my_method1()
@@ -106,11 +106,11 @@ describe "args(value [, value ... ])", ->
         m.expects("my_method").args()
     ).should.throw("you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)")
     
-  it "throws an error if args() has already been called on the expectation", ->
+  it "throws an error if args() has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").args(1,2,3).args("a","b","c")
-    ).should.throw("you called args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); call it just once")
+    ).should.throw("you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation")
 
   it "wraps strings with quotes in expection messages"
   
@@ -123,17 +123,17 @@ describe "returns(value)", ->
         m.expects("my_method").returns()
     ).should.throw("you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)")
     
-  it "throws an error if returns() has already been called on the expectation", ->
+  it "throws an error if returns() has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).returns("abc")
-    ).should.throw("you called returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); call it just once")
+    ).should.throw("you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation")
 
-  it "throws an error if a throws error has been previously set", ->
+  it "throws an error if a throws error has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).returns(42)
-    ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
+    ).should.throw("you specified both returns() and throws() on the same expectation; use one or the other on an expectation")
     
   it "can be called after args()", ->
     mock (m) ->
@@ -154,17 +154,17 @@ describe "throws(error)", ->
         m.expects("my_method").throws()
     ).should.throw("you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')")
     
-  it "throws an error if throws() has already been called on the expectation", ->
+  it "throws an error if throws() has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").throws("an error").throws("another error")
-    ).should.throw("you called throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); call it just once")
+    ).should.throw("you specified throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); use it once per expectation")
 
-  it "throws an error if a return value has been previously set", ->
+  it "throws an error if a return value has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).throws(new Error("an error"))
-    ).should.throw("you called returns() and throws() on the same expectation; use one or the other but not both")
+    ).should.throw("you specified both returns() and throws() on the same expectation; use one or the other on an expectation")
 
   it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
     mock (m) ->
