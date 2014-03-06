@@ -86,9 +86,9 @@ build_not_called_error = (expectation) ->
 #
 # mocked_method
 #
-_build_mocked_method = (object, method_name) ->
+_build_mocked_method = (method_name) ->
   (args...) ->
-    expectation = _find_expectation(object, method_name, args...)
+    expectation = _find_expectation(@, method_name, args...)
     _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
     _check_for_duplicate_expectations()
     expectation.called = true
@@ -201,10 +201,10 @@ _save_throws = (expectation, error) ->
 _install_mock_method = (expectation, object, method_name) ->
   if typeof object == 'function'
     expectation._original_method = object.prototype[ method_name ]
-    object.prototype[ method_name ] = _build_mocked_method(object, method_name)
+    object.prototype[ method_name ] = _build_mocked_method(method_name)
   else
     expectation._original_method = object[ method_name ]
-    object[ method_name ] = _build_mocked_method(object, method_name)
+    object[ method_name ] = _build_mocked_method(method_name)
 
 _throw_args_usage = ->
   throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
