@@ -1,6 +1,9 @@
 publish = exports ? window
 
 
+#
+# mock()
+#
 publish.mock = (test_function) ->
   try
     install_expects_method()
@@ -33,8 +36,38 @@ run_test_function = (test_function, convenience_mocks) ->
   test_function.apply(undefined, convenience_mocks)
 
 
-all_expectations = []
+#
+# expects
+#
+expects = (method_name) ->
+  _check_expects_usage(method_name)
+  if @[ method_name ]? and typeof @[ method_name ] != 'function'
+    throw new Error("'#{method_name}' is an existing property; you can only mock functions")
+  if typeof @ == 'function' and not @.prototype[ method_name ]?
+    throw new Error("'#{method_name}' is not an existing method; you can only mock existing methods on classes")
+  _start_new_expectation(@, method_name)
 
+_check_expects_usage = (method_name) ->
+  _throw_expects_usage() unless method_name?
+  _throw_reserved_word(method_name) if _is_reserved_word(method_name)
+
+_is_reserved_word = (word) ->
+  word in [ "expects", "args", "returns", "check" ]
+
+_throw_expects_usage = ->
+  throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
+
+_throw_reserved_word = (reserved) ->
+  throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
+
+_start_new_expectation = (object, method_name) ->
+  new Expectation(object, method_name)
+
+
+#
+# all_expectations
+#
+all_expectations = []
 
 clear_all_expectations = ->
   all_expectations.length = 0
@@ -48,8 +81,37 @@ build_errors = ->
 
 build_not_called_error = (expectation) ->
   "'#{expectation.method_name}(#{expectation._args})' was never called\n"
+  
+  
+#
+# mocked_method
+#
+_build_mocked_method = (object, method_name) ->
+  (args...) ->
+    expectation = _find_expectation(object, method_name, args...)
+    _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
+    _check_for_duplicate_expectations(object)
+    expectation.called = true
+    throw expectation._throws if expectation._throws?
+    expectation._returns
+
+_find_expectation = (object, method_name, args...) ->
+  for expectation in all_expectations when expectation.matches(object, method_name, args...)
+    return expectation
+  undefined
+
+_check_for_duplicate_expectations = (mock) ->
+  # TODO: use each with index and slice to avoid last element
+  return if all_expectations.length < 2
+  for outer in [0..all_expectations.length-2]
+    for inner in [outer+1..all_expectations.length-1]
+      if all_expectations[outer].equals( all_expectations[inner] )
+        _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
 
 
+#
+# Expectation
+#
 class Expectation
 
   constructor: (object, method_name) ->
@@ -144,28 +206,6 @@ _install_mock_method = (expectation, object, method_name) ->
     expectation._original_method = object[ method_name ]
     object[ method_name ] = _build_mocked_method(object, method_name)
 
-_build_mocked_method = (object, method_name) ->
-  (args...) ->
-    expectation = _find_expectation(object, method_name, args...)
-    _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
-    _check_for_duplicate_expectations(object)
-    expectation.called = true
-    throw expectation._throws if expectation._throws?
-    expectation._returns
-
-_find_expectation = (object, method_name, args...) ->
-  for expectation in all_expectations when expectation.matches(object, method_name, args...)
-    return expectation
-  undefined
-
-_check_for_duplicate_expectations = (mock) ->
-  # TODO: use each with index and slice to avoid last element
-  return if all_expectations.length < 2
-  for outer in [0..all_expectations.length-2]
-    for inner in [outer+1..all_expectations.length-1]
-      if all_expectations[outer].equals( all_expectations[inner] )
-        _throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
-
 _throw_args_usage = ->
   throw "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)"
 
@@ -192,29 +232,3 @@ _throw_duplicate_expectation = (expectation) ->
 
 _throw_unknown_expectation = (expectation) ->
   throw "#{expectation} does not match any expectations"
-
-
-
-expects = (method_name) ->
-  _check_expects_usage(method_name)
-  if @[ method_name ]? and typeof @[ method_name ] != 'function'
-    throw new Error("'#{method_name}' is an existing property; you can only mock functions")
-  if typeof @ == 'function' and not @.prototype[ method_name ]?
-    throw new Error("'#{method_name}' is not an existing method; you can only mock existing methods on classes")
-  _start_new_expectation(@, method_name)
-
-_check_expects_usage = (method_name) ->
-  _throw_expects_usage() unless method_name?
-  _throw_reserved_word(method_name) if _is_reserved_word(method_name)
-
-_is_reserved_word = (word) ->
-  word in [ "expects", "args", "returns", "check" ]
-
-_throw_expects_usage = ->
-  throw "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')"
-
-_throw_reserved_word = (reserved) ->
-  throw "you cannot do my_mock.expects('#{reserved}'); '#{reserved}' is a reserved method name"
-
-_start_new_expectation = (object, method_name) ->
-  new Expectation(object, method_name)
