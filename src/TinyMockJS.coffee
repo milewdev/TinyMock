@@ -90,7 +90,7 @@ _build_mocked_method = (object, method_name) ->
   (args...) ->
     expectation = _find_expectation(object, method_name, args...)
     _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
-    _check_for_duplicate_expectations(object)
+    _check_for_duplicate_expectations()
     expectation.called = true
     throw expectation._throws if expectation._throws?
     expectation._returns
@@ -100,7 +100,7 @@ _find_expectation = (object, method_name, args...) ->
     return expectation
   undefined
 
-_check_for_duplicate_expectations = (mock) ->
+_check_for_duplicate_expectations = ->
   # TODO: use each with index and slice to avoid last element
   return if all_expectations.length < 2
   for outer in [0..all_expectations.length-2]
