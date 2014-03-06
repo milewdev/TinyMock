@@ -91,7 +91,7 @@ build_all_errors = ->
   (build_not_called_error(expectation) for expectation in all_expectations when not expectation.called).join("")
 
 build_not_called_error = (expectation) ->
-  "'#{expectation.method_name}(#{expectation._args})' was never called\n"
+  "'#{expectation._method_name}(#{expectation._args})' was never called\n"
   
   
 #
@@ -117,7 +117,7 @@ check_for_duplicate_expectations = ->
   for outer in [0..all_expectations.length-2]
     for inner in [outer+1..all_expectations.length-1]
       if all_expectations[outer].equals( all_expectations[inner] )
-        throw_duplicate_expectation("#{all_expectations[outer].method_name}(#{all_expectations[outer]._args})")
+        throw_duplicate_expectation("#{all_expectations[outer]._method_name}(#{all_expectations[outer]._args})")
 
 throw_unknown_expectation = (expectation) ->
   throw new Error( "#{expectation} does not match any expectations" )
@@ -133,7 +133,7 @@ class Expectation
 
   constructor: (object, method_name) ->
     @_object = object
-    @method_name = method_name
+    @_method_name = method_name
     @_args = []
     @_returns = undefined
     @_throws = undefined
@@ -176,7 +176,7 @@ class Expectation
   # find duplicate expectations.
   #
   equals: (other) ->
-    @matches(other._object, other.method_name, other._args...)
+    @matches(other._object, other._method_name, other._args...)
 
   #
   # Note: this method is similar to equals() but is used to
@@ -184,7 +184,7 @@ class Expectation
   #
   # TODO: refactor: should @_args be undefined or []?
   matches: (object, method_name, args...) ->
-    ( @method_name == method_name ) and
+    ( @_method_name == method_name ) and
       ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
 
@@ -215,12 +215,12 @@ class Expectation
 
   _install_mock_method: ->
     object = if is_class(@_object) then @_object.prototype else @_object
-    original_method = object[ @method_name ]
-    object[ @method_name ] = build_mocked_method(@method_name)
+    original_method = object[ @_method_name ]
+    object[ @_method_name ] = build_mocked_method(@_method_name)
     if original_method?
-      @uninstall_mocked_method = -> object[ @method_name ] = original_method
+      @uninstall_mocked_method = -> object[ @_method_name ] = original_method
     else
-      @uninstall_mocked_method = -> delete object[ @method_name ]
+      @uninstall_mocked_method = -> delete object[ @_method_name ]
 
   _throw_args_usage: ->
     throw new Error( "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)" )
