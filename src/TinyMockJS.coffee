@@ -88,7 +88,7 @@ verify_all_expectations = ->
   throw new Error( errors ) unless errors == ""
 
 build_all_errors = ->
-  (build_not_called_error(expectation) for expectation in all_expectations when not expectation.called).join("")
+  (build_not_called_error(expectation) for expectation in all_expectations when not expectation._called).join("")
 
 build_not_called_error = (expectation) ->
   "'#{expectation._method_name}(#{expectation._args})' was never called\n"
@@ -102,7 +102,7 @@ build_mocked_method = (method_name) ->
     expectation = find_expectation(@, method_name, args...)
     throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
     check_for_duplicate_expectations()
-    expectation.called = yes
+    expectation._called = yes
     throw expectation._throws if expectation._throws?
     expectation._returns
 
@@ -137,7 +137,7 @@ class Expectation
     @_args = []
     @_returns = undefined
     @_throws = undefined
-    @called = false
+    @_called = false
     @_install_mock_method()
     all_expectations.push(@)
 
