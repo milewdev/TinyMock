@@ -369,3 +369,14 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       m.expects("my_method")
       m.my_method()                   # otherwise we'll get a 'my_method not called' error
     should.not.exist(m.my_method)
+
+  it "restores the orginal method when the same method has more than one expectation", ->
+    original_method = -> "anything"
+    m = new Object()
+    m.my_method = original_method
+    mock ->
+      m.expects("my_method").args(1)
+      m.expects("my_method").args(2)
+      m.my_method(1)                  # otherwise we'll get a 'my_method not called' error
+      m.my_method(2)
+    m.my_method.should.equal(original_method)

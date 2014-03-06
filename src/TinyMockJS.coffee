@@ -21,9 +21,9 @@ install_expects_method = ->
 uninstall_expects_method = ->
   delete Object.prototype.expects
 
+# TODO: write comment about uninstalling in reverse
 uninstall_all_mocked_methods = ->
-  for expectation in all_expectations     # TODO: do this in reverse
-    expectation.uninstall_mocked_method()
+  expectation.uninstall_mocked_method() for expectation in all_expectations by -1
 
 build_convenience_mock_objects = ->
   ( new Object() for i in [1..5] )
