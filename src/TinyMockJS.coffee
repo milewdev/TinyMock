@@ -47,7 +47,7 @@ check_expects_usage = (object, method_name) ->
   throw_expects_usage() unless method_name?
   throw_reserved_word(method_name) if is_reserved_word(method_name)
   throw_pre_existing_property(method_name) if is_pre_existing_property(object, method_name)
-  if typeof object == 'function' and not object.prototype[ method_name ]?
+  if is_class(object) and not object.prototype[ method_name ]?
     throw_not_an_existing_method(method_name)
 
 is_reserved_word = (word) ->
@@ -55,6 +55,9 @@ is_reserved_word = (word) ->
   
 is_pre_existing_property = (object, method_name) ->
   object[ method_name ]? and (typeof object[ method_name ]) != 'function'
+  
+is_class = (object) ->
+   typeof object == 'function'
 
 start_new_expectation = (object, method_name) ->
   new Expectation(object, method_name)
