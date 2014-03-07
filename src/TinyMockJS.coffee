@@ -9,11 +9,11 @@ publish.mock = (test_function) ->
     install_expects_method()
     convenience_mocks = build_convenience_mock_objects()
     run_test_function(test_function, convenience_mocks)
-    verify_all_expectations()
+    AllExpectations.verify_all_expectations()
   finally
     uninstall_expects_method()
     uninstall_all_mocked_methods()
-    forget_all_expectations()
+    AllExpectations.unregister_all_expectations()
 
 install_expects_method = ->
   Object.prototype.expects = expects
@@ -22,8 +22,9 @@ uninstall_expects_method = ->
   delete Object.prototype.expects
 
 # TODO: write comment about uninstalling in reverse
+# TODO: move into AllExpectations
 uninstall_all_mocked_methods = ->
-  expectation.uninstall_mocked_method() for expectation in all_expectations by -1
+  expectation.uninstall_mocked_method() for expectation in AllExpectations._expectations by -1
 
 build_convenience_mock_objects = ->
   ( new Object() for i in [1..5] )
@@ -74,21 +75,28 @@ throw_not_an_existing_method = (method_name) ->
 
 
 #
-# all_expectations
+# AllExpectations
 #
-
 # TODO: note about there not being that many expectations (i.e. typically fewer than 10?)
-all_expectations = []
-
-verify_all_expectations = ->
-  errors = find_all_errors()
-  throw new Error( errors ) unless errors == ""
-
-find_all_errors = ->
-  ( expectation.find_errors() for expectation in all_expectations ).join("")
-
-forget_all_expectations = ->
-  all_expectations.length = 0
+#
+class AllExpectations
+	
+	@register_expectation: (expectation) ->
+		AllExpectations._expectations.push(expectation)
+		
+	@verify_all_expectations: ->
+		errors = AllExpectations._find_all_errors()
+		throw new Error(errors) unless errors == ""
+		
+	@unregister_all_expectations: ->
+		AllExpectations._expectations.length = 0
+		
+	# private
+	
+	@_expectations: []
+	
+	@_find_all_errors: ->
+  	  ( expectation.find_errors() for expectation in AllExpectations._expectations ).join("")
   
   
 #
@@ -103,18 +111,20 @@ build_mocked_method = (method_name) ->
     throw expectation._throws if expectation._throws?
     expectation._returns
 
+# TODO: move into AllExpectations
 find_expectation = (object, method_name, args...) ->
-  for expectation in all_expectations when expectation.matches(object, method_name, args...)
+  for expectation in AllExpectations._expectations when expectation.matches(object, method_name, args...)
     return expectation
   undefined
 
+# TODO: move into AllExpectations
 check_for_duplicate_expectations = ->
   # TODO: use each with index and slice to avoid last element
-  return if all_expectations.length < 2
-  for outer in [0..all_expectations.length-2]
-    for inner in [outer+1..all_expectations.length-1]
-      if all_expectations[outer].equals( all_expectations[inner] )
-        throw_duplicate_expectation("#{all_expectations[outer]._method_name}(#{all_expectations[outer]._args})")
+  return if AllExpectations._expectations.length < 2
+  for outer in [0..AllExpectations._expectations.length-2]
+    for inner in [outer+1..AllExpectations._expectations.length-1]
+      if AllExpectations._expectations[outer].equals( AllExpectations._expectations[inner] )
+        throw_duplicate_expectation("#{AllExpectations._expectations[outer]._method_name}(#{AllExpectations._expectations[outer]._args})")
 
 throw_unknown_expectation = (expectation) ->
   throw new Error( "#{expectation} does not match any expectations" )
@@ -136,7 +146,7 @@ class Expectation
     @_throws = undefined
     @_called = no
     @_install_mock_method()
-    all_expectations.push(@)
+    AllExpectations.register_expectation(@)
 
   #
   # mock (mock) ->
