@@ -4,6 +4,10 @@ publish = exports ? window
 #
 # mock()
 #
+# mock (mocked_book) ->
+#   mocked_book.expects("read")
+#   ...
+#
 publish.mock = (test_function) ->
   try
     install_expects_method()
@@ -122,7 +126,7 @@ class MockedMethod
   @build_mocked_method: (method_name) ->
     (args...) ->
       expectation = AllExpectations.find_expectation(@, method_name, args...)
-      _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
+      _throw_unknown_expectation(method_name, args) unless expectation?
       AllExpectations.check_for_duplicate_expectations()
       expectation._called = yes
       throw expectation._throws if expectation._throws?
@@ -130,8 +134,8 @@ class MockedMethod
 
   # private
   
-  _throw_unknown_expectation = (expectation) ->
-    throw new Error( "#{expectation} does not match any expectations" )
+  _throw_unknown_expectation = (method_name, args) ->
+    throw new Error( "#{method_name}(#{args}) does not match any expectations" )
 
 
 #
