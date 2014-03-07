@@ -1,0 +1,9 @@
+General
+-------
+- Put test pre-conditions/assumptions in their own test once rather than at the beginning of every test.
+
+
+Coffeescript
+------------
+- Private methods (TODO).
+- Private class variables (TODO).
