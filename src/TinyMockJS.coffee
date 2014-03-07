@@ -77,38 +77,41 @@ throw_not_an_existing_method = (method_name) ->
 class AllExpectations
 	
 	@register_expectation: (expectation) ->
-		@_expectations.push(expectation)
+		_expectations.push(expectation)
 		
 	@find_expectation: (object, method_name, args...) ->
-	  for expectation in @_expectations when expectation.matches(object, method_name, args...)
+	  for expectation in _expectations when expectation.matches(object, method_name, args...)
 	    return expectation
 	  undefined
 
 	@check_for_duplicate_expectations: ->
 	  # TODO: use each with index and slice to avoid last element
-	  return if @_expectations.length < 2
-	  for outer in [0..@_expectations.length-2]
-	    for inner in [outer+1..@_expectations.length-1]
-	      if @_expectations[outer].equals( @_expectations[inner] )
-	        throw_duplicate_expectation("#{@_expectations[outer]._method_name}(#{@_expectations[outer]._args})")
+	  return if _expectations.length < 2
+	  for outer in [0.._expectations.length-2]
+	    for inner in [outer+1.._expectations.length-1]
+	      if _expectations[outer].equals( _expectations[inner] )
+	        throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
 
 	@verify_all_expectations: ->
-		errors = @_find_all_errors()
+		errors = _find_all_errors()
 		throw new Error(errors) unless errors == ""
 
 	# TODO: write comment about uninstalling in reverse
+	# TODO: does this belong in unregister_all_expectsions?
 	@uninstall_all_mocked_methods: ->
-	  expectation.uninstall_mocked_method() for expectation in @_expectations by -1
+	  expectation.uninstall_mocked_method() for expectation in _expectations by -1
 		
+	# TODO: should this be called remove_all_expectations?  What about register_expectations?
+	#       How about install_expectation() and uninstall_all_expectations()?
 	@unregister_all_expectations: ->
-		@_expectations.length = 0
+		_expectations.length = 0
 		
 	# private
 	
-	@_expectations: []
+	_expectations = []
 	
-	@_find_all_errors: ->
-  	  ( expectation.find_errors() for expectation in @_expectations ).join("")
+	_find_all_errors = ->
+  	  ( expectation.find_errors() for expectation in _expectations ).join("")
   
   
 #
