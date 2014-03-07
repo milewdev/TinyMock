@@ -79,6 +79,11 @@ class AllExpectations
 	@register_expectation: (expectation) ->
 		@_expectations.push(expectation)
 		
+	@find_expectation: (object, method_name, args...) ->
+	  for expectation in @_expectations when expectation.matches(object, method_name, args...)
+	    return expectation
+	  undefined
+
 	@verify_all_expectations: ->
 		errors = @_find_all_errors()
 		throw new Error(errors) unless errors == ""
@@ -103,18 +108,12 @@ class AllExpectations
 #
 build_mocked_method = (method_name) ->
   (args...) ->
-    expectation = find_expectation(@, method_name, args...)
+    expectation = AllExpectations.find_expectation(@, method_name, args...)
     throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
     check_for_duplicate_expectations()
     expectation._called = yes
     throw expectation._throws if expectation._throws?
     expectation._returns
-
-# TODO: move into AllExpectations
-find_expectation = (object, method_name, args...) ->
-  for expectation in AllExpectations._expectations when expectation.matches(object, method_name, args...)
-    return expectation
-  undefined
 
 # TODO: move into AllExpectations
 check_for_duplicate_expectations = ->
