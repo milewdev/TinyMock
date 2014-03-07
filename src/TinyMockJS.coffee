@@ -16,7 +16,7 @@ publish.mock = (test_function) ->
     AllExpectations.unregister_all_expectations()
 
 install_expects_method = ->
-  Object.prototype.expects = expects
+  Object.prototype.expects = Expects.expects
 
 uninstall_expects_method = ->
   delete Object.prototype.expects
@@ -29,44 +29,42 @@ run_test_function = (test_function, convenience_mocks) ->
 
 
 #
-# expects
+# Expects
 #
-expects = (method_name) ->
-  check_expects_usage(@, method_name)
-  create_expectation(@, method_name)
-
-check_expects_usage = (object, method_name) ->
-  throw_expects_usage() unless method_name?
-  throw_reserved_word(method_name) if is_reserved_word(method_name)
-  throw_pre_existing_property(method_name) if is_pre_existing_property(object, method_name)
-  throw_not_an_existing_method(method_name) if is_class(object) and not prototype_has_method(object, method_name)
-
-is_reserved_word = (word) ->
-  word in [ "expects", "args", "returns", "check" ]
+class Expects
   
-is_pre_existing_property = (object, method_name) ->
-  object[ method_name ]? and (typeof object[ method_name ]) != 'function'
-  
-is_class = (object) ->
-   typeof object == 'function'
-   
-prototype_has_method = (object, method_name) ->
-   object.prototype[ method_name ]?
+  @expects: (method_name) ->
+    _check_expects_usage(@, method_name)
+    _create_expectation(@, method_name)
 
-create_expectation = (object, method_name) ->
-  new Expectation(object, method_name)
+  # private
 
-throw_expects_usage = ->
-  throw new Error( "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')" )
+  _check_expects_usage = (object, method_name) ->
+    _throw_expects_usage() unless method_name?
+    _throw_reserved_word(method_name) if _is_reserved_word(method_name)
+    _throw_pre_existing_property(method_name) if _is_pre_existing_property(object, method_name)
+    _throw_not_an_existing_method(method_name) if is_class(object) and not prototype_has_method(object, method_name)
 
-throw_reserved_word = (reserved_word) ->
-  throw new Error( "you cannot use my_mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name" )
+  _is_reserved_word = (word) ->
+    word in [ "expects", "args", "returns", "check" ]
   
-throw_pre_existing_property = (property_name) ->
-  throw new Error( "'#{property_name}' is an existing property; you can only mock functions" )
+  _is_pre_existing_property = (object, method_name) ->
+    object[ method_name ]? and (typeof object[ method_name ]) != 'function'
   
-throw_not_an_existing_method = (method_name) ->
-  throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on classes" )
+  _create_expectation = (object, method_name) ->
+    new Expectation(object, method_name)
+
+  _throw_expects_usage = ->
+    throw new Error( "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')" )
+
+  _throw_reserved_word = (reserved_word) ->
+    throw new Error( "you cannot use my_mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name" )
+  
+  _throw_pre_existing_property = (property_name) ->
+    throw new Error( "'#{property_name}' is an existing property; you can only mock functions" )
+  
+  _throw_not_an_existing_method = (method_name) ->
+    throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on classes" )
 
 
 #
@@ -75,43 +73,43 @@ throw_not_an_existing_method = (method_name) ->
 # TODO: note about there not being that many expectations (i.e. typically fewer than 10?)
 #
 class AllExpectations
-	
-	@register_expectation: (expectation) ->
-		_expectations.push(expectation)
-		
-	@find_expectation: (object, method_name, args...) ->
-	  for expectation in _expectations when expectation.matches(object, method_name, args...)
-	    return expectation
-	  undefined
+  
+  @register_expectation: (expectation) ->
+    _expectations.push(expectation)
+    
+  @find_expectation: (object, method_name, args...) ->
+    for expectation in _expectations when expectation.matches(object, method_name, args...)
+      return expectation
+    undefined
 
-	@check_for_duplicate_expectations: ->
-	  # TODO: use each with index and slice to avoid last element
-	  return if _expectations.length < 2
-	  for outer in [0.._expectations.length-2]
-	    for inner in [outer+1.._expectations.length-1]
-	      if _expectations[outer].equals( _expectations[inner] )
-	        throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
+  @check_for_duplicate_expectations: ->
+    # TODO: use each with index and slice to avoid last element
+    return if _expectations.length < 2
+    for outer in [0.._expectations.length-2]
+      for inner in [outer+1.._expectations.length-1]
+        if _expectations[outer].equals( _expectations[inner] )
+          throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
 
-	@verify_all_expectations: ->
-		errors = _find_all_errors()
-		throw new Error(errors) unless errors == ""
+  @verify_all_expectations: ->
+    errors = _find_all_errors()
+    throw new Error(errors) unless errors == ""
 
-	# TODO: write comment about uninstalling in reverse
-	# TODO: does this belong in unregister_all_expectsions?
-	@uninstall_all_mocked_methods: ->
-	  expectation.uninstall_mocked_method() for expectation in _expectations by -1
-		
-	# TODO: should this be called remove_all_expectations?  What about register_expectations?
-	#       How about install_expectation() and uninstall_all_expectations()?
-	@unregister_all_expectations: ->
-		_expectations.length = 0
-		
-	# private
-	
-	_expectations = []
-	
-	_find_all_errors = ->
-  	  ( expectation.find_errors() for expectation in _expectations ).join("")
+  # TODO: write comment about uninstalling in reverse
+  # TODO: does this belong in unregister_all_expectsions?
+  @uninstall_all_mocked_methods: ->
+    expectation.uninstall_mocked_method() for expectation in _expectations by -1
+    
+  # TODO: should this be called remove_all_expectations?  What about register_expectations?
+  #       How about install_expectation() and uninstall_all_expectations()?
+  @unregister_all_expectations: ->
+    _expectations.length = 0
+    
+  # private
+  
+  _expectations = []
+  
+  _find_all_errors = ->
+      ( expectation.find_errors() for expectation in _expectations ).join("")
   
   
 #
@@ -252,3 +250,13 @@ class Expectation
 
   _throw_returns_and_throws_both_used: ->
     throw new Error( "you specified both returns() and throws() on the same expectation; use one or the other on an expectation" )
+
+
+#
+# common
+#
+is_class = (object) ->
+   typeof object == 'function'
+ 
+prototype_has_method = (object, method_name) ->
+   object.prototype[ method_name ]?
