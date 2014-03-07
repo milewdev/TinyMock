@@ -12,7 +12,7 @@ publish.mock = (test_function) ->
     AllExpectations.verify_all_expectations()
   finally
     uninstall_expects_method()
-    uninstall_all_mocked_methods()
+    AllExpectations.uninstall_all_mocked_methods()
     AllExpectations.unregister_all_expectations()
 
 install_expects_method = ->
@@ -20,11 +20,6 @@ install_expects_method = ->
 
 uninstall_expects_method = ->
   delete Object.prototype.expects
-
-# TODO: write comment about uninstalling in reverse
-# TODO: move into AllExpectations
-uninstall_all_mocked_methods = ->
-  expectation.uninstall_mocked_method() for expectation in AllExpectations._expectations by -1
 
 build_convenience_mock_objects = ->
   ( new Object() for i in [1..5] )
@@ -87,6 +82,10 @@ class AllExpectations
 	@verify_all_expectations: ->
 		errors = AllExpectations._find_all_errors()
 		throw new Error(errors) unless errors == ""
+
+	# TODO: write comment about uninstalling in reverse
+	@uninstall_all_mocked_methods: ->
+	  expectation.uninstall_mocked_method() for expectation in AllExpectations._expectations by -1
 		
 	@unregister_all_expectations: ->
 		AllExpectations._expectations.length = 0
