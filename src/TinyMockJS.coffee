@@ -146,7 +146,7 @@ class Expectation
     @_returns = undefined
     @_throws = undefined
     @_called = no
-    @_install_mock_method()
+    _install_mock_method(@)
     AllExpectations.register_expectation(@)
 
   #
@@ -155,8 +155,8 @@ class Expectation
   #   ...
   #
   args: (args...) ->
-    @_check_args_usage(args...)
-    @_save_args(args)
+    _check_args_usage(@, args...)
+    _save_args(@, args)
     @
 
   #
@@ -165,8 +165,8 @@ class Expectation
   #   ...
   #
   returns: (value) ->
-    @_check_returns_usage(value)
-    @_save_returns(value)
+    _check_returns_usage(@, value)
+    _save_returns(@, value)
     @
 
   #
@@ -175,8 +175,8 @@ class Expectation
   #   ...
   #
   throws: (error) ->
-    @_check_throws_usage(error)
-    @_save_throws(error)
+    _check_throws_usage(@, error)
+    _save_throws(@, error)
     @
 
   #
@@ -201,57 +201,57 @@ class Expectation
 
   # private
 
-  _check_args_usage: (args...) ->
-    @_throw_args_usage() if args.length == 0
-    @_throw_args_used_more_than_once() unless @_args.length == 0
+  _check_args_usage = (expectation, args...) ->
+    _throw_args_usage() if args.length == 0
+    _throw_args_used_more_than_once() unless expectation._args.length == 0
 
-  _check_returns_usage: (value) ->
-    @_throw_returns_usage() unless value?
-    @_throw_returns_used_more_than_once() if @_returns?
-    @_throw_returns_and_throws_both_used() if @_throws?
+  _check_returns_usage = (expectation, value) ->
+    _throw_returns_usage() unless value?
+    _throw_returns_used_more_than_once() if expectation._returns?
+    _throw_returns_and_throws_both_used() if expectation._throws?
 
-  _check_throws_usage: (error) ->
-    @_throw_throws_usage(error) unless error?
-    @_throw_throws_used_more_than_once() if @_throws?
-    @_throw_returns_and_throws_both_used() if @_returns?
+  _check_throws_usage = (expectation, error) ->
+    _throw_throws_usage() unless error?
+    _throw_throws_used_more_than_once() if expectation._throws?
+    _throw_returns_and_throws_both_used() if expectation._returns?
 
-  _save_args: (args) ->
-    @_args = args
+  _save_args = (expectation, args) ->
+    expectation._args = args
 
-  _save_returns: (value) ->
-    @_returns = value
+  _save_returns = (expectation, value) ->
+    expectation._returns = value
 
-  _save_throws: (error) ->
-    @_throws = error
+  _save_throws = (expectation, error) ->
+    expectation._throws = error
 
-  _install_mock_method: ->
-    object = if is_class(@_object) then @_object.prototype else @_object
-    original_method = object[ @_method_name ]
-    object[ @_method_name ] = MockedMethod.build_mocked_method(@_method_name)
+  _install_mock_method = (expectation) ->
+    object = if is_class(expectation._object) then expectation._object.prototype else expectation._object
+    original_method = object[ expectation._method_name ]
+    object[ expectation._method_name ] = MockedMethod.build_mocked_method(expectation._method_name)
     if original_method?
-      @uninstall_mocked_method = -> object[ @_method_name ] = original_method
+      expectation.uninstall_mocked_method = -> object[ expectation._method_name ] = original_method
     else
-      @uninstall_mocked_method = -> delete object[ @_method_name ]
+      expectation.uninstall_mocked_method = -> delete object[ expectation._method_name ]
 
-  _throw_args_usage: ->
+  _throw_args_usage = ->
     throw new Error( "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)" )
 
-  _throw_args_used_more_than_once: ->
+  _throw_args_used_more_than_once = ->
     throw new Error( "you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation" )
 
-  _throw_returns_usage: ->
+  _throw_returns_usage = ->
     throw new Error( "you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)" )
 
-  _throw_returns_used_more_than_once: ->
+  _throw_returns_used_more_than_once = ->
     throw new Error( "you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation" )
 
-  _throw_throws_usage: ->
+  _throw_throws_usage = ->
     throw new Error( "you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')" )
 
-  _throw_throws_used_more_than_once: ->
+  _throw_throws_used_more_than_once = ->
     throw new Error( "you specified throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); use it once per expectation" )
 
-  _throw_returns_and_throws_both_used: ->
+  _throw_returns_and_throws_both_used = ->
     throw new Error( "you specified both returns() and throws() on the same expectation; use one or the other on an expectation" )
 
 
