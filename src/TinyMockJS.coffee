@@ -31,6 +31,8 @@ run_test_function = (test_function, convenience_mocks) ->
 #
 # Expects
 #
+# Note: this is better thought of as a mixin; comment further
+#
 class Expects
   
   @expects: (method_name) ->
@@ -85,7 +87,7 @@ class AllExpectations
     for outer in [0.._expectations.length-2]
       for inner in [outer+1.._expectations.length-1]
         if _expectations[outer].equals( _expectations[inner] )
-          throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
+          _throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
 
   @verify_all_expectations: ->
     errors = _find_all_errors()
@@ -107,25 +109,29 @@ class AllExpectations
   
   _find_all_errors = ->
       ( expectation.find_errors() for expectation in _expectations ).join("")
+
+  _throw_duplicate_expectation = (expectation) ->
+    throw new Error( "#{expectation} is a duplicate expectation" )
   
   
 #
-# mocked_method
+# MockedMethod
 #
-build_mocked_method = (method_name) ->
-  (args...) ->
-    expectation = AllExpectations.find_expectation(@, method_name, args...)
-    throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
-    AllExpectations.check_for_duplicate_expectations()
-    expectation._called = yes
-    throw expectation._throws if expectation._throws?
-    expectation._returns
+class MockedMethod
+  
+  @build_mocked_method: (method_name) ->
+    (args...) ->
+      expectation = AllExpectations.find_expectation(@, method_name, args...)
+      _throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
+      AllExpectations.check_for_duplicate_expectations()
+      expectation._called = yes
+      throw expectation._throws if expectation._throws?
+      expectation._returns
 
-throw_unknown_expectation = (expectation) ->
-  throw new Error( "#{expectation} does not match any expectations" )
-
-throw_duplicate_expectation = (expectation) ->
-  throw new Error( "#{expectation} is a duplicate expectation" )
+  # private
+  
+  _throw_unknown_expectation = (expectation) ->
+    throw new Error( "#{expectation} does not match any expectations" )
 
 
 #
@@ -221,7 +227,7 @@ class Expectation
   _install_mock_method: ->
     object = if is_class(@_object) then @_object.prototype else @_object
     original_method = object[ @_method_name ]
-    object[ @_method_name ] = build_mocked_method(@_method_name)
+    object[ @_method_name ] = MockedMethod.build_mocked_method(@_method_name)
     if original_method?
       @uninstall_mocked_method = -> object[ @_method_name ] = original_method
     else
