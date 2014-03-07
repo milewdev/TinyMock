@@ -37,7 +37,7 @@ run_test_function = (test_function, convenience_mocks) ->
 #
 expects = (method_name) ->
   check_expects_usage(@, method_name)
-  start_new_expectation(@, method_name)
+  create_expectation(@, method_name)
 
 check_expects_usage = (object, method_name) ->
   throw_expects_usage() unless method_name?
@@ -57,7 +57,7 @@ is_class = (object) ->
 prototype_has_method = (object, method_name) ->
    object.prototype[ method_name ]?
 
-start_new_expectation = (object, method_name) ->
+create_expectation = (object, method_name) ->
   new Expectation(object, method_name)
 
 throw_expects_usage = ->
