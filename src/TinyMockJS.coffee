@@ -84,6 +84,14 @@ class AllExpectations
 	    return expectation
 	  undefined
 
+	@check_for_duplicate_expectations: ->
+	  # TODO: use each with index and slice to avoid last element
+	  return if @_expectations.length < 2
+	  for outer in [0..@_expectations.length-2]
+	    for inner in [outer+1..@_expectations.length-1]
+	      if @_expectations[outer].equals( @_expectations[inner] )
+	        throw_duplicate_expectation("#{@_expectations[outer]._method_name}(#{@_expectations[outer]._args})")
+
 	@verify_all_expectations: ->
 		errors = @_find_all_errors()
 		throw new Error(errors) unless errors == ""
@@ -110,19 +118,10 @@ build_mocked_method = (method_name) ->
   (args...) ->
     expectation = AllExpectations.find_expectation(@, method_name, args...)
     throw_unknown_expectation("#{method_name}(#{args})") unless expectation?
-    check_for_duplicate_expectations()
+    AllExpectations.check_for_duplicate_expectations()
     expectation._called = yes
     throw expectation._throws if expectation._throws?
     expectation._returns
-
-# TODO: move into AllExpectations
-check_for_duplicate_expectations = ->
-  # TODO: use each with index and slice to avoid last element
-  return if AllExpectations._expectations.length < 2
-  for outer in [0..AllExpectations._expectations.length-2]
-    for inner in [outer+1..AllExpectations._expectations.length-1]
-      if AllExpectations._expectations[outer].equals( AllExpectations._expectations[inner] )
-        throw_duplicate_expectation("#{AllExpectations._expectations[outer]._method_name}(#{AllExpectations._expectations[outer]._args})")
 
 throw_unknown_expectation = (expectation) ->
   throw new Error( "#{expectation} does not match any expectations" )
