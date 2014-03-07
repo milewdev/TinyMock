@@ -12,6 +12,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   install_osx_command_line_tools  config  # needed by git
   install_gpg                     config  # needed in order to sign git commits
   install_git                     config
+  install_git_gui                 config
   install_node                    config
   install_editor                  config
   install_project_source_code     config, PROJECT_SOURCE_URL, PROJECT_VM_PATH
@@ -67,6 +68,12 @@ def install_git(config)
     'Git 1.8.4.2 Snow Leopard Intel Universal',
     'git-1.8.4.2-intel-universal-snow-leopard.pkg'
   run_script config, "cp /.vagrant_host_home/.gitconfig /Users/vagrant/.gitconfig"
+end
+
+
+def install_git_gui(config)
+  say config, "Installing GitHub for Mac"
+  run_script config, "curl -fsSL https://central.github.com/mac/latest | sudo tar -x -C /Applications -f -"
 end
 
 
