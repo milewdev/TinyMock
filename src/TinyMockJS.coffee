@@ -13,7 +13,7 @@ publish.mock = (test_function) ->
   finally
     uninstall_expects_method()
     uninstall_all_mocked_methods()
-    clear_all_expectations()
+    forget_all_expectations()
 
 install_expects_method = ->
   Object.prototype.expects = expects
@@ -80,15 +80,15 @@ throw_not_an_existing_method = (method_name) ->
 # TODO: note about there not being that many expectations (i.e. typically fewer than 10?)
 all_expectations = []
 
-clear_all_expectations = ->
-  all_expectations.length = 0
-
 verify_all_expectations = ->
   errors = find_all_errors()
   throw new Error( errors ) unless errors == ""
 
 find_all_errors = ->
   ( expectation.find_errors() for expectation in all_expectations ).join("")
+
+forget_all_expectations = ->
+  all_expectations.length = 0
   
   
 #
