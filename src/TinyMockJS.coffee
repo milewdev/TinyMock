@@ -77,25 +77,25 @@ throw_not_an_existing_method = (method_name) ->
 class AllExpectations
 	
 	@register_expectation: (expectation) ->
-		AllExpectations._expectations.push(expectation)
+		@_expectations.push(expectation)
 		
 	@verify_all_expectations: ->
-		errors = AllExpectations._find_all_errors()
+		errors = @_find_all_errors()
 		throw new Error(errors) unless errors == ""
 
 	# TODO: write comment about uninstalling in reverse
 	@uninstall_all_mocked_methods: ->
-	  expectation.uninstall_mocked_method() for expectation in AllExpectations._expectations by -1
+	  expectation.uninstall_mocked_method() for expectation in @_expectations by -1
 		
 	@unregister_all_expectations: ->
-		AllExpectations._expectations.length = 0
+		@_expectations.length = 0
 		
 	# private
 	
 	@_expectations: []
 	
 	@_find_all_errors: ->
-  	  ( expectation.find_errors() for expectation in AllExpectations._expectations ).join("")
+  	  ( expectation.find_errors() for expectation in @_expectations ).join("")
   
   
 #
