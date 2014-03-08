@@ -10,26 +10,32 @@ publish = exports ? window
 #
 publish.mock = (test_function) ->
   try
-    install_expects_method()
-    convenience_mocks = build_convenience_mock_objects()
-    run_test_function(test_function, convenience_mocks)
+    Mock.install_expects_method()
+    convenience_mocks = Mock.build_convenience_mock_objects()
+    Mock.run_test_function(test_function, convenience_mocks)
     AllExpectations.verify_all_expectations()
   finally
-    uninstall_expects_method()
+    Mock.uninstall_expects_method()
     AllExpectations.uninstall_all_mocked_methods()
     AllExpectations.unregister_all_expectations()
 
-install_expects_method = ->
-  Object.prototype.expects = Expects.expects
 
-uninstall_expects_method = ->
-  delete Object.prototype.expects
+#
+# Mock
+#
+class Mock
+  
+  @install_expects_method: ->
+    Object.prototype.expects = Expects.expects
 
-build_convenience_mock_objects = ->
-  ( new Object() for i in [1..5] )
+  @uninstall_expects_method: ->
+    delete Object.prototype.expects
 
-run_test_function = (test_function, convenience_mocks) ->
-  test_function.apply(undefined, convenience_mocks)
+  @build_convenience_mock_objects: ->
+    ( new Object() for i in [1..5] )
+
+  @run_test_function: (test_function, convenience_mocks) ->
+    test_function.apply(undefined, convenience_mocks)
 
 
 #
