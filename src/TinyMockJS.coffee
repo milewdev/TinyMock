@@ -14,12 +14,12 @@ class MockFunction
   #
   publish.mock = (test_function) ->
     try
-      Expects.install_expects_method()
+      ExpectsMethod.install_expects_method()
       convenience_mocks = _build_convenience_mock_objects()
       _run_test_function(test_function, convenience_mocks)
       AllExpectations.verify_all_expectations()
     finally
-      Expects.uninstall_expects_method()
+      ExpectsMethod.uninstall_expects_method()
       AllExpectations.uninstall_all_mocked_methods()
       AllExpectations.unregister_all_expectations()
 
@@ -33,11 +33,11 @@ class MockFunction
 
 
 #
-# Expects
+# ExpectsMethod
 #
 # Note: this is better thought of as a mixin; comment further
 #
-class Expects
+class ExpectsMethod
   
   @install_expects_method: ->
     Object.prototype.expects = expects
