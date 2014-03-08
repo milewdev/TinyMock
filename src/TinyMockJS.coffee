@@ -54,7 +54,7 @@ class Expects
     _throw_expects_usage() unless method_name?
     _throw_reserved_word(method_name) if _is_reserved_word(method_name)
     _throw_pre_existing_property(method_name) if is_property(object, method_name)
-    _throw_not_an_existing_method(method_name) if is_class(object) and not prototype_has_method(object, method_name)
+    _throw_not_an_existing_method(method_name) if is_class(object) and not is_method_in_prototype(object, method_name)
 
   _is_reserved_word = (word) ->
     word in [ "expects", "args", "returns", "check" ]
@@ -272,7 +272,7 @@ class Expectation
 is_class = (object) ->
    typeof object == 'function'
  
-prototype_has_method = (object, method_name) ->
+is_method_in_prototype = (object, method_name) ->
    object.prototype[ method_name ]?
 
 is_property = (object, method_name) ->
