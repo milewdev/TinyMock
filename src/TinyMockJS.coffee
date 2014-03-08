@@ -1,3 +1,4 @@
+# TODO: or is it: public = exports ? this (http://stackoverflow.com/questions/4214731/coffeescript-global-variables/4215132#4215132)
 publish = exports ? window
 
 
@@ -8,33 +9,31 @@ publish = exports ? window
 #   mocked_book.expects("read")
 #   ...
 #
-publish.mock = (test_function) ->
-  try
-    Mock.install_expects_method()
-    convenience_mocks = Mock.build_convenience_mock_objects()
-    Mock.run_test_function(test_function, convenience_mocks)
-    AllExpectations.verify_all_expectations()
-  finally
-    Mock.uninstall_expects_method()
-    AllExpectations.uninstall_all_mocked_methods()
-    AllExpectations.unregister_all_expectations()
-
-
-#
-# Mock
-#
 class Mock
   
-  @install_expects_method: ->
+  publish.mock = (test_function) ->
+    try
+      _install_expects_method()
+      convenience_mocks = _build_convenience_mock_objects()
+      _run_test_function(test_function, convenience_mocks)
+      AllExpectations.verify_all_expectations()
+    finally
+      _uninstall_expects_method()
+      AllExpectations.uninstall_all_mocked_methods()
+      AllExpectations.unregister_all_expectations()
+
+  # private
+  
+  _install_expects_method = ->
     Object.prototype.expects = Expects.expects
 
-  @uninstall_expects_method: ->
+  _uninstall_expects_method = ->
     delete Object.prototype.expects
 
-  @build_convenience_mock_objects: ->
+  _build_convenience_mock_objects = ->
     ( new Object() for i in [1..5] )
 
-  @run_test_function: (test_function, convenience_mocks) ->
+  _run_test_function = (test_function, convenience_mocks) ->
     test_function.apply(undefined, convenience_mocks)
 
 
