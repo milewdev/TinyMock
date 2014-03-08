@@ -5,30 +5,25 @@ publish = exports ? window
 #
 # mock()
 #
-# mock (mocked_book) ->
-#   mocked_book.expects("read")
-#   ...
-#
 class Mock
   
+  #
+  # mock (my_mock) ->
+  #   my_mock.expects("my_method")
+  #   ...
+  #
   publish.mock = (test_function) ->
     try
-      _install_expects_method()
+      Expects.install_expects_method()
       convenience_mocks = _build_convenience_mock_objects()
       _run_test_function(test_function, convenience_mocks)
       AllExpectations.verify_all_expectations()
     finally
-      _uninstall_expects_method()
+      Expects.uninstall_expects_method()
       AllExpectations.uninstall_all_mocked_methods()
       AllExpectations.unregister_all_expectations()
 
   # private
-  
-  _install_expects_method = ->
-    Object.prototype.expects = Expects.expects
-
-  _uninstall_expects_method = ->
-    delete Object.prototype.expects
 
   _build_convenience_mock_objects = ->
     ( new Object() for i in [1..5] )
@@ -44,7 +39,20 @@ class Mock
 #
 class Expects
   
-  @expects: (method_name) ->
+  @install_expects_method: ->
+    Object.prototype.expects = expects
+
+  @uninstall_expects_method: ->
+    delete Object.prototype.expects
+  
+  #
+  # this functions gets installed to Object.prototype while
+  # in the scope of the mock() function
+  #
+  # mock(my_mock) ->
+  #   my_mock.expects("my_method")
+  #
+  expects = (method_name) ->
     _check_expects_usage(@, method_name)
     _create_expectation(@, method_name)
 
@@ -266,8 +274,6 @@ class Expectation
 
 #
 # common
-#
-# TODO: need descriptions for these functions or provide better names
 #
 is_class = (object) ->
    typeof object == 'function'
