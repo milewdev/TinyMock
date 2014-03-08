@@ -3,9 +3,9 @@ publish = exports ? window
 
 
 #
-# mock()
+# MockFunction
 #
-class Mock
+class MockFunction
   
   #
   # mock (my_mock) ->
