@@ -132,9 +132,9 @@ class AllExpectations
   
   
 #
-# MockedMethod
+# MockedMethodBuilder
 #
-class MockedMethod
+class MockedMethodBuilder
   
   @build_mocked_method: (method_name) ->
     (args...) ->
@@ -244,7 +244,7 @@ class Expectation
   _install_mock_method = (expectation) ->
     object = if is_class(expectation._object) then expectation._object.prototype else expectation._object
     original_method = object[ expectation._method_name ]
-    object[ expectation._method_name ] = MockedMethod.build_mocked_method(expectation._method_name)
+    object[ expectation._method_name ] = MockedMethodBuilder.build_mocked_method(expectation._method_name)
     if original_method?
       expectation.uninstall_mocked_method = -> object[ expectation._method_name ] = original_method
     else
