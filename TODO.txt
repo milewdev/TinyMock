@@ -9,3 +9,5 @@ Use either the word 'exception' or the work 'error' (pick one and be consistent)
 Extract all test descriptions and make sure they are consistent.
 Remove 'expectations' attribute from mocked objects.
 Ensure that all test descriptions are sentence parts, not capitalized sentences.
+Write a test for mock-within-mock.
+Add mock() parameters: name of 'expects' method, number of convenience mock objects to create.

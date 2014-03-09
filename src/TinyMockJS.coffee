@@ -1,4 +1,5 @@
-# TODO: or is it: public = exports ? this (http://stackoverflow.com/questions/4214731/coffeescript-global-variables/4215132#4215132)
+# TODO: or is it: publish = exports ? this (http://stackoverflow.com/questions/4214731/coffeescript-global-variables/4215132#4215132)
+# visible, available, world, everyone, add_to_interface, MakePublic, PubliclyVisible, PubliclyAvailable, Published, Exported, PublicItems, exporting
 publish = exports ? window
 
 
