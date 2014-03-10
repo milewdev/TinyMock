@@ -122,12 +122,9 @@ class AllExpectations
     throw new Error(errors) unless errors == ""
 
   # TODO: write comment about uninstalling in reverse
-  # TODO: does this belong in unregister_all_expectsions?
   @uninstall_all_mocked_methods: ->
     expectation.uninstall_mocked_method() for expectation in _expectations by -1
     
-  # TODO: should this be called remove_all_expectations?  What about register_expectations?
-  #       How about install_expectation() and uninstall_all_expectations()?
   @unregister_all_expectations: ->
     _expectations.length = 0
     
@@ -284,8 +281,9 @@ class Expectation
 
 
 #
-# common
+# common functions
 #
+
 is_class = (object) ->
   typeof object == 'function'
 
