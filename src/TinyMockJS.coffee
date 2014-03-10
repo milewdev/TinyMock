@@ -1,6 +1,5 @@
 # TODO: or is it: publish = exports ? this (http://stackoverflow.com/questions/4214731/coffeescript-global-variables/4215132#4215132)
-# visible, available, world, everyone, add_to_interface, MakePublic, PubliclyVisible, PubliclyAvailable, Published, Exported, PublicItems, exporting
-publish = exports ? window
+PUBLISH = exports ? window
 
 
 #
@@ -13,7 +12,7 @@ class MockFunction
   #   my_mock.expects("my_method")
   #   ...
   #
-  publish.mock = (test_function) ->
+  PUBLISH.mock = (test_function) ->
     try
       ExpectsMethod.install_expects_method()
       convenience_mocks = _build_convenience_mock_objects()
