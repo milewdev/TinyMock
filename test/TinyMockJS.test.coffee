@@ -47,7 +47,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
 
   it "passes pre-created convenience Mock objects to the function argument", ->
     mock (m) ->
-      m.constructor.name.should.equal("Mock")
+      m.constructor.name.should.equal("MockObject")
       
   it "passes 5 Mock objects to the function argument", ->
     mock (m...) ->
