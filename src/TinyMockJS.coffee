@@ -258,13 +258,13 @@ class Expectation
     expectation._throws = error
 
   _install_mock_method = (expectation) ->
-    object = if is_class(expectation._object) then expectation._object.prototype else expectation._object
-    original_method = object[ expectation._method_name ]
-    object[ expectation._method_name ] = MockedMethodBuilder.build_mocked_method(expectation._method_name)
+    methods = if is_class(expectation._object) then expectation._object.prototype else expectation._object
+    original_method = methods[ expectation._method_name ]
+    methods[ expectation._method_name ] = MockedMethodBuilder.build_mocked_method(expectation._method_name)
     if original_method?
-      expectation.uninstall_mocked_method = -> object[ expectation._method_name ] = original_method
+      expectation.uninstall_mocked_method = -> methods[ expectation._method_name ] = original_method
     else
-      expectation.uninstall_mocked_method = -> delete object[ expectation._method_name ]
+      expectation.uninstall_mocked_method = -> delete methods[ expectation._method_name ]
 
   _throw_args_usage = ->
     throw new Error( "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)" )
