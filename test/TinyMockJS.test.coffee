@@ -109,6 +109,11 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         m2.expects("my_method2")
         m1.my_method1()
         m2.my_method2()
+        
+  it "allows one mock object to use another", ->
+    mock (m1, m2) ->
+      m1.expects("my_method").returns(m2)
+      m1.my_method().should.equal(m2)
 
 
 describe "expects(method_name)", ->
