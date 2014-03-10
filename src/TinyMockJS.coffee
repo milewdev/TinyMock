@@ -74,13 +74,10 @@ class ExpectsMethod
 
   _check_expects_usage = (object, method_name) ->
     _throw_expects_usage() unless method_name?
-    _throw_reserved_word(method_name) if _is_reserved_word(method_name)
+    _throw_reserved_word(method_name) if is_reserved_method_name(method_name)
     _throw_pre_existing_property(method_name) if is_property_of_object(object, method_name)
-    _throw_not_an_existing_method(method_name) if not is_mock_object(object) and not is_class(object) and not is_method_of_object(object, method_name)
     _throw_not_an_existing_method(method_name) if not is_mock_object(object) and is_class(object) and not is_method_in_prototype(object, method_name)
-
-  _is_reserved_word = (word) ->
-    word in [ "expects", "args", "returns", "check" ]
+    _throw_not_an_existing_method(method_name) if not is_mock_object(object) and not is_class(object) and not is_method_of_object(object, method_name)
   
   _create_expectation = (object, method_name) ->
     new Expectation(object, method_name)
@@ -307,3 +304,6 @@ is_property_of_object = (object, method_name) ->
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
+
+is_reserved_method_name = (word) ->
+  word in [ "expects", "args", "returns", "check" ]
