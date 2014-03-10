@@ -76,7 +76,7 @@ class ExpectsMethod
     _throw_reserved_word(method_name) if is_reserved_method_name(method_name)
     _throw_pre_existing_property(method_name) if is_property_of_object(object, method_name)
     _throw_not_an_existing_method(method_name) if not is_mock_object(object) and is_class(object) and not is_method_in_prototype(object, method_name)
-    _throw_not_an_existing_method(method_name) if not is_mock_object(object) and not is_class(object) and not is_method_of_object(object, method_name)
+    _throw_not_an_existing_method(method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
   
   _create_expectation = (object, method_name) ->
     new Expectation(object, method_name)
@@ -112,7 +112,7 @@ class AllExpectations
   @check_for_duplicate_expectations: ->
     # TODO: use each with index and slice to avoid last element
     return if _expectations.length < 2
-    for outer in [0.._expectations.length-2]                     # given [ a, b, c ]
+    for outer in [0.._expectations.length-2]                     # given _expectations = [ a, b, c ]
       for inner in [outer+1.._expectations.length-1]             # these loops produce the pairs (a,b), (a,c), (b,c)
         if _expectations[outer].equals( _expectations[inner] )
           _throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
@@ -295,7 +295,7 @@ is_method_in_prototype = (object, method_name) ->
   object.prototype[ method_name ]?
    
 # TODO: needs a better function name
-is_method_of_object = (object, method_name) ->
+does_object_have_method = (object, method_name) ->
   object[ method_name ]?
 
 is_property_of_object = (object, method_name) ->
