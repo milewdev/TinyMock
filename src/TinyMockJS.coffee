@@ -135,7 +135,6 @@ class AllExpectations
   
   _expectations = []
   
-  # TODO: rename to _gather_all_errors?
   _find_all_errors = ->
       ( expectation.find_errors() for expectation in _expectations ).join("")
 
