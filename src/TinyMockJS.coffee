@@ -75,8 +75,8 @@ class ExpectsMethod
     _throw_expects_usage() unless method_name?
     _throw_reserved_word(method_name) if is_reserved_method_name(method_name)
     _throw_pre_existing_property(method_name) if does_object_have_property(object, method_name)
-    _throw_not_an_existing_method(method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
     _throw_not_an_existing_method(method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
+    _throw_not_an_existing_method(method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
   
   _create_expectation = (object, method_name) ->
     new Expectation(object, method_name)
