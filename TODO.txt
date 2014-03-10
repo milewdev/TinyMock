@@ -11,3 +11,4 @@ Remove 'expectations' attribute from mocked objects.
 Ensure that all test descriptions are sentence parts, not capitalized sentences.
 Write a test for mock-within-mock.
 Add mock() parameters: name of 'expects' method, number of convenience mock objects to create.
+Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).

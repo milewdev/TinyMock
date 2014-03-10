@@ -27,7 +27,7 @@ class MockFunction
   # private
 
   _build_convenience_mock_objects = ->
-    ( new Mock() for i in [1..5] )
+    ( new Mock() for i in [1..5] )          # => [ mock, mock, ... ]
 
   _run_test_function = (test_function, convenience_mocks) ->
     test_function.apply(undefined, convenience_mocks)
@@ -103,7 +103,7 @@ class AllExpectations
   @register_expectation: (expectation) ->
     _expectations.push(expectation)
     
-  @find_expectation: (object, method_name, args...) ->
+  @find_expectation_that_matches: (object, method_name, args...) ->
     for expectation in _expectations when expectation.matches(object, method_name, args...)
       return expectation
     undefined
@@ -111,8 +111,8 @@ class AllExpectations
   @check_for_duplicate_expectations: ->
     # TODO: use each with index and slice to avoid last element
     return if _expectations.length < 2
-    for outer in [0.._expectations.length-2]
-      for inner in [outer+1.._expectations.length-1]
+    for outer in [0.._expectations.length-2]                     # given [ a, b, c ]
+      for inner in [outer+1.._expectations.length-1]             # these loops produce the pairs (a,b), (a,c), (b,c)
         if _expectations[outer].equals( _expectations[inner] )
           _throw_duplicate_expectation("#{_expectations[outer]._method_name}(#{_expectations[outer]._args})")
 
@@ -134,6 +134,7 @@ class AllExpectations
   
   _expectations = []
   
+  # TODO: rename to _gather_all_errors?
   _find_all_errors = ->
       ( expectation.find_errors() for expectation in _expectations ).join("")
 
@@ -148,7 +149,7 @@ class MockedMethodBuilder
   
   @build_mocked_method: (method_name) ->
     (args...) ->
-      expectation = AllExpectations.find_expectation(@, method_name, args...)
+      expectation = AllExpectations.find_expectation_that_matches(@, method_name, args...)
       _throw_unknown_expectation(method_name, args) unless expectation?
       AllExpectations.check_for_duplicate_expectations()
       expectation._called = yes
