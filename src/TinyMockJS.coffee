@@ -306,4 +306,4 @@ is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
 
 is_reserved_method_name = (word) ->
-  word in [ "expects", "args", "returns", "check" ]
+  word == "expects"
