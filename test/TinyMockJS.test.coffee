@@ -8,57 +8,161 @@ describe "test pre-conditions", ->
   it "Object does not have the property or method 'expects'", ->
     should.not.exist(Object.prototype.expects)
 
-  it "instances of Object do not have the property or method 'my_method'", ->
-    m = new Object()
-    should.not.exist(m.my_method)
-
   it "Object does not have the property or method 'my_method'", ->
     should.not.exist(Object.prototype.my_method)
+
+  it "instances of Object do not have the property or method 'my_method'", ->
+    o = new Object()
+    should.not.exist(o.my_method)
 
   it "mock() passes in objects that do not have the property or method 'my_method'", ->
     mock (m) ->
       should.not.exist(m.my_method)
 
 
-describe "expects(method_name)", ->
+describe "mock( function( mock1 [, mock2 ...] ) )", ->
 
-  it "adds method_name to instances that do not already have a method method_name", ->
-    m = new Object()
+  it "Adds expects() to Object so that it is available on all objects", ->
     mock ->
+      should.exist(Object.prototype.expects)
+
+  it "Removes expects() from Object after running the passed function", ->
+    mock ->
+      # empty
+    should.not.exist(Object.prototype.expects)
+
+  it "Removes expects() from Object when the passed function throws an exception", ->
+    try
+      mock ->
+        throw new Error("an error")
+    catch error
+      # ignore
+    should.not.exist(Object.prototype.expects)
+
+  it "does not eat exceptions thrown by the passed function", ->
+    (->
+      mock ->
+        throw new Error("an error")
+    ).should.throw("an error")
+
+  it "passes pre-created convenience Mock objects to the function argument", ->
+    mock (m) ->
+      m.constructor.name.should.equal("Mock")
+      
+  it "passes 5 Mock objects to the function argument", ->
+    mock (m...) ->
+      m.length.should.equal(5)
+
+  it "checks expectations for errors if the passed function did not throw an error", ->
+    (->
+      mock (m) ->
+        m.expects("my_method")
+    ).should.throw("'my_method()' was never called")
+
+  it "does not check expectations for errors if the passed function throws an error", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error"))
+        m.my_method()
+    ).should.throw(/^an error$/)
+
+  it "reports all unmet expectations", ->
+    (->
+      mock (m1, m2) ->
+        m1.expects("my_method1").args(1,2,3)
+        m2.expects("my_method2")
+    ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
+
+  it "restores the original method on class prototypes", ->
+    original_method = -> "anything"
+    class Klass
+      my_method: original_method
+    mock ->
+      Klass.expects("my_method")
+      (new Klass()).my_method()       # otherwise we'll get a 'my_method not called' error
+    Klass.prototype.my_method.should.equal(original_method)
+
+  it "restores the original method on instances that had the original method", ->
+    original_method = -> "anything"
+    o = new Object()
+    o.my_method = original_method
+    mock ->
+      o.expects("my_method")
+      o.my_method()                   # otherwise we'll get a 'my_method not called' error
+    o.my_method.should.equal(original_method)
+
+  it "restores the orginal method when the same method has more than one expectation", ->
+    original_method = -> "anything"
+    o = new Object()
+    o.my_method = original_method
+    mock ->
+      o.expects("my_method").args(1)
+      o.expects("my_method").args(2)
+      o.my_method(1)                  # otherwise we'll get a 'my_method not called' error
+      o.my_method(2)
+    o.my_method.should.equal(original_method)
+
+
+describe "expects(method_name)", ->
+  
+  it "adds method_name to mock objects passed in by mock()", ->
+    mock (m) ->
       m.expects("my_method")
       (typeof m.my_method).should.equal('function')
       m.my_method()                 # otherwise we'll get a 'my_method not called' error
-
-  it "adds method_name to instances that already have a method method_name", ->
-    m = new Object()
-    m.my_method = -> "existing method"
+      
+  it "mocks method_name on instances of classes that were not passed in by mock()", ->
+    existing_method = -> "existing method"
+    class Klass
+      my_method: existing_method
+    k = new Klass()
     mock ->
-      m.expects("my_method").returns("mocked method")
-      m.my_method().should.equal("mocked method")
-
-  it "throws an error if method_name is already a property on an instance", ->
-    m = new Object()
-    m.my_method = "a property"
+      k.expects("my_method")
+      k.my_method.should.not.equal(existing_method)
+      k.my_method()                 # otherwise we'll get a 'my_method not called' error
+      
+  it "mocks method_name on objects that were not passed in by mock()", ->
+    existing_method = -> "existing method"
+    o = new Object()
+    o.my_method = existing_method
+    mock ->
+      o.expects("my_method")
+      o.my_method.should.not.equal(existing_method)
+      o.my_method()                 # otherwise we'll get a 'my_method not called' error
+      
+  it "throws an error if method_name does not already exist on an instance of a class that was not passed in by mock()", ->
+    class Klass
+      some_method: -> "some method"
+    k = new Klass()
     (->
       mock ->
-        m.expects("my_method")
-    ).should.throw("'my_method' is an existing property; you can only mock functions")
-
+        k.expects("my_method")
+    ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
+      
+  it "throws an error if method_name does not already exist on an object that was not passed in by mock()", ->
+    o = new Object()
+    o.some_method = "some method"
+    (->
+      mock ->
+        o.expects("my_method")
+    ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
+      
   # TODO: expects() should throw an error, stubs() should not?
-  it "throws an error if method_name does not already exist in a class", ->
+  it "throws an error if method_name does not already exist on a class", ->
     class Klass
       # empty
     (->
       mock ->
         Klass.expects("my_method")
-    ).should.throw("'my_method' is not an existing method; you can only mock existing methods")
+    ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
 
-  it "adds method_name to class prototypes that already have a method method_name", ->
-    class Klass
-      my_method: -> "existing method"
-    mock ->
-      Klass.expects("my_method").returns("mocked method")
-      (new Klass()).my_method().should.equal("mocked method")
+  it "throws an error if method_name is already a property on an instance", ->
+    o = new Object()
+    o.my_method = "a property"
+    (->
+      mock ->
+        o.expects("my_method")
+    ).should.throw("'my_method' is an existing property; you can only mock functions")
 
   it "throws an error if method_name is already a property on a class", ->
     try
@@ -293,90 +397,3 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method").throws("another error")
         m.my_method()
     ).should.throw("my_method() is a duplicate expectation")
-
-
-describe "mock( function( mock1 [, mock2 ...] ) )", ->
-
-  it "Adds expects() to Object so that it is available on all objects", ->
-    mock ->
-      should.exist(Object.prototype.expects)
-
-  it "Removes expects() from Object after running the passed function", ->
-    mock ->
-      # empty
-    should.not.exist(Object.prototype.expects)
-
-  it "Removes expects() from Object when the passed function throws an exception", ->
-    try
-      mock ->
-        throw new Error("an error")
-    catch error
-      # ignore
-    should.not.exist(Object.prototype.expects)
-
-  it "does not eat exceptions thrown by the passed function", ->
-    (->
-      mock ->
-        throw new Error("an error")
-    ).should.throw("an error")
-
-  it "checks expectations for errors if the passed function did not throw an error", ->
-    (->
-      mock (m) ->
-        m.expects("my_method")
-    ).should.throw("'my_method()' was never called")
-
-  it "does not check expectations for errors if the passed function throws an error", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws(new Error("an error"))
-        m.my_method()
-    ).should.throw(/^an error$/)
-
-  it "passes pre-created convenience objects to the function argument", ->
-    mock (m1, m2) ->
-      m1.should.respondTo "expects"
-      m2.should.respondTo "expects"
-
-  it "reports all unmet expectations", ->
-    (->
-      mock (m1, m2) ->
-        m1.expects("my_method1").args(1,2,3)
-        m2.expects("my_method2")
-    ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
-
-  it "restores the original method on class prototypes", ->
-    original_method = -> "anything"
-    class Klass
-      my_method: original_method
-    mock ->
-      Klass.expects("my_method")
-      (new Klass()).my_method()       # otherwise we'll get a 'my_method not called' error
-    Klass.prototype.my_method.should.equal(original_method)
-
-  it "restores the original method on instances that had the original method", ->
-    original_method = -> "anything"
-    m = new Object()
-    m.my_method = original_method
-    mock ->
-      m.expects("my_method")
-      m.my_method()                   # otherwise we'll get a 'my_method not called' error
-    m.my_method.should.equal(original_method)
-
-  it "removes the mock method on instances that did not have an original method", ->
-    m = new Object()
-    mock ->
-      m.expects("my_method")
-      m.my_method()                   # otherwise we'll get a 'my_method not called' error
-    should.not.exist(m.my_method)
-
-  it "restores the orginal method when the same method has more than one expectation", ->
-    original_method = -> "anything"
-    m = new Object()
-    m.my_method = original_method
-    mock ->
-      m.expects("my_method").args(1)
-      m.expects("my_method").args(2)
-      m.my_method(1)                  # otherwise we'll get a 'my_method not called' error
-      m.my_method(2)
-    m.my_method.should.equal(original_method)

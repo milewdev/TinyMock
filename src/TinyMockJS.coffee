@@ -27,10 +27,18 @@ class MockFunction
   # private
 
   _build_convenience_mock_objects = ->
-    ( new Object() for i in [1..5] )
+    ( new Mock() for i in [1..5] )
 
   _run_test_function = (test_function, convenience_mocks) ->
     test_function.apply(undefined, convenience_mocks)
+    
+    
+#
+# Mock
+#
+class Mock
+  
+  # empty
 
 
 #
@@ -63,7 +71,8 @@ class ExpectsMethod
     _throw_expects_usage() unless method_name?
     _throw_reserved_word(method_name) if _is_reserved_word(method_name)
     _throw_pre_existing_property(method_name) if is_property_of_object(object, method_name)
-    _throw_not_an_existing_method(method_name) if is_class(object) and not is_method_in_prototype(object, method_name)
+    _throw_not_an_existing_method(method_name) if not is_mock_instance(object) and not is_class(object) and not is_method_of_object(object, method_name)
+    _throw_not_an_existing_method(method_name) if not is_mock_instance(object) and is_class(object) and not is_method_in_prototype(object, method_name)
 
   _is_reserved_word = (word) ->
     word in [ "expects", "args", "returns", "check" ]
@@ -81,7 +90,7 @@ class ExpectsMethod
     throw new Error( "'#{property_name}' is an existing property; you can only mock functions" )
   
   _throw_not_an_existing_method = (method_name) ->
-    throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on classes" )
+    throw new Error( "'#{method_name}' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()" )
 
 
 #
@@ -277,10 +286,18 @@ class Expectation
 # common
 #
 is_class = (object) ->
-   typeof object == 'function'
- 
+  typeof object == 'function'
+
+# TODO: needs a better function name
 is_method_in_prototype = (object, method_name) ->
-   object.prototype[ method_name ]?
+  object.prototype[ method_name ]?
+   
+# TODO: needs a better function name
+is_method_of_object = (object, method_name) ->
+  object[ method_name ]?
 
 is_property_of_object = (object, method_name) ->
   object[ method_name ]? and (typeof object[ method_name ]) != 'function'
+
+is_mock_instance = (object) ->
+  object.constructor.name == 'Mock'
