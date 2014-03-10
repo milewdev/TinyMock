@@ -101,6 +101,14 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       o.my_method(1)                  # otherwise we'll get a 'my_method not called' error
       o.my_method(2)
     o.my_method.should.equal(original_method)
+    
+  it "can be nested (cannot see the need, but just to verify that it will work)", ->
+    mock (m1) ->
+      mock (m2) ->
+        m1.expects("my_method1")
+        m2.expects("my_method2")
+        m1.my_method1()
+        m2.my_method2()
 
 
 describe "expects(method_name)", ->
