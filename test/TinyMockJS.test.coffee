@@ -61,6 +61,11 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       # empty
     should.not.exist(Object.prototype.expects)
 
+  it "Removes the expects method name that was passed as an option to mock()", ->
+    mock expects_method_name: "my_expects", ->
+      # empty
+    should.not.exist(Object.prototype.my_expects)    
+
   it "Removes expects() from Object when the passed function throws an exception", ->
     try
       mock ->

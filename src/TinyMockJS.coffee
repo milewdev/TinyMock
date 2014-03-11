@@ -82,12 +82,9 @@ class ExpectsMethod
     Object.prototype[ expects_method_name ] = (method_name) ->
       _check_expects_usage(@, expects_method_name, method_name)
       _create_expectation(@, method_name)
+    @uninstall_expects_method = -> delete Object.prototype[ expects_method_name ]
     # TODO: need to dynamically generate uninstall_expects_method so that it deletes the correct method; not sure where to hang it.
-    # TODO: need to dynamically generate 'expects' method so that it correctly does the _check_expects_usage.
     # TODO: can we convert AllExpectations to be non-singleton and hang it off of the mock() method?
-
-  @uninstall_expects_method: ->
-    delete Object.prototype.expects
   
   #
   # this functions gets installed to Object.prototype while
