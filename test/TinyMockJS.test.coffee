@@ -21,7 +21,37 @@ describe "test pre-conditions", ->
 
 
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
+  
+  it "throws an error if there are no arguments", ->
+    (->
+      mock()  # need parenthesis to coerce function call
+    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
 
+  it "throws an error if there are more than two arguments", ->
+    (->
+      mock 1, 2, 3
+    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+
+  it "throws an error if there is one argument and it is not a function", ->
+    (->
+      mock 1
+    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+
+  it "throws an error if there are two arguments and the first one is not an object", ->
+    (->
+      mock "expects", -> 0
+    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+
+  it "throws an error if there are two arguments and the second one is not a function", ->
+    (->
+      mock expects_method_name: "expects", 1
+    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    
+  it "throws an error if the options arguments has neither the expects_method_name nor the mock_count properties", ->
+    (->
+      mock a: "expects", b: 3, -> 0
+    ).should.throw("the options argument should have attributes expects_method_name or mock_count; found attributes: a, b")
+  
   it "Adds expects() to Object so that it is available on all objects", ->
     mock ->
       should.exist(Object.prototype.expects)
@@ -114,6 +144,14 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     mock (m1, m2) ->
       m1.expects("my_method").returns(m2)
       m1.my_method().should.equal(m2)
+      
+  it "allows a different expectation method name to be used instead of 'expects'", ->
+    class Klass
+      expects: -> "pre-existing expects() method"
+    k = new Klass()
+    mock expects_method_name: "my_expects", ->
+      k.my_expects("expects").returns("overridden expects() method")
+      k.expects().should.equal("overridden expects() method")
 
 
 describe "expects(method_name)", ->
@@ -212,6 +250,12 @@ describe "expects(method_name)", ->
       mock (m) ->
         m.expects("expects")
     ).should.throw("you cannot use my_mock.expects('expects'); 'expects' is a reserved method name")
+    
+  it "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
+    (->
+      mock expects_method_name: "my_expects", (m) ->
+        m.my_expects("my_expects")
+    ).should.throw("you cannot use my_mock.my_expects('my_expects'); 'my_expects' is a reserved method name")
 
 
 describe "args(value [, value ... ])", ->

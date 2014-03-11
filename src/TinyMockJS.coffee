@@ -12,9 +12,11 @@ class MockFunction
   #   my_mock.expects("my_method")
   #   ...
   #
-  PUBLISH.mock = (test_function) ->
+  PUBLISH.mock = (args...) ->
     try
-      ExpectsMethod.install_expects_method()
+      _check_mock_usage(args)
+      [ expects_method_name, mock_count, test_function ] = _parse_args(args)
+      ExpectsMethod.install_expects_method(expects_method_name)
       convenience_mocks = _build_convenience_mock_objects()
       _run_test_function(test_function, convenience_mocks)
       AllExpectations.verify_all_expectations()
@@ -24,12 +26,35 @@ class MockFunction
       AllExpectations.unregister_all_expectations()
 
   # private
+  
+  _check_mock_usage = (args) ->
+    _throw_usage() unless 1 <= args.length <= 2
+    _throw_usage() if args.length == 1 and not (typeof args[0] == 'function')
+    _throw_usage() if args.length == 2 and not (typeof args[0] == 'object')
+    _throw_usage() if args.length == 2 and not (typeof args[1] == 'function')
+    _throw_bad_options(args[0]) if args.length == 2 and not does_object_have_property(args[0], "expects_method_name") and not does_object_have_property(args[0], "mock_count")
+    
+  _parse_args = (args) ->
+    if args.length == 1
+      test_function = args[0]
+    else
+      expects_method_name = args[0]["expects_method_name"]
+      mock_count = args[0]["mock_count"]
+      test_function = args[1]
+    [ expects_method_name || "expects", mock_count || 5, test_function ]
 
   _build_convenience_mock_objects = ->
     ( new MockObject() for i in [1..5] )      # => [ mock, mock, ... ]
 
   _run_test_function = (test_function, convenience_mocks) ->
     test_function.apply(undefined, convenience_mocks)
+    
+  _throw_usage = ->
+    throw new Error("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    
+  _throw_bad_options = (options) ->
+    attributes = (key for key of options).join(", ")
+    throw new Error("the options argument should have attributes expects_method_name or mock_count; found attributes: #{attributes}")
     
     
 #
@@ -52,8 +77,14 @@ class MockObject
 #
 class ExpectsMethod
   
-  @install_expects_method: ->
-    Object.prototype.expects = expects
+  @install_expects_method: (expects_method_name) ->
+    # TODO: throw an exception if Object.prototype already has a method called expects_method_name
+    Object.prototype[ expects_method_name ] = (method_name) ->
+      _check_expects_usage(@, expects_method_name, method_name)
+      _create_expectation(@, method_name)
+    # TODO: need to dynamically generate uninstall_expects_method so that it deletes the correct method; not sure where to hang it.
+    # TODO: need to dynamically generate 'expects' method so that it correctly does the _check_expects_usage.
+    # TODO: can we convert AllExpectations to be non-singleton and hang it off of the mock() method?
 
   @uninstall_expects_method: ->
     delete Object.prototype.expects
@@ -65,15 +96,15 @@ class ExpectsMethod
   # mock(my_mock) ->
   #   my_mock.expects("my_method")
   #
-  expects = (method_name) ->
-    _check_expects_usage(@, method_name)
-    _create_expectation(@, method_name)
+  #expects = (method_name) ->
+  #  _check_expects_usage(@, method_name)
+  #  _create_expectation(@, method_name)
 
   # private
 
-  _check_expects_usage = (object, method_name) ->
+  _check_expects_usage = (object, expects_method_name, method_name) ->
     _throw_expects_usage() unless method_name?
-    _throw_reserved_word(method_name) if is_reserved_method_name(method_name)
+    _throw_reserved_method_name(method_name) if _is_reserved_method_name(expects_method_name, method_name)
     _throw_pre_existing_property(method_name) if does_object_have_property(object, method_name)
     _throw_not_an_existing_method(method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
     _throw_not_an_existing_method(method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
@@ -81,11 +112,14 @@ class ExpectsMethod
   _create_expectation = (object, method_name) ->
     new Expectation(object, method_name)
 
+  _is_reserved_method_name = (expects_method_name, method_name) ->
+    method_name == expects_method_name
+
   _throw_expects_usage = ->
     throw new Error( "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')" )
 
-  _throw_reserved_word = (reserved_word) ->
-    throw new Error( "you cannot use my_mock.expects('#{reserved_word}'); '#{reserved_word}' is a reserved method name" )
+  _throw_reserved_method_name = (reserved_method_name) ->
+    throw new Error( "you cannot use my_mock.#{reserved_method_name}('#{reserved_method_name}'); '#{reserved_method_name}' is a reserved method name" )
   
   _throw_pre_existing_property = (property_name) ->
     throw new Error( "'#{property_name}' is an existing property; you can only mock functions" )
@@ -298,6 +332,3 @@ does_object_have_property = (object, method_name) ->
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
-
-is_reserved_method_name = (word) ->
-  word == "expects"
