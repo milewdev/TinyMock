@@ -79,9 +79,13 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     mock (m) ->
       m.constructor.name.should.equal("MockObject")
       
-  it "passes 5 Mock objects to the function argument", ->
+  it "passes 5 mock objects to the function argument", ->
     mock (m...) ->
       m.length.should.equal(5)
+      
+  it "passes mock_count mock objects to the function argument when the mock_count option is used", ->
+    mock mock_count: 17, (m...) ->
+      m.length.should.equal(17)
 
   it "checks expectations for errors if the passed function did not throw an error", ->
     (->

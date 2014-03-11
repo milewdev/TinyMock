@@ -17,7 +17,7 @@ class MockFunction
       _check_mock_usage(args)
       [ expects_method_name, mock_count, test_function ] = _parse_args(args)
       ExpectsMethod.install_expects_method(expects_method_name)
-      convenience_mocks = _build_convenience_mock_objects()
+      convenience_mocks = _build_convenience_mock_objects(mock_count)
       _run_test_function(test_function, convenience_mocks)
       AllExpectations.verify_all_expectations()
     finally
@@ -43,8 +43,8 @@ class MockFunction
       test_function = args[1]
     [ expects_method_name || "expects", mock_count || 5, test_function ]
 
-  _build_convenience_mock_objects = ->
-    ( new MockObject() for i in [1..5] )      # => [ mock, mock, ... ]
+  _build_convenience_mock_objects = (mock_count)->
+    ( new MockObject() for i in [1..mock_count] )       # => [ mock, mock, ... ]
 
   _run_test_function = (test_function, convenience_mocks) ->
     test_function.apply(undefined, convenience_mocks)
