@@ -7,6 +7,9 @@ describe "test pre-conditions", ->
 
   it "Object does not have the property or method 'expects'", ->
     should.not.exist(Object.prototype.expects)
+    
+  it "Object does not have the property or method 'my_expects'", ->
+    should.not.exist(Object.prototype.my_expects)
 
   it "Object does not have the property or method 'my_method'", ->
     should.not.exist(Object.prototype.my_method)
@@ -55,6 +58,10 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
   it "Adds expects() to Object so that it is available on all objects", ->
     mock ->
       should.exist(Object.prototype.expects)
+      
+  it "Adds the expects method name that was passed as an option to mock()", ->
+    mock expects_method_name: "my_expects", ->
+      should.exist(Object.prototype.my_expects)
 
   it "Removes expects() from Object after running the passed function", ->
     mock ->
@@ -73,6 +80,14 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     catch error
       # ignore
     should.not.exist(Object.prototype.expects)
+    
+  it "Removes the expects method name that was passed as an option to mock() when the passed function throws an exception", ->
+    try
+      mock expects_method_name: "my_expects", ->
+        throw new Error("an error")
+    catch error
+      # ignore
+    should.not.exist(Object.prototype.my_expects)
 
   it "does not eat exceptions thrown by the passed function", ->
     (->
