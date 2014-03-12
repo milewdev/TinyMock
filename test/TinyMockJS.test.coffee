@@ -73,7 +73,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       # empty
     should.not.exist(Object.prototype.my_expects)    
 
-  it "Removes expects() from Object when the passed function throws an exception", ->
+  it "Removes expects() from Object when the passed function throws an error", ->
     try
       mock ->
         throw new Error("an error")
@@ -81,13 +81,33 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       # ignore
     should.not.exist(Object.prototype.expects)
     
-  it "Removes the expects method name that was passed as an option to mock() when the passed function throws an exception", ->
+  it "Removes the expects method name that was passed as an option to mock() when the passed function throws an error", ->
     try
       mock expects_method_name: "my_expects", ->
         throw new Error("an error")
     catch error
       # ignore
     should.not.exist(Object.prototype.my_expects)
+    
+  it "throws an error if expects() is already a method of Object", ->
+    try
+      Object.prototype.expects = -> "existing expects method"
+      (->
+        mock ->
+          # empty
+      ).should.throw("expects() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+    finally
+      delete Object.prototype.expects
+      
+  it "throws an error if the expects method name that was passed as an option to mock() is already a method of Object", ->
+    try
+      Object.prototype.my_expects = -> "existing my_expects method"
+      (->
+        mock expects_method_name: "my_expects", ->
+          # empty
+      ).should.throw("my_expects() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+    finally
+      delete Object.prototype.my_expects
 
   it "does not eat exceptions thrown by the passed function", ->
     (->
@@ -156,13 +176,23 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       o.my_method(2)
     o.my_method.should.equal(original_method)
     
-  it "can be nested (cannot see the need, but just to verify that it will work)", ->
-    mock (m1) ->
-      mock (m2) ->
-        m1.expects("my_method1")
-        m2.expects("my_method2")
-        m1.my_method1()
-        m2.my_method2()
+  it "cannot be nested without specifying expects_method_name (no reason to do this but we'll test it anyway)", ->
+    (->
+      mock (m1) ->
+        mock (m2) ->
+          # empty
+    ).should.throw("expects() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+    
+  it "can be nested if expects_method_name is specified (no reason to do this but we'll test it anyway)", ->
+    mock (m0) ->
+      mock expects_method_name: "my_expects1", (m1) ->
+        mock expects_method_name: "my_expects2", (m2) ->
+          m0.expects("my_method0")
+          m1.my_expects1("my_method1")
+          m2.my_expects2("my_method2")
+          m0.my_method0()
+          m1.my_method1()
+          m2.my_method2()
         
   it "allows one mock object to use another", ->
     mock (m1, m2) ->
@@ -446,7 +476,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.my_method(1,2,3)
     ).should.throw("my_method(1,2,3) is a duplicate expectation")
 
-  it "throws an exception when the same method returns the same values", ->
+  it "throws an error when the same method returns the same values", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(1)
@@ -454,7 +484,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.my_method()
     ).should.throw("my_method() is a duplicate expectation")
 
-  it "throws an exception when the same method returns different values", ->
+  it "throws an error when the same method returns different values", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(1)
@@ -462,7 +492,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.my_method()
     ).should.throw("my_method() is a duplicate expectation")
 
-  it "throws an exception when the same method throws the same values", ->
+  it "throws an error when the same method throws the same values", ->
     (->
       mock (m) ->
         m.expects("my_method").throws("an error")
@@ -470,7 +500,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.my_method()
     ).should.throw("my_method() is a duplicate expectation")
 
-  it "throws an exception when the same method throws different values", ->
+  it "throws an error when the same method throws different values", ->
     (->
       mock (m) ->
         m.expects("my_method").throws("an error")
