@@ -16,12 +16,12 @@ class MockFunction
     try
       _check_mock_usage(args)
       [ expects_method_name, mock_count, test_function ] = _parse_args(args)
-      ExpectsMethod.install_expects_method(expects_method_name)
+      expects_method = new ExpectsMethod(expects_method_name)
       convenience_mocks = _build_convenience_mock_objects(mock_count)
       _run_test_function(test_function, convenience_mocks)
       AllExpectations.verify_all_expectations()
     finally
-      ExpectsMethod.uninstall_expects_method()
+      expects_method.uninstall_expects_method() if expects_method?
       AllExpectations.uninstall_all_mocked_methods()
       AllExpectations.unregister_all_expectations()
 
@@ -73,31 +73,35 @@ class MockObject
 #
 # ExpectsMethod
 #
+#
+# Add comment: this functions gets installed to Object.prototype while
+# in the scope of the mock() function
+#
+# mock(my_mock) ->
+#   my_mock.expects("my_method")
+#
 # Note: this is better thought of as a mixin; comment further
 #
 class ExpectsMethod
   
-  @install_expects_method: (expects_method_name) ->
-    # TODO: throw an exception if Object.prototype already has a method called expects_method_name
+  constructor: (expects_method_name) ->
+    _check_constructor_usage(expects_method_name)
+    _install_expects_method(expects_method_name)
+    _install_uninstall_expects_method(@, expects_method_name)
+
+  # private
+  
+  _check_constructor_usage = (expects_method_name) ->
+    _throw_expects_method_already_exists(expects_method_name) unless not Object.prototype[ expects_method_name ]?
+    
+  _install_expects_method = (expects_method_name) ->
     Object.prototype[ expects_method_name ] = (method_name) ->
       _check_expects_usage(@, expects_method_name, method_name)
       _create_expectation(@, method_name)
-    @uninstall_expects_method = -> delete Object.prototype[ expects_method_name ]
-    # TODO: need to dynamically generate uninstall_expects_method so that it deletes the correct method; not sure where to hang it.
-    # TODO: can we convert AllExpectations to be non-singleton and hang it off of the mock() method?
-  
-  #
-  # this functions gets installed to Object.prototype while
-  # in the scope of the mock() function
-  #
-  # mock(my_mock) ->
-  #   my_mock.expects("my_method")
-  #
-  #expects = (method_name) ->
-  #  _check_expects_usage(@, method_name)
-  #  _create_expectation(@, method_name)
 
-  # private
+  # TODO: refactor (hideous name confusion re: expects_method, _install_uninstall_..., etc.)
+  _install_uninstall_expects_method = (expects_method, expects_method_name) ->
+    expects_method.uninstall_expects_method = -> delete Object.prototype[ expects_method_name ]    
 
   _check_expects_usage = (object, expects_method_name, method_name) ->
     _throw_expects_usage() unless method_name?
@@ -112,6 +116,9 @@ class ExpectsMethod
   _is_reserved_method_name = (expects_method_name, method_name) ->
     method_name == expects_method_name
 
+  _throw_expects_method_already_exists = (expects_method_name) ->
+    throw new Error("#{expects_method_name}() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+    
   _throw_expects_usage = ->
     throw new Error( "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')" )
 
