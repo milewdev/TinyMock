@@ -31,12 +31,19 @@ class MockFunction
   # private
   
   _check_mock_usage = (args) ->
-    fail(messages.MockUsage) unless 1 <= args.length <= 2
-    fail(messages.MockUsage) if args.length == 1 and (typeof args[0] isnt 'function')
-    fail(messages.MockUsage) if args.length == 2 and (typeof args[0] isnt 'object')
-    fail(messages.MockUsage) if args.length == 2 and (typeof args[1] isnt 'function')
-    fail(messages.MockBadOptions) if args.length == 2 and not does_object_have_property(args[0], "expects_method_name") and not does_object_have_property(args[0], "mock_count")
-    
+    switch args.length
+      when 1
+        fail(messages.MockUsage) if not is_function(args[0])
+      when 2
+        fail(messages.MockUsage) if not is_object(args[0])
+        fail(messages.MockBadOptions) if not _is_options(args[0])
+        fail(messages.MockUsage) if not is_function(args[1])
+      else
+        fail(messages.MockUsage)
+
+  _is_options = (object) ->
+    has_property(object, "expects_method_name") or has_property(object, "mock_count")
+      
   _parse_args = (args) ->
     if args.length == 1
       test_function = args[0]
@@ -102,7 +109,7 @@ class ExpectsMethod
   _check_expects_usage = (object, expects_method_name, method_name) ->
     fail(messages.ExpectsUsage) unless method_name?
     fail(messages.ExpectsReservedMethodName, method_name) if _is_reserved_method_name(expects_method_name, method_name)
-    fail(messages.PreExistingProperty, method_name) if does_object_have_property(object, method_name)
+    fail(messages.PreExistingProperty, method_name) if has_property(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
   
@@ -278,6 +285,12 @@ class Expectation
 
 is_class = (object) ->
   typeof object == 'function'
+  
+is_function = (object) ->
+  typeof object == 'function'
+  
+is_object = (object) ->
+  typeof object == 'object'
 
 does_prototype_have_method = (object, method_name) ->
   object.prototype[ method_name ]?
@@ -285,7 +298,7 @@ does_prototype_have_method = (object, method_name) ->
 does_object_have_method = (object, method_name) ->
   object[ method_name ]?
 
-does_object_have_property = (object, method_name) ->
+has_property = (object, method_name) ->
   object[ method_name ]? and (typeof object[ method_name ]) isnt 'function'
 
 is_mock_object = (object) ->
