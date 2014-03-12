@@ -133,7 +133,7 @@ class AllExpectations
   @register_expectation: (expectation) ->
     _expectations.push(expectation)
     
-  @find_expectation_that_matches: (object, method_name, args...) ->
+  @find_expectation: (object, method_name, args...) ->
     for expectation in _expectations when expectation.matches(object, method_name, args...)
       return expectation
     undefined
@@ -224,9 +224,9 @@ class Expectation
   
   _build_mocked_method = (method_name) ->
     (args...) ->
-      expectation = AllExpectations.find_expectation_that_matches(@, method_name, args...)
-      fail(messages.UnknownExpectation, method_name, args) unless expectation?
       AllExpectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
+      expectation = AllExpectations.find_expectation(@, method_name, args...)
+      fail(messages.UnknownExpectation, method_name, args) unless expectation?
       return expectation.invoke()
 
   _check_args_usage = (expectation, args...) ->
