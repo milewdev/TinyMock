@@ -32,9 +32,9 @@ class MockFunction
   
   _check_mock_usage = (args) ->
     fail(messages.MockUsage) unless 1 <= args.length <= 2
-    fail(messages.MockUsage) if args.length == 1 and not (typeof args[0] == 'function')
-    fail(messages.MockUsage) if args.length == 2 and not (typeof args[0] == 'object')
-    fail(messages.MockUsage) if args.length == 2 and not (typeof args[1] == 'function')
+    fail(messages.MockUsage) if args.length == 1 and (typeof args[0] isnt 'function')
+    fail(messages.MockUsage) if args.length == 2 and (typeof args[0] isnt 'object')
+    fail(messages.MockUsage) if args.length == 2 and (typeof args[1] isnt 'function')
     fail(messages.MockBadOptions) if args.length == 2 and not does_object_have_property(args[0], "expects_method_name") and not does_object_have_property(args[0], "mock_count")
     
   _parse_args = (args) ->
@@ -88,7 +88,7 @@ class ExpectsMethod
   # private
   
   _check_constructor_usage = (expects_method_name) ->
-    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) unless not Object.prototype[ expects_method_name ]?
+    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[ expects_method_name ]?
     
   _install_expects_method = (expects_method_name) ->
     Object.prototype[ expects_method_name ] = (method_name) ->
@@ -235,7 +235,7 @@ class Expectation
       ( @_args.every ( element, i ) -> element == args[ i ] )
 
   find_errors: ->
-    if not @_called then format(messages.ExpectationNeverCalled, @_method_name, @_args) else ""
+    if @_called then "" else format(messages.ExpectationNeverCalled, @_method_name, @_args)
 
   # private
 
@@ -286,7 +286,7 @@ does_object_have_method = (object, method_name) ->
   object[ method_name ]?
 
 does_object_have_property = (object, method_name) ->
-  object[ method_name ]? and (typeof object[ method_name ]) != 'function'
+  object[ method_name ]? and (typeof object[ method_name ]) isnt 'function'
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
@@ -295,7 +295,7 @@ fail = (message, args...) ->
   throw new Error(format(message, args...))
 
 #  
-# http://stackoverflow.com/questions/9880578/coffeescript-version-of-string-format-sprintf-etc-for-javascript-or-node-js
+# From http://stackoverflow.com/questions/9880578/coffeescript-version-of-string-format-sprintf-etc-for-javascript-or-node-js
 #
 format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
   message.replace /{(\d)+}/g, (match, i) ->
