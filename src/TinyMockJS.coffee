@@ -136,7 +136,7 @@ class AllExpectations
   @find_expectation: (object, method_name, args...) ->
     for expectation in _expectations when expectation.matches(object, method_name, args...)
       return expectation
-    undefined
+    fail(messages.UnknownExpectation, method_name, args)
 
   @check_for_duplicate_expectations: ->
     # TODO: use each with index and slice to avoid last element
@@ -225,9 +225,7 @@ class Expectation
   _build_mocked_method = (method_name) ->
     (args...) ->
       AllExpectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
-      expectation = AllExpectations.find_expectation(@, method_name, args...)
-      fail(messages.UnknownExpectation, method_name, args) unless expectation?
-      return expectation.invoke()
+      return AllExpectations.find_expectation(@, method_name, args...).invoke()
 
   _check_args_usage = (expectation, args...) ->
     fail(messages.ArgsUsage) if args.length == 0
