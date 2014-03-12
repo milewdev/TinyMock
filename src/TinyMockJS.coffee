@@ -202,11 +202,6 @@ class Expectation
     ( @_method_name == method_name ) and
       ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
-      
-  invoke: ->
-    @_called = yes
-    throw @_throws if @_throws?
-    @_returns
 
   find_errors: ->
     if @_called then "" else format(messages.ExpectationNeverCalled, @_method_name, @_args)
@@ -225,7 +220,12 @@ class Expectation
   _build_mocked_method = (method_name) ->
     (args...) ->
       AllExpectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
-      return AllExpectations.find_expectation(@, method_name, args...).invoke()
+      return _invoke( AllExpectations.find_expectation(@, method_name, args...) )
+      
+  _invoke = (expectation) ->
+    expectation._called = yes
+    throw expectation._throws if expectation._throws?
+    expectation._returns
 
   _check_args_usage = (expectation, args...) ->
     fail(messages.ArgsUsage) if args.length == 0
