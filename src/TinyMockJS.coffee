@@ -195,48 +195,24 @@ class Expectation
     _install_mock_method(@)
     AllExpectations.register_expectation(@)
 
-  #
-  # mock (mock) ->
-  #   my_mock.expects("my_method").args(1,2,3)
-  #   ...
-  #
   args: (args...) ->
     _check_args_usage(@, args...)
     _save_args(@, args)
     @
 
-  #
-  # mock (my_mock) ->
-  #   my_mock.expects("my_method").returns(42)
-  #   ...
-  #
   returns: (value) ->
     _check_returns_usage(@, value)
     _save_returns(@, value)
     @
 
-  #
-  # mock (my_mock) ->
-  #   my_mock.expects("my_method").throws(new Error("an error"))
-  #   ...
-  #
   throws: (error) ->
     _check_throws_usage(@, error)
     _save_throws(@, error)
     @
 
-  #
-  # Note: this method is similar to matches() but is used to
-  # find duplicate expectations.
-  #
   equals: (other) ->
     @matches(other._object, other._method_name, other._args...)
 
-  #
-  # Note: this method is similar to equals() but is used to
-  # search for a expectation with a given name and args.
-  #
-  # TODO: refactor: should @_args be undefined or []?
   matches: (object, method_name, args...) ->
     ( @_method_name == method_name ) and
       ( @_args.length == args.length ) and
