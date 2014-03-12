@@ -1,0 +1,19 @@
+{
+  "MockUsage": "you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...",
+  "MockBadOptions": "the options argument should have attributes expects_method_name or mock_count",
+  "ExpectsMethodAlreadyExists": "{0}() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...",
+  "ExpectsUsage": "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')",
+  "ExpectsReservedMethodName": "you cannot use my_mock.{0}('{0}'); '{0}' is a reserved method name",
+  "PreExistingProperty": "'{0}' is an existing property; you can only mock functions",
+  "NotAnExistingMethod": "'{0}' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()",
+  "DuplicateExpectation": "{0}({1}) is a duplicate expectation",
+  "UnknownExpectation": "{0}({1}) does not match any expectations",
+  "ArgsUsage": "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)",
+  "ArgsUsedMoreThanOnce": "you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation",
+  "ReturnsUsage": "you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)",
+  "ReturnsUsedMoreThanOnce": "you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation",
+  "ReturnsAndThrowsBothUsed": "you specified both returns() and throws() on the same expectation; use one or the other on an expectation",
+  "ThrowsUsage": "you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')",
+  "ThrowsUsedMoreThanOnce": "you specified throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); use it once per expectation",
+  "ExpectationNeverCalled": "'{0}({1})' was never called\n"
+}

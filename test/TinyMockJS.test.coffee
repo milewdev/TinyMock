@@ -53,7 +53,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
   it "throws an error if the options arguments has neither the expects_method_name nor the mock_count properties", ->
     (->
       mock a: "expects", b: 3, -> 0
-    ).should.throw("the options argument should have attributes expects_method_name or mock_count; found attributes: a, b")
+    ).should.throw("the options argument should have attributes expects_method_name or mock_count")
   
   it "Adds expects() to Object so that it is available on all objects", ->
     mock ->
