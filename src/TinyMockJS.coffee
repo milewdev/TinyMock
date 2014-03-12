@@ -45,12 +45,13 @@ class MockFunction
     has_property(object, "expects_method_name") or has_property(object, "mock_count")
       
   _parse_args = (args) ->
-    if args.length == 1
-      test_function = args[0]
-    else
-      expects_method_name = args[0]["expects_method_name"]
-      mock_count = args[0]["mock_count"]
-      test_function = args[1]
+    switch args.length
+      when 1
+        test_function = args[0]
+      when 2
+        expects_method_name = args[0]["expects_method_name"]
+        mock_count = args[0]["mock_count"]
+        test_function = args[1]
     [ expects_method_name || "expects", mock_count || 5, test_function ]
 
   _build_convenience_mock_objects = (mock_count)->
