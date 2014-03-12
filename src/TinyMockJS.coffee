@@ -32,9 +32,9 @@ class MockFunction
   
   _check_mock_usage = (args) ->
     fail(messages.MockUsage) unless 1 <= args.length <= 2
-    fail(messages.MockUsage) if args.length == 1 and not (typeof args[0] == 'function')
-    fail(messages.MockUsage) if args.length == 2 and not (typeof args[0] == 'object')
-    fail(messages.MockUsage) if args.length == 2 and not (typeof args[1] == 'function')
+    fail(messages.MockUsage) if args.length == 1 and (typeof args[0] isnt 'function')
+    fail(messages.MockUsage) if args.length == 2 and (typeof args[0] isnt 'object')
+    fail(messages.MockUsage) if args.length == 2 and (typeof args[1] isnt 'function')
     fail(messages.MockBadOptions) if args.length == 2 and not does_object_have_property(args[0], "expects_method_name") and not does_object_have_property(args[0], "mock_count")
     
   _parse_args = (args) ->
@@ -88,7 +88,7 @@ class ExpectsMethod
   # private
   
   _check_constructor_usage = (expects_method_name) ->
-    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) unless not Object.prototype[ expects_method_name ]?
+    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[ expects_method_name ]?
     
   _install_expects_method = (expects_method_name) ->
     Object.prototype[ expects_method_name ] = (method_name) ->
@@ -235,7 +235,7 @@ class Expectation
       ( @_args.every ( element, i ) -> element == args[ i ] )
 
   find_errors: ->
-    if not @_called then format(messages.ExpectationNeverCalled, @_method_name, @_args) else ""
+    if @_called then "" else format(messages.ExpectationNeverCalled, @_method_name, @_args)
 
   # private
 
