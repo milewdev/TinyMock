@@ -166,21 +166,6 @@ class AllExpectations
   
   
 #
-# MockedMethodBuilder
-#
-class MockedMethodBuilder
-  
-  @build_mocked_method: (method_name) ->
-    (args...) ->
-      expectation = AllExpectations.find_expectation_that_matches(@, method_name, args...)
-      fail(messages.UnknownExpectation, method_name, args) unless expectation?
-      AllExpectations.check_for_duplicate_expectations()
-      expectation._called = yes
-      throw expectation._throws if expectation._throws?
-      expectation._returns
-
-
-#
 # Expectation
 #
 class Expectation
@@ -217,11 +202,32 @@ class Expectation
     ( @_method_name == method_name ) and
       ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
+      
+  invoke: ->
+    @_called = yes
+    throw @_throws if @_throws?
+    @_returns
 
   find_errors: ->
     if @_called then "" else format(messages.ExpectationNeverCalled, @_method_name, @_args)
 
   # private
+
+  _install_mock_method = (expectation) ->
+    methods = if is_class(expectation._object) then expectation._object.prototype else expectation._object
+    original_method = methods[ expectation._method_name ]
+    methods[ expectation._method_name ] = _build_mocked_method(expectation._method_name)
+    if original_method?
+      expectation.uninstall_mocked_method = -> methods[ expectation._method_name ] = original_method
+    else
+      expectation.uninstall_mocked_method = -> delete methods[ expectation._method_name ]
+  
+  _build_mocked_method = (method_name) ->
+    (args...) ->
+      expectation = AllExpectations.find_expectation_that_matches(@, method_name, args...)
+      fail(messages.UnknownExpectation, method_name, args) unless expectation?
+      AllExpectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
+      return expectation.invoke()
 
   _check_args_usage = (expectation, args...) ->
     fail(messages.ArgsUsage) if args.length == 0
@@ -245,15 +251,6 @@ class Expectation
 
   _save_throws = (expectation, error) ->
     expectation._throws = error
-
-  _install_mock_method = (expectation) ->
-    methods = if is_class(expectation._object) then expectation._object.prototype else expectation._object
-    original_method = methods[ expectation._method_name ]
-    methods[ expectation._method_name ] = MockedMethodBuilder.build_mocked_method(expectation._method_name)
-    if original_method?
-      expectation.uninstall_mocked_method = -> methods[ expectation._method_name ] = original_method
-    else
-      expectation.uninstall_mocked_method = -> delete methods[ expectation._method_name ]
 
 
 #
