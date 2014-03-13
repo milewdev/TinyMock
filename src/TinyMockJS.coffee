@@ -19,14 +19,15 @@ class MockFunction
     try
       _check_mock_usage(args)
       [ expects_method_name, mock_count, test_function ] = _parse_args(args)
-      expects_method = new ExpectsMethod(expects_method_name)
+      all_expectations = new AllExpectations()    # TODO: use factory method instead of new (same for other classes)
+      expects_method = new ExpectsMethod(expects_method_name, all_expectations)
       convenience_mocks = _build_convenience_mock_objects(mock_count)
       _run_test_function(test_function, convenience_mocks)
-      AllExpectations.verify_all_expectations()
+      all_expectations.verify_all_expectations()
     finally
-      expects_method.uninstall_expects_method() if expects_method?  # TODO: the 'if' guard smells.
-      AllExpectations.uninstall_all_mocked_methods()
-      AllExpectations.unregister_all_expectations()
+      expects_method.uninstall_expects_method() if expects_method?  # TODO: the 'if' guard smells?
+      all_expectations.uninstall_all_mocked_methods() if all_expectations?
+      all_expectations.unregister_all_expectations() if all_expectations?
 
   # private
   
@@ -88,9 +89,9 @@ class MockObject
 #
 class ExpectsMethod
   
-  constructor: (expects_method_name) ->
+  constructor: (expects_method_name, all_expectations) ->
     _check_constructor_usage(expects_method_name)
-    _install_expects_method(expects_method_name)
+    _install_expects_method(expects_method_name, all_expectations)
     _install_uninstall_expects_method(@, expects_method_name)
 
   # private
@@ -98,10 +99,10 @@ class ExpectsMethod
   _check_constructor_usage = (expects_method_name) ->
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[ expects_method_name ]?
     
-  _install_expects_method = (expects_method_name) ->
+  _install_expects_method = (expects_method_name, all_expectations) ->
     Object.prototype[ expects_method_name ] = (method_name) ->
       _check_expects_usage(@, expects_method_name, method_name)
-      _create_expectation(@, method_name)
+      _create_expectation(@, method_name, all_expectations)
 
   # TODO: refactor (hideous name confusion re: expects_method, _install_uninstall_..., etc.)
   _install_uninstall_expects_method = (expects_method, expects_method_name) ->
@@ -114,8 +115,8 @@ class ExpectsMethod
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
   
-  _create_expectation = (object, method_name) ->
-    new Expectation(object, method_name)
+  _create_expectation = (object, method_name, all_expectations) ->
+    new Expectation(object, method_name, all_expectations)
 
   _is_reserved_method_name = (expects_method_name, method_name) ->
     method_name == expects_method_name
@@ -130,39 +131,40 @@ class ExpectsMethod
 #
 class AllExpectations
   
-  @register_expectation: (expectation) ->
-    _expectations.push(expectation)
+  constructor: ->
+    @_expectations = []
     
-  @find_expectation: (object, method_name, args...) ->
-    for expectation in _expectations when expectation.matches(object, method_name, args...)
+  register_expectation: (expectation) ->
+    @_expectations.push(expectation)
+    
+  find_expectation: (object, method_name, args...) ->
+    for expectation in @_expectations when expectation.matches(object, method_name, args...)
       return expectation
     fail(messages.UnknownExpectation, method_name, args)
 
-  @check_for_duplicate_expectations: ->
+  check_for_duplicate_expectations: ->
     # TODO: use each with index and slice to avoid last element
-    return if _expectations.length < 2
-    for outer in [0.._expectations.length-2]                     # given _expectations = [ a, b, c ]
-      for inner in [outer+1.._expectations.length-1]             # these loops produce the pairs (a,b), (a,c), (b,c)
-        if _expectations[outer].equals( _expectations[inner] )
-          fail(messages.DuplicateExpectation, _expectations[outer]._method_name, _expectations[outer]._args)
+    return if @_expectations.length < 2
+    for outer in [0..@_expectations.length-2]                     # given @_expectations = [ a, b, c ]
+      for inner in [outer+1..@_expectations.length-1]             # these loops produce the pairs (a,b), (a,c), (b,c)
+        if @_expectations[outer].equals( @_expectations[inner] )
+          fail(messages.DuplicateExpectation, @_expectations[outer]._method_name, @_expectations[outer]._args)
 
-  @verify_all_expectations: ->
-    errors = _find_all_errors()
+  verify_all_expectations: ->
+    errors = _find_all_errors(@_expectations)
     throw new Error(errors) unless errors == ""
 
   # TODO: write comment about uninstalling in reverse
-  @uninstall_all_mocked_methods: ->
-    expectation.uninstall_mocked_method() for expectation in _expectations by -1
+  uninstall_all_mocked_methods: ->
+    expectation.uninstall_mocked_method() for expectation in @_expectations by -1
     
-  @unregister_all_expectations: ->
-    _expectations.length = 0
-    
+  unregister_all_expectations: ->
+    @_expectations.length = 0
+
   # private
   
-  _expectations = []
-  
-  _find_all_errors = ->
-      ( expectation.find_errors() for expectation in _expectations ).join("")
+  _find_all_errors = (all_expectations) ->
+      ( expectation.find_errors() for expectation in all_expectations ).join("")
   
   
 #
@@ -170,15 +172,15 @@ class AllExpectations
 #
 class Expectation
 
-  constructor: (object, method_name) ->
+  constructor: (object, method_name, all_expectations) ->
     @_object = object
     @_method_name = method_name
     @_args = []
     @_returns = undefined
     @_throws = undefined
     @_called = no
-    _install_mock_method(@)
-    AllExpectations.register_expectation(@)
+    _install_mock_method(@, all_expectations)
+    all_expectations.register_expectation(@)
 
   args: (args...) ->
     _check_args_usage(@, args...)
@@ -208,19 +210,19 @@ class Expectation
 
   # private
 
-  _install_mock_method = (expectation) ->
+  _install_mock_method = (expectation, all_expectations) ->
     methods = if is_class(expectation._object) then expectation._object.prototype else expectation._object
     original_method = methods[ expectation._method_name ]
-    methods[ expectation._method_name ] = _build_mocked_method(expectation._method_name)
+    methods[ expectation._method_name ] = _build_mocked_method(expectation._method_name, all_expectations)
     if original_method?
       expectation.uninstall_mocked_method = -> methods[ expectation._method_name ] = original_method
     else
       expectation.uninstall_mocked_method = -> delete methods[ expectation._method_name ]
   
-  _build_mocked_method = (method_name) ->
+  _build_mocked_method = (method_name, all_expectations) ->
     (args...) ->
-      AllExpectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
-      return _invoke( AllExpectations.find_expectation(@, method_name, args...) )
+      all_expectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
+      _invoke( all_expectations.find_expectation(@, method_name, args...) )
       
   _invoke = (expectation) ->
     expectation._called = yes
