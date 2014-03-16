@@ -5,6 +5,16 @@
 ### TinyMockJS - A very small CoffeeScript mocking library
 
 
+### Development Installation
+```
+mkdir -p ~/work/TinyMockJS
+cd ~/work/TinyMockJS
+curl -fsSL https://raw.github.com/milewgit/TinyMockJS/v0.2.0/Vagrantfile -o Vagrantfile
+vagrant up --provider=vmware_fusion
+```
+<br>
+
+
 
 ### Overview
 TinyMockJS is a very small mocking library for use in CoffeeScript and JavaScript testing.  It was written as an exercise for learning CoffeeScript rather than as a complete mocking framework.
