@@ -1,5 +1,5 @@
 {
-  "name": "TinyMockJS",
+  "name": "TinyMock",
   "version": "0.2.0",
   "description": "tiny coffeescript/javascript mocking library",
   "private": true,
