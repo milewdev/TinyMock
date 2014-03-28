@@ -93,7 +93,7 @@ end
 
 def install_project(config, scc_url, vm_path)
   say config, "Installing project sources and dependencies"
-  run_script config, <<="EOF"
+  run_script config, <<-"EOF"
     git clone #{scc_url} #{vm_path}
     cd #{vm_path}
     npm install
@@ -103,11 +103,11 @@ end
 
 def install_project_docs(config, scc_url, vm_path)
   say config, "Installing project documentation sources and dependencies"
-  run_script config, <<="EOF"
+  run_script config, <<-"EOF"
     git clone #{scc_url} #{vm_path}
     cd #{vm_path}
     npm install
-    sudo gem install bunder
+    sudo gem install bundler
     sudo bundle install
   EOF
 end
