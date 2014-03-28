@@ -1,0 +1,10 @@
+quick_start
+src
+test
+_*
+.*
+Cakefile
+LESSONS
+*.tgz
+TODO
+Vagrantfile

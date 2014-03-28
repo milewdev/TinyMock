@@ -1,9 +1,9 @@
 {
   "name": "TinyMockJS",
   "version": "0.2.0",
-  "description": "tiny coffeescript/javascript mocking library",
+  "description": "tiny coffeescript mocking library",
   "private": true,
-  "main": "./src/TinyMockJS.js",
+  "main": "./lib/TinyMockJS.js",
   "scripts": {
     "test": "cake test",
     "prepublish": "cake build"
