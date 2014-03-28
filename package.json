@@ -4,6 +4,9 @@
   "description": "tiny coffeescript mocking library",
   "private": true,
   "main": "./lib/TinyMockJS.js",
+  "engines": {
+    "node": "*"
+  },
   "scripts": {
     "test": "cake test",
     "prepublish": "cake build"
