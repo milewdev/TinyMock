@@ -1,6 +1,8 @@
 VAGRANTFILE_API_VERSION   = "2"
-PROJECT_SOURCE_URL        = "https://github.com/milewgit/TinyMockJS.git"
+PROJECT_SCC_URL           = "https://github.com/milewgit/TinyMockJS.git"
 PROJECT_VM_PATH           = "/Users/vagrant/Documents/TinyMockJS"
+PROJECT_DOCS_SCC_URL      = "https://github.com/milewgit/TinyMockJS.doc.git"
+PROJECT_DOCS_VM_PATH      = "/Users/vagrant/Documents/TinyMockJS.doc"
 PROVIDER                  = :vmware_fusion
 BOX                       = "OSX109"
 
@@ -15,8 +17,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   install_git_gui                 config
   install_node                    config
   install_editor                  config
-  install_project_source_code     config, PROJECT_SOURCE_URL, PROJECT_VM_PATH
-  install_project_dependencies    config, PROJECT_VM_PATH
+  install_project                 config, PROJECT_SCC_URL, PROJECT_VM_PATH
+  install_project_docs            config, PROJECT_DOCS_SCC_URL, PROJECT_DOCS_VM_PATH
   reboot                          config
 end
 
@@ -89,15 +91,25 @@ def install_editor(config)
 end
 
 
-def install_project_source_code(config, project_source_url, project_vm_path)
-  say config, "Installing project source code"
-  run_script config, "git clone #{project_source_url} #{project_vm_path}"
+def install_project(config, scc_url, vm_path)
+  say config, "Installing project sources and dependencies"
+  run_script config, <<-"EOF"
+    git clone #{scc_url} #{vm_path}
+    cd #{vm_path}
+    npm install
+  EOF
 end
 
 
-def install_project_dependencies(config, project_vm_path)
-  say config, "Install project dependencies"
-  run_script config, "( cd #{project_vm_path} && exec npm install )"
+def install_project_docs(config, scc_url, vm_path)
+  say config, "Installing project documentation sources and dependencies"
+  run_script config, <<-"EOF"
+    git clone #{scc_url} #{vm_path}
+    cd #{vm_path}
+    npm install
+    sudo gem install bundler
+    sudo bundle install
+  EOF
 end
 
 
@@ -130,7 +142,7 @@ end
 
 
 def escape_shell_special_chars(string)
-  string.gsub(/([ ()])/, '\\\\\1')        # 'my product (v1)' => 'my\ product\ \(v1\)'
+  string.gsub(/([ ()])/, '\\\\\1')        # "my product (v1)" => "my\ product\ \(v1\)"
 end
 
 

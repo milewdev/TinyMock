@@ -17,3 +17,5 @@ Rename ./src to ./lib
 Use git: instead of https: in package.json
 Rename TinyMockJS to TinyMock
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.
+Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
+Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock-js
