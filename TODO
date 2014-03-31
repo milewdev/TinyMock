@@ -1,0 +1,2 @@
+- Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
+- Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock-js
