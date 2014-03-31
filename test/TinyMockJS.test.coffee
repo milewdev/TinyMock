@@ -49,6 +49,8 @@ describe "Mock.args( value [, value ...] )", ->
     (-> m.args(43) ).should.throw( ".args() must be called immediately after .expects()" )
     m.expects("my_method").throws("an error")
     (-> m.args(44) ).should.throw( ".args() must be called immediately after .expects()" )
+    
+  it "throws an error if called more than once"
 
   it "wraps strings with quotes in expection messages"
 
@@ -79,6 +81,8 @@ describe "Mock.returns(value)", ->
   it "throws an error if an error (exception) value has been previously set", ->
     m = (new Mock).expects("my_method").throws("an error")
     (-> m.returns(42) ).should.throw # anything
+    
+  it "throws an error if called more than once"
 
 
 
@@ -113,6 +117,8 @@ describe "Mock.throws(error)", ->
   it "throws an error if it was not called immediately after either .expects() or .args()", ->
     m = new Mock()
     (-> m.throws("an error") ).should.throw( ".throws() must be called immediately after .expects() or .args()" )
+    
+  it "throws an error if called more than once"
 
 
 
