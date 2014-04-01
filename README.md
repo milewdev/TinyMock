@@ -1,9 +1,9 @@
 ### What is TinyMockJS?
 A very small coffeescript mocking framework.
 
+
 ### Documentation
-  
-[Here](http://milewgit.github.io/TinyMockJS.doc/).
+[Here](http://milewgit.github.io/TinyMockJS.doc/) (documentation source is [here](https://github.com/milewgit/TinyMockJS.doc)).
 
 
 ### Development Setup
@@ -15,9 +15,7 @@ A very small coffeescript mocking framework.
 - [Vagrant VMware provider](https://www.vagrantup.com/vmware)
 - An OS X Vagrant box named OSX109 (you can use a different name by changing the BOX variable near the top of the Vagrantfile downloaded in the Install step below)
 
-
 #####Install:
-
 In a terminal window on the host machine:
 ```
 $ mkdir -p ~/work/TinyMockJS
@@ -28,7 +26,6 @@ $ vagrant up --provider=vmware_fusion
 ```
 
 #####Check installation:
-
 In a terminal window on the vm (guest machine):
 ```
 $ cd ~/Documents/TinyMockJS
@@ -36,8 +33,6 @@ $ ./_test
 
 > TinyMockJS@0.2.0 test /Users/vagrant/Documents/TinyMockJS
 > cake test
-
-
 
   test pre-conditions
     ✓ Object does not have the property or method 'expects' 
@@ -48,14 +43,11 @@ $ ./_test
     ✓ throws an error when the same method throws the same values 
     ✓ throws an error when the same method throws different values 
 
-
   74 passing (40ms)
   1 pending
 ```
 
-
 #####Uninstall:
-
 **WARNING**: This will completely destroy the vm so you likely want to ensure that you have 
 pushed any and all code changes to GitHub beforehand.
 
@@ -69,9 +61,8 @@ $ rm -r ~/work/TinyMockJS    # and possibly rm -r ~/work if it is now empty
 
 
 #####Development Notes:
-
 - ./_test will run all business/unit tests.  Leave a terminal window open during development and
-run _test as you make changes to code.
+run ./_test as you make changes to code.
 
 - ./_build will create TinyMockJS-0.2.0.tgz.  This file is checked into GitHub so that TinyMockJS
 can be installed using:
@@ -96,11 +87,10 @@ changes, vagrant up and then in a terminal window on the vm do something like:
 
 
 ### Thanks
-
 - [Apple](http://www.apple.com)
 - [CoffeeScript](http://coffeescript.org)
 - [GitHub](https://github.com) and [GitHub pages](http://pages.github.com)
-- [mocha](http://visionmedia.github.io/mocha) & [chai](http://chaijs.com)
+- [mocha](http://visionmedia.github.io/mocha) and [chai](http://chaijs.com)
 - [Node.js](http://nodejs.org)
 - [npm](https://www.npmjs.org)
 - [TextMate](http://macromates.com)
