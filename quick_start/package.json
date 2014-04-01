@@ -1,8 +1,0 @@
-{
-  "description": "TinyMockJS quick start",
-  "scripts": {
-    "test": "../node_modules/.bin/cake test"
-  },
-  "author": "Michael Lewandowski",
-  "license": "MIT"
-}
