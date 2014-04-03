@@ -218,7 +218,7 @@ describe "expects(method_name)", ->
         o.expects("my_method")
     ).should.throw("Object object has no method 'expects'")
   
-  it "adds method_name to mock objects passed in by mock()", ->
+  it "adds method_name to mock object instances passed in by mock()", ->
     mock (m) ->
       m.expects("my_method")
       (typeof m.my_method).should.equal('function')
@@ -234,7 +234,7 @@ describe "expects(method_name)", ->
       k.my_method.should.not.equal(existing_method)
       k.my_method()                 # otherwise we'll get a 'my_method not called' error
       
-  it "mocks method_name on objects that were not passed in by mock()", ->
+  it "mocks method_name on instances that were not passed in by mock()", ->
     existing_method = -> "existing method"
     o = new Object()
     o.my_method = existing_method
@@ -243,7 +243,7 @@ describe "expects(method_name)", ->
       o.my_method.should.not.equal(existing_method)
       o.my_method()                 # otherwise we'll get a 'my_method not called' error
       
-  it "throws an error if method_name does not already exist on an instance of a class that was not passed in by mock()", ->
+  it "throws an error if method_name does not already exist on an instance that was not passed in by mock()", ->
     class Klass
       some_method: -> "some method"
     k = new Klass()
@@ -252,7 +252,7 @@ describe "expects(method_name)", ->
         k.expects("my_method")
     ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
       
-  it "throws an error if method_name does not already exist on an object that was not passed in by mock()", ->
+  it "throws an error if method_name does not already exist on an instance that was not passed in by mock()", ->
     o = new Object()
     o.some_method = "some method"
     (->
