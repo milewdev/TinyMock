@@ -379,6 +379,14 @@ describe "returns(value)", ->
       mock (m) ->
         m.expects("my_method").returns(42).args(1,2,3)
     ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
+    
+  it "cannot be called more than once on the same signature", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(1)
+        m.expects("my_method").returns(2)
+        m.my_method()
+    ).should.throw("my_method() is a duplicate expectation")
 
 
 describe "throws(error)", ->
