@@ -243,7 +243,7 @@ describe "expects(method_name)", ->
       o.my_method.should.not.equal(existing_method)
       o.my_method()                 # otherwise we'll get a 'my_method not called' error
       
-  it "throws an error if method_name does not already exist on an instance that was not passed in by mock()", ->
+  it "throws an error if method_name does not already exist on an instance of a class that was not passed in by mock()", ->
     class Klass
       some_method: -> "some method"
     k = new Klass()
