@@ -210,6 +210,14 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
 
 describe "expects(method_name)", ->
   
+  it "throws an error if called on an object that does not inherit from Object", ->
+    o = Object.create(null)
+    o.my_method = -> "my method"
+    (->
+      mock ->
+        o.expects("my_method")
+    ).should.throw("Object object has no method 'expects'")
+  
   it "adds method_name to mock objects passed in by mock()", ->
     mock (m) ->
       m.expects("my_method")
