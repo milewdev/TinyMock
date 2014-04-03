@@ -10,6 +10,7 @@
   "UnknownExpectation": "{0}({1}) does not match any expectations",
   "ArgsUsage": "you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)",
   "ArgsUsedMoreThanOnce": "you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation",
+  "ArgsCalledAfterReturnsOrThrows": "you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()",
   "ReturnsUsage": "you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)",
   "ReturnsUsedMoreThanOnce": "you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation",
   "ReturnsAndThrowsBothUsed": "you specified both returns() and throws() on the same expectation; use one or the other on an expectation",

@@ -333,6 +333,18 @@ describe "args(value [, value ... ])", ->
       mock (m) ->
         m.expects("my_method").args(1,2,3).args("a","b","c")
     ).should.throw("you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation")
+    
+  it "throws an error if called after returns()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(42).args(1,2,3)
+    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
+  
+  it "throws an error if called after throws()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
+    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
 
   it "wraps strings with quotes in expection messages"
 
@@ -362,10 +374,11 @@ describe "returns(value)", ->
       m.expects("my_method").args(1,2,3).returns(42)
       m.my_method(1,2,3)
 
-  it "can be called before args() (but not good style)", ->
-    mock (m) ->
-      m.expects("my_method").returns(42).args(1,2,3)
-      m.my_method(1,2,3)
+  it "cannot be called before args()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(42).args(1,2,3)
+    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
 
 
 describe "throws(error)", ->
@@ -402,12 +415,12 @@ describe "throws(error)", ->
         m.my_method(1,2,3)
     ).should.throw("an error")
 
-  it "can be called before args() (but not good style)", ->
+  it "cannot be called before args()", ->
     (->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).args(1,2,3)
         m.my_method(1,2,3)
-    ).should.throw("an error")
+    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
 
 
 describe "my_method([ value [, value ... ] ])", ->
