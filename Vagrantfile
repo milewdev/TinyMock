@@ -1,35 +1,34 @@
-VAGRANTFILE_API_VERSION   = "2"
-PROJECT_SCC_URL           = "https://github.com/milewgit/TinyMockJS.git"
-PROJECT_VM_PATH           = "/Users/vagrant/Documents/TinyMockJS"
-PROJECT_DOCS_SCC_URL      = "https://github.com/milewgit/TinyMockJS.doc.git"
-PROJECT_DOCS_VM_PATH      = "/Users/vagrant/Documents/TinyMockJS.doc"
-PROVIDER                  = :vmware_fusion
-BOX                       = "OSX109"
+VM_NAME                           = "TinyMockJS.doc"
+VAGRANTFILE_API_VERSION           = "2"
+PROJECT_SCC_URL                   = "https://github.com/milewgit/TinyMockJS.git"
+PROJECT_VM_PATH                   = "/Users/vagrant/Documents/TinyMockJS"
+PROVIDER                          = "vmware_fusion"
+BOX                               = "OSX109"
 
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  select_box                      config, BOX
-  configure_provider              config, PROVIDER
-  setup_synced_folders            config
+  select_box                      config
+  configure_provider              config
+  setup_synced_folders            config  # easy way to copy gpg keys and git config from host to vm
   install_osx_command_line_tools  config  # needed by git
   install_gpg                     config  # needed in order to sign git commits
-  install_git                     config
-  install_git_gui                 config
+  install_git                     config  # source is on github
+  install_git_gui                 config  # sometimes gui diff is handy
   install_node                    config
   install_editor                  config
-  install_project                 config, PROJECT_SCC_URL, PROJECT_VM_PATH
-  install_project_docs            config, PROJECT_DOCS_SCC_URL, PROJECT_DOCS_VM_PATH
+  install_project                 config
   reboot                          config
 end
 
 
-def select_box(config, box)
-  config.vm.box = box
+def select_box(config)
+  config.vm.box = BOX
 end
 
 
-def configure_provider(config, vm)
-  config.vm.provider(vm) do |vb|
+def configure_provider(config)
+  config.vm.provider(PROVIDER) do |vb|
+    vb.name = VM_NAME
     vb.gui = true
   end
 end
@@ -91,24 +90,12 @@ def install_editor(config)
 end
 
 
-def install_project(config, scc_url, vm_path)
+def install_project(config)
   say config, "Installing project sources and dependencies"
   run_script config, <<-"EOF"
-    git clone #{scc_url} #{vm_path}
-    cd #{vm_path}
+    git clone #{PROJECT_SCC_URL} #{PROJECT_VM_PATH}
+    cd #{PROJECT_VM_PATH}
     npm install
-  EOF
-end
-
-
-def install_project_docs(config, scc_url, vm_path)
-  say config, "Installing project documentation sources and dependencies"
-  run_script config, <<-"EOF"
-    git clone #{scc_url} #{vm_path}
-    cd #{vm_path}
-    npm install
-    sudo gem install bundler
-    sudo bundle install
   EOF
 end
 
