@@ -312,13 +312,13 @@ describe "expects(method_name)", ->
     (->
       mock (m) ->
         m.expects("expects")
-    ).should.throw(format(messages.ExpectsReservedMethodName, "expects"))
+    ).should.throw(format(messages.ReservedMethodName, "expects"))
     
   it "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
     (->
       mock expects_method_name: "my_expects", (m) ->
         m.my_expects("my_expects")
-    ).should.throw(format(messages.ExpectsReservedMethodName, "my_expects"))
+    ).should.throw(format(messages.ReservedMethodName, "my_expects"))
 
 
 describe "args(value [, value ... ])", ->

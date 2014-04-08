@@ -111,7 +111,7 @@ class ExpectsMethod
 
   _check_expects_usage = (object, expects_method_name, method_name) ->
     fail(messages.ExpectsUsage) unless method_name?
-    fail(messages.ExpectsReservedMethodName, method_name) if _is_reserved_method_name(expects_method_name, method_name)
+    fail(messages.ReservedMethodName, method_name) if _is_reserved_method_name(expects_method_name, method_name)
     fail(messages.PreExistingProperty, method_name) if has_property(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
