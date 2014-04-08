@@ -339,13 +339,13 @@ describe "args(value [, value ... ])", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).args(1,2,3)
-    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
   
   it "throws an error if called after throws()", ->
     (->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).args(1,2,3)
-    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
 
   it "wraps strings with quotes in expection messages"
 
@@ -379,7 +379,7 @@ describe "returns(value)", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).args(1,2,3)
-    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
     
   it "cannot be called more than once on the same signature", ->
     (->
@@ -429,7 +429,7 @@ describe "throws(error)", ->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).args(1,2,3)
         m.my_method(1,2,3)
-    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
 
 
 # TODO: In error message names: Called, Used, or Specified: pick one

@@ -246,7 +246,7 @@ class Expectation
   _check_args_usage = (expectation, args...) ->
     fail(messages.ArgsUsage) if args.length == 0
     fail(messages.ArgsUsedMoreThanOnce) unless expectation._args.length == 0
-    fail(messages.ArgsCalledAfterReturnsOrThrows) if expectation._returns? or expectation._throws?
+    fail(messages.ArgsUsedAfterReturnsOrThrows) if expectation._returns? or expectation._throws?
 
   _check_returns_usage = (expectation, value) ->
     fail(messages.ReturnsUsage) unless value?
