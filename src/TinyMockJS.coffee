@@ -146,8 +146,8 @@ class AllExpectations
   check_for_duplicate_expectations: ->
     # TODO: use each with index and slice to avoid last element
     return if @_expectations.length < 2
-    for outer in [0..@_expectations.length-2]                     # given @_expectations = [ a, b, c ]
-      for inner in [outer+1..@_expectations.length-1]             # these loops produce the pairs (a,b), (a,c), (b,c)
+    for outer in [0..@_expectations.length-2]                     # given @_expectations = [ a, b, c ], these
+      for inner in [outer+1..@_expectations.length-1]             # loops produce the pairs (a,b), (a,c), (b,c)
         if @_expectations[outer].equals( @_expectations[inner] )
           fail(messages.DuplicateExpectation, @_expectations[outer]._method_name, @_expectations[outer]._args)
 
@@ -163,9 +163,22 @@ class AllExpectations
     @_expectations.length = 0
 
   # private
-  
-  _find_all_errors = (all_expectations) ->
-      ( expectation.find_errors() for expectation in all_expectations ).join("")
+
+  _find_all_errors = (all_expectations) ->    # returns "an error\nanother error\n...\n" or ""
+    errors = _flatten_array( expectation.find_errors() for expectation in all_expectations )
+    if errors.length > 0 then errors.join("\n") + "\n" else ""
+    
+  #
+  # [ [], [ "a" ], [ "b", "c" ] ]   => [ "a", "b", "c" ]
+  # [ [], [], [] ]                  => []
+  #
+  # Don't care about this scenario:
+  # [ [ [ "a" ] ], [ "b"] ]         => [ [ "a" ], "b" ]
+  #
+  # See: http://stackoverflow.com/a/10865042
+  #
+  _flatten_array = (array) ->
+    [].concat.apply([], array)
   
   
 #
@@ -207,7 +220,7 @@ class Expectation
       ( @_args.every ( element, i ) -> element == args[ i ] )
 
   find_errors: ->
-    if @_called then "" else format(messages.ExpectationNeverCalled, @_method_name, @_args)
+    if @_called then [] else [ format(messages.ExpectationNeverCalled, @_method_name, @_args) ]
 
   # private
 

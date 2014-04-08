@@ -1,6 +1,7 @@
-chai   = require("chai")
-should = chai.should()
-mock   = require("../src/TinyMockJS").mock
+chai      = require("chai")
+should    = chai.should()
+mock      = require("../src/TinyMockJS").mock
+messages  = require("../messages.en.json")
 
 
 describe "test pre-conditions", ->
@@ -28,32 +29,32 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
   it "throws an error if there are no arguments", ->
     (->
       mock()  # need parenthesis to coerce function call
-    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    ).should.throw(messages.MockUsage)
 
   it "throws an error if there are more than two arguments", ->
     (->
       mock 1, 2, 3
-    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    ).should.throw(messages.MockUsage)
 
   it "throws an error if there is one argument and it is not a function", ->
     (->
       mock 1
-    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    ).should.throw(messages.MockUsage)
 
   it "throws an error if there are two arguments and the first one is not an object", ->
     (->
       mock "expects", -> 0
-    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    ).should.throw(messages.MockUsage)
 
   it "throws an error if there are two arguments and the second one is not a function", ->
     (->
       mock expects_method_name: "expects", 1
-    ).should.throw("you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...")
+    ).should.throw(messages.MockUsage)
     
   it "throws an error if the options arguments has neither the expects_method_name nor the mock_count properties", ->
     (->
       mock a: "expects", b: 3, -> 0
-    ).should.throw("the options argument should have attributes expects_method_name and/or mock_count")
+    ).should.throw(messages.MockBadUsage)
   
   it "Adds expects() to Object so that it is available on all objects", ->
     mock ->
@@ -95,7 +96,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       (->
         mock ->
           # empty
-      ).should.throw("expects() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+      ).should.throw(format(messages.ExpectsMethodAlreadyExists, "expects"))
     finally
       delete Object.prototype.expects
       
@@ -105,7 +106,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       (->
         mock expects_method_name: "my_expects", ->
           # empty
-      ).should.throw("my_expects() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+      ).should.throw(format(messages.ExpectsMethodAlreadyExists, "my_expects"))
     finally
       delete Object.prototype.my_expects
 
@@ -131,7 +132,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     (->
       mock (m) ->
         m.expects("my_method")
-    ).should.throw("'my_method()' was never called")
+    ).should.throw(format(messages.ExpectationNeverCalled, "my_method", ""))
 
   it "does not check expectations for errors if the passed function throws an error", ->
     (->
@@ -145,7 +146,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       mock (m1, m2) ->
         m1.expects("my_method1").args(1,2,3)
         m2.expects("my_method2")
-    ).should.throw( "'my_method1(1,2,3)' was never called\n'my_method2()' was never called\n" )
+    ).should.throw("#{format(messages.ExpectationNeverCalled, 'my_method1', '1,2,3')}\n#{format(messages.ExpectationNeverCalled, 'my_method2', '')}\n")
 
   it "restores the original method on class prototypes", ->
     original_method = -> "anything"
@@ -181,7 +182,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       mock (m1) ->
         mock (m2) ->
           # empty
-    ).should.throw("expects() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...")
+    ).should.throw(format(messages.ExpectsMethodAlreadyExists, "expects"))
     
   it "can be nested if expects_method_name is specified (no reason to do this but we'll test it anyway)", ->
     mock (m0) ->
@@ -250,7 +251,7 @@ describe "expects(method_name)", ->
     (->
       mock ->
         k.expects("my_method")
-    ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
+    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
       
   it "throws an error if method_name does not already exist on an instance that was not passed in by mock()", ->
     o = new Object()
@@ -258,7 +259,7 @@ describe "expects(method_name)", ->
     (->
       mock ->
         o.expects("my_method")
-    ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
+    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
       
   # TODO: expects() should throw an error, stubs() should not?
   it "throws an error if method_name does not already exist on a class", ->
@@ -267,7 +268,7 @@ describe "expects(method_name)", ->
     (->
       mock ->
         Klass.expects("my_method")
-    ).should.throw("'my_method' is not an existing method; you can only mock existing methods on objects (or classes) not passed in by mock()")      
+    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
 
   it "throws an error if method_name is already a property on an instance", ->
     o = new Object()
@@ -275,7 +276,7 @@ describe "expects(method_name)", ->
     (->
       mock ->
         o.expects("my_method")
-    ).should.throw("'my_method' is an existing property; you can only mock functions")
+    ).should.throw(format(messages.PreExistingProperty, "my_method"))
 
   it "throws an error if method_name is already a property on a class", ->
     try
@@ -283,7 +284,7 @@ describe "expects(method_name)", ->
       (->
         mock ->
           Object.expects("my_method")
-      ).should.throw("'my_method' is an existing property; you can only mock functions")
+      ).should.throw(format(messages.PreExistingProperty, "my_method"))
     finally
       delete Object.prototype.my_method
 
@@ -305,19 +306,19 @@ describe "expects(method_name)", ->
     (->
       mock (m) ->
         m.expects()
-    ).should.throw("you need to supply a method name to expects(), e.g. my_mock.expects('my_method')")
+    ).should.throw(format(messages.ExpectsUsage, "my_method"))
 
   it "throws an error if method_name is the reserved name 'expects'", ->
     (->
       mock (m) ->
         m.expects("expects")
-    ).should.throw("you cannot use my_mock.expects('expects'); 'expects' is a reserved method name")
+    ).should.throw(format(messages.ExpectsReservedMethodName, "expects"))
     
   it "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
     (->
       mock expects_method_name: "my_expects", (m) ->
         m.my_expects("my_expects")
-    ).should.throw("you cannot use my_mock.my_expects('my_expects'); 'my_expects' is a reserved method name")
+    ).should.throw(format(messages.ExpectsReservedMethodName, "my_expects"))
 
 
 describe "args(value [, value ... ])", ->
@@ -326,25 +327,25 @@ describe "args(value [, value ... ])", ->
     (->
       mock (m) ->
         m.expects("my_method").args()
-    ).should.throw("you need to supply at least one argument to args(), e.g. my_mock.expects('my_method').args(42)")
+    ).should.throw(format(messages.ArgsUsage))
 
   it "throws an error if args() has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").args(1,2,3).args("a","b","c")
-    ).should.throw("you specified args() more than once, e.g. my_mock.expects('my_method').args(1).args(2); use it once per expectation")
+    ).should.throw(format(messages.ArgsUsedMoreThanOnce))
     
   it "throws an error if called after returns()", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).args(1,2,3)
-    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
+    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
   
   it "throws an error if called after throws()", ->
     (->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).args(1,2,3)
-    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
+    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
 
   it "wraps strings with quotes in expection messages"
 
@@ -355,19 +356,19 @@ describe "returns(value)", ->
     (->
       mock (m) ->
         m.expects("my_method").returns()
-    ).should.throw("you need to supply an argument to returns(), e.g. my_mock.expects('my_method').returns(123)")
+    ).should.throw(format(messages.ReturnsUsage))
 
   it "throws an error if returns() has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).returns("abc")
-    ).should.throw("you specified returns() more than once, e.g. my_mock.expects('my_method').returns(1).returns(2); use it once per expectation")
+    ).should.throw(format(messages.ReturnsUsedMoreThanOnce))
 
   it "throws an error if a throws error has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).returns(42)
-    ).should.throw("you specified both returns() and throws() on the same expectation; use one or the other on an expectation")
+    ).should.throw(format(messages.ReturnsAndThrowsBothUsed))
 
   it "can be called after args()", ->
     mock (m) ->
@@ -378,7 +379,7 @@ describe "returns(value)", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).args(1,2,3)
-    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
+    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
     
   it "cannot be called more than once on the same signature", ->
     (->
@@ -386,7 +387,7 @@ describe "returns(value)", ->
         m.expects("my_method").returns(1)
         m.expects("my_method").returns(2)
         m.my_method()
-    ).should.throw("my_method() is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
 
 describe "throws(error)", ->
@@ -395,19 +396,19 @@ describe "throws(error)", ->
     (->
       mock (m) ->
         m.expects("my_method").throws()
-    ).should.throw("you need to supply an argument to throws(), e.g. my_mock.expects('my_method').throws('an error')")
+    ).should.throw(format(messages.ThrowsUsage))
 
   it "throws an error if throws() has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").throws("an error").throws("another error")
-    ).should.throw("you specified throws() more than once, e.g. my_mock.expects('my_method').throws('something').throws('something else'); use it once per expectation")
+    ).should.throw(format(messages.ThrowsUsedMoreThanOnce))
 
   it "throws an error if a return value has already been specified", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(42).throws(new Error("an error"))
-    ).should.throw("you specified both returns() and throws() on the same expectation; use one or the other on an expectation")
+    ).should.throw(format(messages.ReturnsAndThrowsBothUsed))
 
   it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
     mock (m) ->
@@ -428,7 +429,10 @@ describe "throws(error)", ->
       mock (m) ->
         m.expects("my_method").throws(new Error("an error")).args(1,2,3)
         m.my_method(1,2,3)
-    ).should.throw("you called args() after returns() or throws(), e.g. my_mock.expects('my_method').returns(42).args(1); use it before returns() or throws()")
+    ).should.throw(format(messages.ArgsCalledAfterReturnsOrThrows))
+
+
+# TODO: In error message names: Called, Used, or Specified: pick one
 
 
 describe "my_method([ value [, value ... ] ])", ->
@@ -449,14 +453,14 @@ describe "my_method([ value [, value ... ] ])", ->
       mock (m) ->
         m.expects("my_method")
         m.my_method(1,2,3)
-    ).should.throw("my_method(1,2,3) does not match any expectations")
+    ).should.throw(format(messages.UnknownExpectation, "my_method", "1,2,3"))
 
   it "throws an error if the args do not match any expectations", ->
     (->
       mock (m) ->
         m.expects("my_method").args(1,2,3)
         m.my_method(4,5,6)
-    ).should.throw("my_method(4,5,6) does not match any expectations")
+    ).should.throw(format(messages.UnknownExpectation, "my_method", "4,5,6"))
 
   it "returns the value specified in a returns()", ->
     mock (m) ->
@@ -487,7 +491,7 @@ describe "my_method([ value [, value ... ] ])", ->
       mock (m) ->
         m.expects("my_method").args(1,2,3)
         m.my_method()
-    ).should.throw("my_method() does not match any expectations")
+    ).should.throw(format(messages.UnknownExpectation, "my_method", ""))
 
   it "throws an error if a method signature with no args is duplicated", ->
     (->
@@ -495,7 +499,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method")
         m.expects("my_method")
         m.my_method()
-    ).should.throw("my_method() is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
   it "throws an error if a method signature with args is duplicated", ->
     (->
@@ -503,7 +507,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method").args(1,2,3)
         m.expects("my_method").args(1,2,3)
         m.my_method(1,2,3)
-    ).should.throw("my_method(1,2,3) is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", "1,2,3"))
 
   it "throws an error when the same method returns the same values", ->
     (->
@@ -511,7 +515,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method").returns(1)
         m.expects("my_method").returns(1)
         m.my_method()
-    ).should.throw("my_method() is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
   it "throws an error when the same method returns different values", ->
     (->
@@ -519,7 +523,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method").returns(1)
         m.expects("my_method").returns(2)
         m.my_method()
-    ).should.throw("my_method() is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
   it "throws an error when the same method throws the same values", ->
     (->
@@ -527,7 +531,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method").throws("an error")
         m.expects("my_method").throws("an error")
         m.my_method()
-    ).should.throw("my_method() is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
   it "throws an error when the same method throws different values", ->
     (->
@@ -535,4 +539,12 @@ describe "my_method([ value [, value ... ] ])", ->
         m.expects("my_method").throws("an error")
         m.expects("my_method").throws("another error")
         m.my_method()
-    ).should.throw("my_method() is a duplicate expectation")
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
+
+
+# This is a duplicate of a function in TinyMockJS.coffee, but this
+# application is currently so small that it is not worth worrying 
+# about it.
+format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
+  message.replace /{(\d)+}/g, (match, i) ->
+    if typeof args[i] isnt 'undefined' then args[i] else match

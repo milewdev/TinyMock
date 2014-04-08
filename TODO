@@ -20,4 +20,5 @@ Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a 
 Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
 Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock-js
 Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
-Need to ensure that english version of messages are used in unit tests; better yet, load the messages and reference the messages by message name
+
+[done] Need to ensure that english version of messages are used in unit tests; better yet, load the messages and reference the messages by message name
