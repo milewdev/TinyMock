@@ -1,6 +1,6 @@
 {
   "MockUsage": "you need to pass either a function, or options and a function, to mock(), e.g. mock expects_method_name: 'exp', (m) -> m.expects('my_method') ...",
-  "MockBadOptions": "the options argument should have attributes expects_method_name or mock_count",
+  "MockBadOptions": "the options argument should have attributes expects_method_name and/or mock_count",
   "ExpectsMethodAlreadyExists": "{0}() is already a method of Object; try doing something like: mock expects_method_name: 'expects2', -> ...",
   "ExpectsUsage": "you need to supply a method name to expects(), e.g. my_mock.expects('my_method')",
   "ExpectsReservedMethodName": "you cannot use my_mock.{0}('{0}'); '{0}' is a reserved method name",

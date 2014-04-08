@@ -38,12 +38,12 @@ class MockFunction
         fail(messages.MockUsage) if not is_function(args[0])
       when 2
         fail(messages.MockUsage) if not is_object(args[0])
-        fail(messages.MockBadOptions) if not _is_options(args[0])
+        fail(messages.MockBadOptions) if not _has_expected_options(args[0])
         fail(messages.MockUsage) if not is_function(args[1])
       else
         fail(messages.MockUsage)
 
-  _is_options = (object) ->
+  _has_expected_options = (object) ->
     has_property(object, "expects_method_name") or has_property(object, "mock_count")
       
   _parse_args = (args) ->
