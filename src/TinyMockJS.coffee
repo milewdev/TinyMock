@@ -19,8 +19,9 @@ class MockFunction
     try
       _check_mock_usage(args)
       [ expects_method_name, mock_count, test_function ] = _parse_args(args)
+      # TODO: what is 'all_expectations'?  Why is it being created here?  What purpose does it server?  Need a better name.
       all_expectations = new AllExpectations()    # TODO: use factory method instead of new (same for other classes)
-      expects_method = new ExpectsMethod(expects_method_name, all_expectations)
+      expects_method = new ExpectsMethod(expects_method_name, all_expectations)   # TODO: expects_method/ExpectsMethod is a poor name
       convenience_mocks = _build_convenience_mock_objects(mock_count)
       _run_test_function(test_function, convenience_mocks)
       all_expectations.verify_all_expectations()
