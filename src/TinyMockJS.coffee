@@ -17,7 +17,7 @@ class MockFunction
   #
   PUBLISH.mock = (args...) ->
     try
-      _check_mock_usage(args)
+      _check_usage(args)
       [ expects_method_name, mock_count, test_function ] = _parse_args(args)
       # TODO: what is 'all_expectations'?  Why is it being created here?  What purpose does it server?  Need a better name.
       all_expectations = new AllExpectations()    # TODO: use factory method instead of new (same for other classes)
@@ -32,7 +32,7 @@ class MockFunction
 
   # private
   
-  _check_mock_usage = (args) ->
+  _check_usage = (args) ->
     switch args.length
       when 1
         fail(messages.MockUsage) if not is_function(args[0])
