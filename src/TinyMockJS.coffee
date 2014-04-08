@@ -273,8 +273,8 @@ does_prototype_have_method = (object, method_name) ->
 does_object_have_method = (object, method_name) ->
   object[ method_name ]?
 
-has_property = (object, method_name) ->
-  object[ method_name ]? and (typeof object[ method_name ]) isnt 'function'
+has_property = (object, property_name) ->
+  object[ property_name ]? and (typeof object[ property_name ]) isnt 'function'
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
