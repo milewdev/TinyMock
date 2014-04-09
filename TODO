@@ -1,7 +1,7 @@
+Use either the word 'exception' or the word 'error' (pick one and be consistent).
 Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
 Check the ordering of the unit tests - are they listed logically?
 Check that spacing around '(' and ')' is consistent.
-Use either the word 'exception' or the word 'error' (pick one and be consistent).
 Extract all test descriptions and make sure they are consistent.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.

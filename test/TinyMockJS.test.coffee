@@ -6,7 +6,7 @@ messages  = require("../messages.en.json")
 
 describe "test pre-conditions", ->
 
-  describe "class Object"
+  describe "class Object", ->
     
     it "does not have the property or method 'expects'", ->
       Object.should.not.respondTo("expects")
@@ -17,13 +17,13 @@ describe "test pre-conditions", ->
     it "does not have the property or method 'my_method'", ->
       Object.should.not.respondTo("my_method")
 
-  describe "instances of Object"
+  describe "instances of Object", ->
   
     it "do not have the property or method 'my_method'", ->
       o = new Object()
       o.should.not.respondTo("my_method")
 
-  describe "mock()"
+  describe "mock()", ->
 
     it "passes in objects that do not have the property or method 'my_method'", ->
       mock (m) ->
@@ -116,7 +116,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     finally
       delete Object.prototype.my_expects
 
-  it "does not eat exceptions thrown by the passed function", ->
+  it "does not eat errors thrown by the passed function", ->
     (->
       mock ->
         throw new Error("an error")

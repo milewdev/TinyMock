@@ -19,5 +19,8 @@ egrep -rin '^[ ]+[a-z][a-z_]*[ ]*=.*->' src/*.coffee
 echo 'Check for capitalization in test descriptions ...'
 egrep -rn $'(describe|it)[ ]+[\'"][A-Z]' test/*.coffee
 
-echo 'Check for non-http protocols on urls in package.json ...'
+echo 'Check for non-https protocols on urls in package.json ...'
 egrep $'[\'"]url[\'"][ ]*:' package.json | egrep -v 'https:'
+
+echo 'Check for occurrences of 'exception' (should use 'error' instead) ...'
+egrep -rin 'exception' src/*.coffee test/*.coffee
