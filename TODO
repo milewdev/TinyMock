@@ -1,24 +1,23 @@
-Ensure that we use should.respondTo in unit tests to check for existence of methods on an object.
 Check the ordering of the unit tests - are they listed logically?
 Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
 Check that spacing around '(' and ')' is consistent.
 Ensure that all 'private' attributes have a leading underscore (e.g. _name).
 Ensure that all 'throws' statements throw Error's, not Strings, etc.
-Use either the word 'exception' or the work 'error' (pick one and be consistent).
+Use either the word 'exception' or the word 'error' (pick one and be consistent).
 Extract all test descriptions and make sure they are consistent.
 Remove 'expectations' attribute from mocked objects.
 Ensure that all test descriptions are sentence parts, not capitalized sentences.
-Write a test for mock-within-mock.
-Add mock() parameters: name of 'expects' method, number of convenience mock objects to create.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
-Extract messages (e.g. error messages) into a separate JSON (?) file.
-Rename ./src to ./lib
 Use git: instead of https: in package.json
-Rename TinyMockJS to TinyMock
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.
 Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
-Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock-js
+Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
 
 [done] Need to ensure that english version of messages are used in unit tests; better yet, load the messages and reference the messages by message name
 [done] Extract all error messages and make sure they are consistent.
+[done] Write a test for mock-within-mock.
+[done] Add mock() parameters: name of 'expects' method, number of convenience mock objects to create.
+[done] Extract messages (e.g. error messages) into a separate JSON (?) file.
+[n/a - *.coffee goes in ./src, generated *.js goes in ./lib] Rename ./src to ./lib
+[done] Ensure that we use should.respondTo in unit tests to check for existence of methods on an object.

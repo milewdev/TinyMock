@@ -7,21 +7,21 @@ messages  = require("../messages.en.json")
 describe "test pre-conditions", ->
 
   it "Object does not have the property or method 'expects'", ->
-    should.not.exist(Object.prototype.expects)
+    Object.should.not.respondTo("expects")
     
   it "Object does not have the property or method 'my_expects'", ->
-    should.not.exist(Object.prototype.my_expects)
+    Object.should.not.respondTo("my_expects")
 
   it "Object does not have the property or method 'my_method'", ->
-    should.not.exist(Object.prototype.my_method)
+    Object.should.not.respondTo("my_method")
 
   it "instances of Object do not have the property or method 'my_method'", ->
     o = new Object()
-    should.not.exist(o.my_method)
+    o.should.not.respondTo("my_method")
 
   it "mock() passes in objects that do not have the property or method 'my_method'", ->
     mock (m) ->
-      should.not.exist(m.my_method)
+      m.should.not.respondTo("my_method")
 
 
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
@@ -58,21 +58,21 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
   
   it "Adds expects() to Object so that it is available on all objects", ->
     mock ->
-      should.exist(Object.prototype.expects)
+      Object.should.respondTo("expects")
       
   it "Adds the expects method name that was passed as an option to mock()", ->
     mock expects_method_name: "my_expects", ->
-      should.exist(Object.prototype.my_expects)
+      Object.should.respondTo("my_expects")
 
   it "Removes expects() from Object after running the passed function", ->
     mock ->
       # empty
-    should.not.exist(Object.prototype.expects)
+    Object.should.not.respondTo("expects")
 
   it "Removes the expects method name that was passed as an option to mock()", ->
     mock expects_method_name: "my_expects", ->
       # empty
-    should.not.exist(Object.prototype.my_expects)    
+    Object.should.not.respondTo("my_expects")
 
   it "Removes expects() from Object when the passed function throws an error", ->
     try
@@ -80,7 +80,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         throw new Error("an error")
     catch error
       # ignore
-    should.not.exist(Object.prototype.expects)
+    Object.should.not.respondTo("expects")
     
   it "Removes the expects method name that was passed as an option to mock() when the passed function throws an error", ->
     try
@@ -88,7 +88,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
         throw new Error("an error")
     catch error
       # ignore
-    should.not.exist(Object.prototype.my_expects)
+    Object.should.not.respondTo("my_expects")
     
   it "throws an error if expects() is already a method of Object", ->
     try
