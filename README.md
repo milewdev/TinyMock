@@ -70,6 +70,11 @@ can be installed using:
 	$ npm install https://github.com/milewgit/TinyMockJS/raw/v0.2.0/TinyMockJS-0.2.0.tgz
 	```
   
+- ./_lint will run various checks against the source code, typically looking for things that cropped
+up in the TODO list, such as a change in naming convention; in this case, the checks will ensure that 
+the old names are not used anywhere.  Warning: the checks are not sophisticated and may report things
+that are in fact not erroneous.
+
 - If you wish to modify the Vagrantfile, it is best to do so on the host machine (~/work/TinyMockJS/Vagrantfile) 
 so that you can easily do an edit/vagrant up/vagrant destroy cycle.  Once you have finished making 
 changes, vagrant up and then in a terminal window on the vm do something like:

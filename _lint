@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+#
+# Performs checks of various things, typically TODO items.  For example, the 
+# phrase 'method signature' was originally used in the code but was replaced 
+# with 'expectation' as understanding of the problem space improved.  Below 
+# is a check using grep to find and report all occurrences of 'signature' in 
+# source and test code.
+#
+# Warning: the checks are not sophisticated.
+#
+
+echo 'Check for occurrences of 'signature' (should use 'expectation' instead) ...'
+egrep -rin 'signature' src/*.coffee test/*.coffee
+
+echo 'Check for private functions not beginning with underscore (_) ...'
+egrep -rin '^[ ]+[a-z][a-z_]*[ ]*=.*->' src/*.coffee
+
+echo 'Check for capitalization in test descriptions ...'
+egrep -rn $'(describe|it)[ ]+[\'"][A-Z]' test/*.coffee

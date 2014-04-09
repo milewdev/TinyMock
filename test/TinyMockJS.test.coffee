@@ -6,22 +6,28 @@ messages  = require("../messages.en.json")
 
 describe "test pre-conditions", ->
 
-  it "Object does not have the property or method 'expects'", ->
-    Object.should.not.respondTo("expects")
+  describe "class Object"
     
-  it "Object does not have the property or method 'my_expects'", ->
-    Object.should.not.respondTo("my_expects")
+    it "does not have the property or method 'expects'", ->
+      Object.should.not.respondTo("expects")
+    
+    it "does not have the property or method 'my_expects'", ->
+      Object.should.not.respondTo("my_expects")
 
-  it "Object does not have the property or method 'my_method'", ->
-    Object.should.not.respondTo("my_method")
+    it "does not have the property or method 'my_method'", ->
+      Object.should.not.respondTo("my_method")
 
-  it "instances of Object do not have the property or method 'my_method'", ->
-    o = new Object()
-    o.should.not.respondTo("my_method")
+  describe "instances of Object"
+  
+    it "do not have the property or method 'my_method'", ->
+      o = new Object()
+      o.should.not.respondTo("my_method")
 
-  it "mock() passes in objects that do not have the property or method 'my_method'", ->
-    mock (m) ->
-      m.should.not.respondTo("my_method")
+  describe "mock()"
+
+    it "passes in objects that do not have the property or method 'my_method'", ->
+      mock (m) ->
+        m.should.not.respondTo("my_method")
 
 
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
@@ -56,25 +62,25 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       mock a: "expects", b: 3, -> 0
     ).should.throw(messages.MockBadUsage)
   
-  it "Adds expects() to Object so that it is available on all objects", ->
+  it "adds expects() to Object so that it is available on all objects", ->
     mock ->
       Object.should.respondTo("expects")
       
-  it "Adds the expects method name that was passed as an option to mock()", ->
+  it "adds the expects method name that was passed as an option to mock()", ->
     mock expects_method_name: "my_expects", ->
       Object.should.respondTo("my_expects")
 
-  it "Removes expects() from Object after running the passed function", ->
+  it "removes expects() from Object after running the passed function", ->
     mock ->
       # empty
     Object.should.not.respondTo("expects")
 
-  it "Removes the expects method name that was passed as an option to mock()", ->
+  it "removes the expects method name that was passed as an option to mock()", ->
     mock expects_method_name: "my_expects", ->
       # empty
     Object.should.not.respondTo("my_expects")
 
-  it "Removes expects() from Object when the passed function throws an error", ->
+  it "removes expects() from Object when the passed function throws an error", ->
     try
       mock ->
         throw new Error("an error")
@@ -82,7 +88,7 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
       # ignore
     Object.should.not.respondTo("expects")
     
-  it "Removes the expects method name that was passed as an option to mock() when the passed function throws an error", ->
+  it "removes the expects method name that was passed as an option to mock() when the passed function throws an error", ->
     try
       mock expects_method_name: "my_expects", ->
         throw new Error("an error")

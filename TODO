@@ -1,14 +1,11 @@
+Use git: instead of https: in package.json
+Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
 Check the ordering of the unit tests - are they listed logically?
 Check that spacing around '(' and ')' is consistent.
-Ensure that all 'private' attributes have a leading underscore (e.g. _name).
 Use either the word 'exception' or the word 'error' (pick one and be consistent).
 Extract all test descriptions and make sure they are consistent.
-Remove 'expectations' attribute from mocked objects.
-Ensure that all test descriptions are sentence parts, not capitalized sentences.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
-Use git: instead of https: in package.json
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.
-Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
 Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
 
@@ -19,5 +16,8 @@ Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and th
 [done] Extract messages (e.g. error messages) into a separate JSON (?) file.
 [n/a - *.coffee goes in ./src, generated *.js goes in ./lib] Rename ./src to ./lib
 [done] Ensure that we use should.respondTo in unit tests to check for existence of methods on an object.
-[done] Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
 [done] Ensure that all 'throws' statements throw Error's, not Strings, etc.
+[done - now using an internal list of all expectations] Remove 'expectations' attribute from mocked objects.
+[done] Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
+[done] Ensure that all 'private' attributes have a leading underscore (e.g. _name).
+[done] Ensure that all test descriptions are sentence parts, not capitalized sentences.
