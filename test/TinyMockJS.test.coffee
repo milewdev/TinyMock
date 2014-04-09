@@ -381,7 +381,7 @@ describe "returns(value)", ->
         m.expects("my_method").returns(42).args(1,2,3)
     ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
     
-  it "cannot be called more than once on the same signature", ->
+  it "cannot be called more than once on the same expectation", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(1)
@@ -410,7 +410,7 @@ describe "throws(error)", ->
         m.expects("my_method").returns(42).throws(new Error("an error"))
     ).should.throw(format(messages.ReturnsAndThrowsBothUsed))
 
-  it "does not throw an error if a return value has been previously set on the same method with a different signature", ->
+  it "does not throw an error if a return value has been previously set on the same method with a different expectation", ->
     mock (m) ->
       m.expects("my_method").args(1,2,3).returns(42)
       m.expects("my_method").args(4,5,6).throws(new Error("an error"))
@@ -493,7 +493,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.my_method()
     ).should.throw(format(messages.UnknownExpectation, "my_method", ""))
 
-  it "throws an error if a method signature with no args is duplicated", ->
+  it "throws an error if an expectation with no args is duplicated", ->
     (->
       mock (m) ->
         m.expects("my_method")
@@ -501,7 +501,7 @@ describe "my_method([ value [, value ... ] ])", ->
         m.my_method()
     ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
-  it "throws an error if a method signature with args is duplicated", ->
+  it "throws an error if an expectation with args is duplicated", ->
     (->
       mock (m) ->
         m.expects("my_method").args(1,2,3)
