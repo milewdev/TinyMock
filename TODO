@@ -1,7 +1,6 @@
 Check the ordering of the unit tests - are they listed logically?
 Check that spacing around '(' and ')' is consistent.
 Ensure that all 'private' attributes have a leading underscore (e.g. _name).
-Ensure that all 'throws' statements throw Error's, not Strings, etc.
 Use either the word 'exception' or the word 'error' (pick one and be consistent).
 Extract all test descriptions and make sure they are consistent.
 Remove 'expectations' attribute from mocked objects.
@@ -21,3 +20,4 @@ Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and th
 [n/a - *.coffee goes in ./src, generated *.js goes in ./lib] Rename ./src to ./lib
 [done] Ensure that we use should.respondTo in unit tests to check for existence of methods on an object.
 [done] Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
+[done] Ensure that all 'throws' statements throw Error's, not Strings, etc.

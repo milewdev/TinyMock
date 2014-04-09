@@ -153,7 +153,7 @@ class AllExpectations
 
   verify_all_expectations: ->
     errors = _find_all_errors(@_expectations)
-    throw new Error(errors) unless errors == ""
+    fail(errors) unless errors == ""
 
   # TODO: write comment about uninstalling in reverse
   uninstall_all_mocked_methods: ->
