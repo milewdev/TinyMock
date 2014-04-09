@@ -1,4 +1,3 @@
-Use git: instead of https: in package.json
 Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
 Check the ordering of the unit tests - are they listed logically?
 Check that spacing around '(' and ')' is consistent.
@@ -21,3 +20,4 @@ Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and th
 [done] Search for 'signature' in code and tests and replace with 'expectation' as appropriate.
 [done] Ensure that all 'private' attributes have a leading underscore (e.g. _name).
 [done] Ensure that all test descriptions are sentence parts, not capitalized sentences.
+[n/a - see: http://git-scm.com/book/en/Git-on-the-Server-The-Protocols] Use git: instead of https: in package.json
