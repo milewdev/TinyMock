@@ -1,6 +1,6 @@
 chai      = require("chai")
 should    = chai.should()
-mock      = require("../src/TinyMockJS").mock
+mock      = require("../src/TinyMockJS")
 messages  = require("../messages.en.json")
 
 
@@ -10,6 +10,7 @@ describe "test pre-conditions", ->
     
     it "does not have the property or method 'expects'", ->
       Object.should.not.respondTo("expects")
+      # Object.should.not.have.property("expects")
     
     it "does not have the property or method 'my_expects'", ->
       Object.should.not.respondTo("my_expects")

@@ -1,7 +1,14 @@
-# TODO: or is it: publish = exports ? this (http://stackoverflow.com/questions/4214731/coffeescript-global-variables/4215132#4215132)
-PUBLISH = exports ? window
-
-
+#
+# TODO:
+#
+#   mock = require("TinyMockJS").language("en")
+#
+# same as:
+#
+#   mock = require("TinyMockJS")
+#
+# Need to add a language() method to the mock() function that returns 'this'.
+#
 messages = require("../messages.en.json")
 
 
@@ -15,7 +22,7 @@ class MockFunction
   #   my_mock.expects("my_method")
   #   ...
   #
-  PUBLISH.mock = (args...) ->
+  @mock: (args...) ->
     try
       _check_usage(args)
       [ expects_method_name, mock_count, test_function ] = _parse_args(args)
@@ -32,6 +39,9 @@ class MockFunction
 
   # private
   
+  #
+  # Can be either 'mock ->' or 'mock {option: value ...}, ->'
+  #
   _check_usage = (args) ->
     switch args.length
       when 1
@@ -297,8 +307,30 @@ fail = (message, args...) ->
   throw new Error(format(message, args...))
 
 #  
-# From http://stackoverflow.com/questions/9880578/coffeescript-version-of-string-format-sprintf-etc-for-javascript-or-node-js
+# See: http://stackoverflow.com/questions/9880578/coffeescript-version-of-string-format-sprintf-etc-for-javascript-or-node-js
 #
 format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
   message.replace /{(\d)+}/g, (match, i) ->
     if typeof args[i] isnt 'undefined' then args[i] else match
+
+
+#
+# Export the mock() function.  In a node app do:
+#
+#   mock = require("TinyMockJS")
+#
+# and in a browser do:
+#
+#   <script src="validator.js"></script>
+#   <script>
+#     mock( function(m) {
+#       m.expects ...
+#     });
+#   </script>
+#
+# See: http://www.matteoagosti.com/blog/2013/02/24/writing-javascript-modules-for-both-browser-and-node/
+#
+if module?.exports?
+  module.exports = MockFunction.mock
+else
+  window.mock = MockFunction.mock

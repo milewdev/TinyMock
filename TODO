@@ -1,12 +1,15 @@
-Use either the word 'exception' or the word 'error' (pick one and be consistent).
-Use module.exports = mock rather than module.exports.mock = mock; this simplifies the require statement: mock = require("TinyMockJS") instead of mock = require("TinyMockJS").mock
+Add messages.en.json to package.json
+Test in a browser.
+Get Travis CI working.
+Use module.exports = mock rather than module.exports.mock = mock, so we get: mock = require("TinyMockJS"), not mock = require("TinyMockJS").mock
+Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Check the ordering of the unit tests - are they listed logically?
-Check that spacing around '(' and ')' is consistent.
 Extract all test descriptions and make sure they are consistent.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.
-Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
+Create CHECKLIST, include things to do before 'git push'.
+Check that spacing around '(' and ')' is consistent.
 
 [done] Need to ensure that english version of messages are used in unit tests; better yet, load the messages and reference the messages by message name
 [done] Extract all error messages and make sure they are consistent.
@@ -21,3 +24,4 @@ Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and th
 [done] Ensure that all 'private' attributes have a leading underscore (e.g. _name).
 [done] Ensure that all test descriptions are sentence parts, not capitalized sentences.
 [n/a - see: http://git-scm.com/book/en/Git-on-the-Server-The-Protocols] Use git: instead of https: in package.json
+[done] Use either the word 'exception' or the word 'error' (pick one and be consistent).
