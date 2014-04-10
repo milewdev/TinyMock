@@ -9,7 +9,7 @@
 #
 # Need to add a language() method to the mock() function that returns 'this'.
 #
-messages = require("../messages.en.json")
+messages = require("../messages/messages.en.json")
 
 
 #

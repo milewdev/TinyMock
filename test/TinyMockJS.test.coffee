@@ -1,7 +1,7 @@
 chai      = require("chai")
 should    = chai.should()
 mock      = require("../src/TinyMockJS")
-messages  = require("../messages.en.json")
+messages  = require("../messages/messages.en.json")
 
 
 describe "test pre-conditions", ->

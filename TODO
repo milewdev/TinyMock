@@ -1,13 +1,10 @@
-Add messages.en.json to package.json
 Test in a browser.
 Get Travis CI working.
-Use module.exports = mock rather than module.exports.mock = mock, so we get: mock = require("TinyMockJS"), not mock = require("TinyMockJS").mock
 Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Check the ordering of the unit tests - are they listed logically?
 Extract all test descriptions and make sure they are consistent.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.
-Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
 Create CHECKLIST, include things to do before 'git push'.
 Check that spacing around '(' and ')' is consistent.
 
@@ -25,3 +22,6 @@ Check that spacing around '(' and ')' is consistent.
 [done] Ensure that all test descriptions are sentence parts, not capitalized sentences.
 [n/a - see: http://git-scm.com/book/en/Git-on-the-Server-The-Protocols] Use git: instead of https: in package.json
 [done] Use either the word 'exception' or the word 'error' (pick one and be consistent).
+[done] Use module.exports = mock rather than module.exports.mock = mock, so we get: mock = require("TinyMockJS"), not mock = require("TinyMockJS").mock
+[n/a - already being packaged because it is not in .npmignore] Add messages.en.json to package.json
+[done - moved to ./messages] Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
