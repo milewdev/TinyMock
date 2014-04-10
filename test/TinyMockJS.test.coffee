@@ -31,6 +31,30 @@ describe "test pre-conditions", ->
         m.should.not.respondTo("my_method")
 
 
+describe "mock.language(lang)", ->
+
+  it "defaults to english if it is never called", ->
+    (-> mock() ).should.throw("you need to pass")
+    
+  it "loads the messages file for the specified language", ->
+    try
+      module = require("module")
+      mock ->
+        module.expects("require").args("../messages/messages.fr.json").returns( { MockUsage: "un message en français" } )
+        mock.language("fr")
+        (-> mock() ).should.throw("un message en français")
+    finally
+      mock.language("en")
+
+  it "throws an error if a messages file for the specified language does not exist", ->
+    (->
+      mock.language("klingon")
+    ).should.throw("'klingon' is not a supported language")
+    
+  it "returns the mock object (i.e. returns 'this')", ->
+    mock.language("en").should.equal(mock)
+
+
 describe "mock( function( mock1 [, mock2 ...] ) )", ->
   
   it "throws an error if there are no arguments", ->

@@ -1,14 +1,3 @@
-#
-# TODO:
-#
-#   mock = require("TinyMockJS").language("en")
-#
-# same as:
-#
-#   mock = require("TinyMockJS")
-#
-# Need to add a language() method to the mock() function that returns 'this'.
-#
 messages = require("../messages/messages.en.json")
 
 
@@ -36,6 +25,14 @@ class MockFunction
       expects_method.uninstall_expects_method() if expects_method?  # TODO: the 'if' guard smells?
       all_expectations.uninstall_all_mocked_methods() if all_expectations?
       all_expectations.unregister_all_expectations() if all_expectations?
+      
+  @mock.language = (lang) ->
+    try
+      messages = require("../messages/messages.#{lang}.json")   # TODO: hmmm - referencing a 'global' variable here; can/should fix?
+      @
+    catch error
+      fail("'#{lang}' is not a supported language") if error.message.match( /Cannot find module/ )
+      throw error
 
   # private
   
@@ -321,7 +318,7 @@ format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "
 #
 # and in a browser do:
 #
-#   <script src="validator.js"></script>
+#   <script src="TinyMockJS.js"></script>
 #   <script>
 #     mock( function(m) {
 #       m.expects ...
