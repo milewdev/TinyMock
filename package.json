@@ -5,7 +5,7 @@
   "private": true,
   "main": "./lib/TinyMock.js",
   "engines": {
-    "node": "*"
+    "node": "0.10"
   },
   "scripts": {
     "test": "cake test",
@@ -27,8 +27,8 @@
     "url": "https://github.com/milewgit/TinyMock/issues"
   },
   "devDependencies": {
-    "mocha": "*",
-    "chai": "*",
+    "mocha": "~1.18",
+    "chai": "~1.9",
     "coffee-script": "~1.6"
   }
 }
