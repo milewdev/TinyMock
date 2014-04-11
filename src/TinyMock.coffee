@@ -308,11 +308,11 @@ format = (message, args...) ->
 #
 # Export the mock() function.  In a node app:
 #
-#   mock = require("TinyMockJS")
+#   mock = require("TinyMock")
 #
 # and in a browser:
 #
-#   <script src="TinyMockJS.js"></script>
+#   <script src="TinyMock.js"></script>
 #   <script>
 #     mock( function(m) {
 #       m.expects ...

@@ -1,9 +1,9 @@
-### What is TinyMockJS?
+### What is TinyMock?
 A very small coffeescript mocking framework.
 
 
 ### Documentation
-[Here](http://milewgit.github.io/TinyMockJS.doc/) (documentation source is [here](https://github.com/milewgit/TinyMockJS.doc)).
+[Here](http://milewgit.github.io/TinyMock.doc/) (documentation source is [here](https://github.com/milewgit/TinyMock.doc)).
 
 
 ### Development Setup
@@ -18,9 +18,9 @@ A very small coffeescript mocking framework.
 #####Install:
 In a terminal window on the host machine:
 ```
-$ mkdir -p ~/work/TinyMockJS
-$ cd ~/work/TinyMockJS
-$ curl -fsSL https://raw.github.com/milewgit/TinyMockJS/master/Vagrantfile -o Vagrantfile
+$ mkdir -p ~/work/TinyMock
+$ cd ~/work/TinyMock
+$ curl -fsSL https://raw.github.com/milewgit/TinyMock/master/Vagrantfile -o Vagrantfile
 $ vagrant up --provider=vmware_fusion
 ...
 ```
@@ -28,10 +28,10 @@ $ vagrant up --provider=vmware_fusion
 #####Check installation:
 In a terminal window on the vm (guest machine):
 ```
-$ cd ~/Documents/TinyMockJS
+$ cd ~/Documents/TinyMock
 $ ./_test
 
-> TinyMockJS@0.2.0 test /Users/vagrant/Documents/TinyMockJS
+> TinyMock@0.2.0 test /Users/vagrant/Documents/TinyMock
 > cake test
 
   test pre-conditions
@@ -53,10 +53,10 @@ pushed any and all code changes to GitHub beforehand.
 
 In a terminal window on the host machine:
 ```
-$ cd ~/work/TinyMockJS
+$ cd ~/work/TinyMock
 $ vagrant destroy -f
 $ cd ~
-$ rm -r ~/work/TinyMockJS    # and possibly rm -r ~/work if it is now empty
+$ rm -r ~/work/TinyMock    # and possibly rm -r ~/work if it is now empty
 ```
 
 
@@ -64,10 +64,10 @@ $ rm -r ~/work/TinyMockJS    # and possibly rm -r ~/work if it is now empty
 - ./_test will run all business/unit tests.  Leave a terminal window open during development and
 run ./_test as you make changes to code.
 
-- ./_build will create TinyMockJS-0.2.0.tgz.  This file is checked into GitHub so that TinyMockJS
+- ./_build will create TinyMock-0.2.0.tgz.  This file is checked into GitHub so that TinyMock
 can be installed using:
     ```
-	$ npm install https://github.com/milewgit/TinyMockJS/raw/v0.2.0/TinyMockJS-0.2.0.tgz
+	$ npm install https://github.com/milewgit/TinyMock/raw/v0.2.0/TinyMock-0.2.0.tgz
 	```
   
 - ./_lint will run various checks against the source code, typically looking for things that cropped
@@ -75,11 +75,11 @@ up in the TODO list, such as a change in naming convention; in this case, the ch
 the old names are not used anywhere.  Warning: the checks are not sophisticated and may report things
 that are in fact not erroneous.
 
-- If you wish to modify the Vagrantfile, it is best to do so on the host machine (~/work/TinyMockJS/Vagrantfile) 
+- If you wish to modify the Vagrantfile, it is best to do so on the host machine (~/work/TinyMock/Vagrantfile) 
 so that you can easily do an edit/vagrant up/vagrant destroy cycle.  Once you have finished making 
 changes, vagrant up and then in a terminal window on the vm do something like:
     ```
-    $ cd ~/Documents/TinyMockJS
+    $ cd ~/Documents/TinyMock
     $ cp /vagrant/Vagrantfile .
     $ git status
     ...

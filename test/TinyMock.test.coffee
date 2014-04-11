@@ -1,6 +1,6 @@
 chai      = require("chai")
 should    = chai.should()
-mock      = require("../src/TinyMockJS")
+mock      = require("../src/TinyMock")
 messages  = require("../messages/messages.en.json")
 
 
@@ -549,7 +549,7 @@ describe "my_method([ value [, value ... ] ])", ->
     ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
 
-# This is a duplicate of a function in TinyMockJS.coffee, but this
+# This is a duplicate of a function in TinyMock.coffee, but this
 # application is currently so small that it is not worth worrying 
 # about it.
 format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
