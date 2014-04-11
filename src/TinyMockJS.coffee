@@ -25,14 +25,6 @@ class MockFunction
       expects_method.uninstall_expects_method() if expects_method?  # TODO: the 'if' guard smells?
       all_expectations.uninstall_all_mocked_methods() if all_expectations?
       all_expectations.unregister_all_expectations() if all_expectations?
-      
-  @mock.language = (lang) ->
-    try
-      messages = require("../messages/messages.#{lang}.json")   # TODO: hmmm - referencing a 'global' variable here; can/should fix?
-      @
-    catch error
-      fail("'#{lang}' is not a supported language") if error.message.match( /Cannot find module/ )
-      throw error
 
   # private
   

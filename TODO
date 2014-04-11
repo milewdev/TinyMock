@@ -1,4 +1,3 @@
-Document new mock.language(lang) feature.  Also, run a manual test to double-check that mock = require("TinyMockJS").languate("en") works.
 Test in a browser.
 Get Travis CI working.
 Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
