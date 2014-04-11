@@ -24,3 +24,6 @@ egrep $'[\'"]url[\'"][ ]*:' package.json | egrep -v 'https:'
 
 echo 'Check for occurrences of 'exception' (should use 'error' instead) ...'
 egrep -rin 'exception' src/*.coffee test/*.coffee
+
+echo 'Check for .only and .skip tests ...'
+egrep -rin '\.(only|skip) ' test/*.coffee
