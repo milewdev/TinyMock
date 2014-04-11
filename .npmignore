@@ -1,9 +1,9 @@
-quick_start
 src
 test
 _*
 .*
 Cakefile
+CHECKLIST
 LESSONS
 *.tgz
 TODO
