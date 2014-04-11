@@ -1,0 +1,6 @@
+Before 'git push'
+=================
+
+- run ./_lint
+- run ./_build
+- run ./_test

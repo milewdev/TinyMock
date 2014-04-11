@@ -1,11 +1,10 @@
-Test in a browser.
 Get Travis CI working.
+Test in a browser.
 Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Check the ordering of the unit tests - are they listed logically?
 Extract all test descriptions and make sure they are consistent.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
 Need to distingish between a dev env Vagrantfile and test env Vagrantfile and a prod env Vagrantfile, etc.
-Create CHECKLIST, include things to do before 'git push'.
 Check that spacing around '(' and ')' is consistent.
 
 [done] Need to ensure that english version of messages are used in unit tests; better yet, load the messages and reference the messages by message name
@@ -25,3 +24,4 @@ Check that spacing around '(' and ')' is consistent.
 [done] Use module.exports = mock rather than module.exports.mock = mock, so we get: mock = require("TinyMockJS"), not mock = require("TinyMockJS").mock
 [n/a - already being packaged because it is not in .npmignore] Add messages.en.json to package.json
 [done - moved to ./messages] Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
+[done] Create CHECKLIST, include things to do before 'git push'.
