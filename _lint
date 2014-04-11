@@ -27,3 +27,6 @@ egrep -rin 'exception' src/*.coffee test/*.coffee
 
 echo 'Check for .only and .skip tests ...'
 egrep -rin '\.(only|skip) ' test/*.coffee
+
+echo 'Check Travis CI config file .travis.yml ...'
+QUIET=1 travis-lint

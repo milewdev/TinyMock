@@ -1,4 +1,3 @@
-Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Get Travis CI working.
 Test in a browser.
 Finish writing up LESSONS.
@@ -26,3 +25,4 @@ Check that spacing around '(' and ')' is consistent.
 [n/a - already being packaged because it is not in .npmignore] Add messages.en.json to package.json
 [done - moved to ./messages] Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
 [done] Create CHECKLIST, include things to do before 'git push'.
+[done] Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js

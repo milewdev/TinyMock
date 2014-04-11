@@ -14,8 +14,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   install_gpg                     config  # needed in order to sign git commits
   install_git                     config  # source is on github
   install_git_gui                 config  # sometimes gui diff is handy
-  install_node                    config
+  install_node                    config  # used to run tests under node.js
   install_editor                  config
+  install_travis_lint             config  # used to lint the travis config file .travis.yml
   install_project                 config
   reboot                          config
 end
@@ -90,6 +91,12 @@ def install_editor(config)
 end
 
 
+def install_travis_lint(config)
+  say config, "Installing travis-lint"
+  install_ruby_gem config, "travis-lint"
+end
+
+
 def install_project(config)
   say config, "Installing project sources and dependencies"
   run_script config, <<-"EOF"
@@ -125,6 +132,11 @@ def install_pkg(config, url)
     sudo installer -pkg vm_install.pkg -target /
     rm -f vm_install.pkg
   EOF
+end
+
+
+def install_ruby_gem(config, gem_name)
+  run_script config, "sudo gem install #{gem_name}"
 end
 
 
