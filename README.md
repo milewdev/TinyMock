@@ -1,3 +1,7 @@
+<!-- build status badge -->
+[![Build Status](https://travis-ci.org/milewgit/TinyMock.svg?branch=master)](https://travis-ci.org/milewgit/TinyMock)
+
+
 ### What is TinyMock?
 A very small coffeescript mocking framework.
 

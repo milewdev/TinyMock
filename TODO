@@ -1,4 +1,3 @@
-Get Travis CI working.
 Test in a browser.
 Finish writing up LESSONS.
 Check the ordering of the unit tests - are they listed logically?
@@ -26,3 +25,4 @@ Check that spacing around '(' and ')' is consistent.
 [done - moved to ./messages] Move ./message.en.json to a sub-dir?  If so, which one?  Move it to ./src and then copy it to ./lib during build?
 [done] Create CHECKLIST, include things to do before 'git push'.
 [done] Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
+[done] Get Travis CI working.
