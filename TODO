@@ -1,6 +1,7 @@
+Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 Get Travis CI working.
 Test in a browser.
-Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
+Finish writing up LESSONS.
 Check the ordering of the unit tests - are they listed logically?
 Extract all test descriptions and make sure they are consistent.
 Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).

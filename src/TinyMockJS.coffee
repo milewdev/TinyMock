@@ -295,20 +295,22 @@ is_mock_object = (object) ->
 fail = (message, args...) ->  
   throw new Error(format(message, args...))
 
-#  
+#
+# format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
+#
 # See: http://stackoverflow.com/questions/9880578/coffeescript-version-of-string-format-sprintf-etc-for-javascript-or-node-js
 #
-format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
+format = (message, args...) ->
   message.replace /{(\d)+}/g, (match, i) ->
     if typeof args[i] isnt 'undefined' then args[i] else match
 
 
 #
-# Export the mock() function.  In a node app do:
+# Export the mock() function.  In a node app:
 #
 #   mock = require("TinyMockJS")
 #
-# and in a browser do:
+# and in a browser:
 #
 #   <script src="TinyMockJS.js"></script>
 #   <script>
