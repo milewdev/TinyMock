@@ -248,11 +248,13 @@ class Expectation
     fail(messages.ArgsUsedAfterReturnsOrThrows) if expectation._returns? or expectation._throws?
 
   _check_returns_usage = (expectation, value) ->
+    # TODO: check argument count
     fail(messages.ReturnsUsage) unless value?
     fail(messages.ReturnsUsedMoreThanOnce) if expectation._returns?
     fail(messages.ReturnsAndThrowsBothUsed) if expectation._throws?
 
   _check_throws_usage = (expectation, error) ->
+    # TODO: check argument count
     fail(messages.ThrowsUsage) unless error?
     fail(messages.ThrowsUsedMoreThanOnce) if expectation._throws?
     fail(messages.ReturnsAndThrowsBothUsed) if expectation._returns?
