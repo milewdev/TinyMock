@@ -36,3 +36,6 @@ egrep -rn '\t' src/*.coffee test/*.coffee
 
 echo 'Check for trailing spaces in source code files ...'
 egrep -rn ' $' src/*.coffee test/*.coffee
+
+echo 'Check for git stashes ...'
+git stash list
