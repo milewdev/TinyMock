@@ -30,3 +30,9 @@ egrep -rin '\.(only|skip) ' test/*.coffee
 
 echo 'Check Travis CI config file .travis.yml ...'
 QUIET=1 travis-lint
+
+echo 'Check for tabs in source code files ...'
+egrep -rn '\t' src/*.coffee test/*.coffee
+
+echo 'Check for trailing spaces in source code files ...'
+egrep -rn ' $' src/*.coffee test/*.coffee
