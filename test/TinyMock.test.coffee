@@ -240,6 +240,38 @@ describe "throws( error )", ->
       expectation = m.expects("my_method")
       expectation.throws(new Error("an error")).should.equal(expectation)
 
+  it "throws an error if no 'error' argument is specified", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws()
+    ).should.throw(format(messages.ThrowsUsage))
+
+  it "throws an error if throws() has already been specified", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error").throws("another error")
+    ).should.throw(format(messages.ThrowsUsedMoreThanOnce))
+
+  it "throws an error if a return value has already been specified", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(42).throws(new Error("an error"))
+    ).should.throw(format(messages.ReturnsAndThrowsBothUsed))
+
+  it "does not throw an error if a return value has been previously set on the same method with a different expectation", ->
+    mock (m) ->
+      m.expects("my_method").args(1,2,3).returns(42)
+      m.expects("my_method").args(4,5,6).throws(new Error("an error"))
+      m.my_method(1,2,3)
+      (-> m.my_method(4,5,6) ).should.throw("an error")
+
+  it "can be called after args()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3).throws(new Error("an error"))
+        m.my_method(1,2,3)
+    ).should.throw("an error")
+
 
 describe "my_method( [ arg ... ] )", ->
 
@@ -590,6 +622,14 @@ describe "args(value [, value ... ])", ->
         m.expects("my_method").throws(new Error("an error")).args(1,2,3)
     ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
 
+  # TODO: check that this dups test above and then delete it
+  it "cannot be called before args()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
+        m.my_method(1,2,3)  # TODO: remove this line
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
+
   it "wraps strings with quotes in expection messages"
 
 
@@ -631,51 +671,6 @@ describe "returns(value)", ->
         m.expects("my_method").returns(2)
         m.my_method()
     ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
-
-
-describe "throws(error)", ->
-
-  it "throws an error if no 'error' argument is specified", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws()
-    ).should.throw(format(messages.ThrowsUsage))
-
-  it "throws an error if throws() has already been specified", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws("an error").throws("another error")
-    ).should.throw(format(messages.ThrowsUsedMoreThanOnce))
-
-  it "throws an error if a return value has already been specified", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").returns(42).throws(new Error("an error"))
-    ).should.throw(format(messages.ReturnsAndThrowsBothUsed))
-
-  it "does not throw an error if a return value has been previously set on the same method with a different expectation", ->
-    mock (m) ->
-      m.expects("my_method").args(1,2,3).returns(42)
-      m.expects("my_method").args(4,5,6).throws(new Error("an error"))
-      m.my_method(1,2,3)
-      (-> m.my_method(4,5,6) ).should.throw("an error")
-
-  it "can be called after args()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").args(1,2,3).throws(new Error("an error"))
-        m.my_method(1,2,3)
-    ).should.throw("an error")
-
-  it "cannot be called before args()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
-        m.my_method(1,2,3)
-    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
-
-
-# TODO: In error message names: Called, Used, or Specified: pick one
 
 
 describe "my_method([ value [, value ... ] ])", ->

@@ -1,3 +1,4 @@
+# TODO: In error message names: Called, Used, or Specified: pick one
 messages = require("../messages/messages.en.json")
 
 
@@ -32,6 +33,9 @@ class Expectation
     @
     
   throws: (error) ->
+    fail(messages.ThrowsUsage) unless error?
+    fail(messages.ThrowsUsedMoreThanOnce) if @_error?
+    fail(messages.ReturnsAndThrowsBothUsed) if @_returns?
     @_error = error
     @
     
