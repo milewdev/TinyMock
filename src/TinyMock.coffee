@@ -26,6 +26,9 @@ class Expectation
     @_throws = undefined
     
   args: (args...) ->
+    fail(messages.ArgsUsage) if args.length == 0
+    fail(messages.ArgsUsedMoreThanOnce) unless @_args.length == 0
+    fail(messages.ArgsUsedAfterReturnsOrThrows) if @_returns? or @_throws?
     @_args = args
     @
     

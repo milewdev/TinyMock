@@ -207,12 +207,38 @@ describe "expects( method_name )", ->
     # TODO: test that the original method is restored
 
 
-describe "args( arg [, ... ] )", ->
+describe "args( arg [, arg ... ] )", ->
 
   it "returns itself", ->
     mock (m) ->
       expectation = m.expects("my_method")
       expectation.args(1).should.equal(expectation)
+
+  it "throws an error if no arguments are specified", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").args()
+    ).should.throw(format(messages.ArgsUsage))
+
+  it "throws an error if args() has already been specified", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3).args("a","b","c")
+    ).should.throw(format(messages.ArgsUsedMoreThanOnce))
+
+  it "throws an error if called after returns()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(42).args(1,2,3)
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
+
+  it "throws an error if called after throws()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
+    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
+
+  it "wraps strings with quotes in expection messages"
 
 
 describe "returns( value )", ->
@@ -645,50 +671,6 @@ describe "expects(method_name)", ->
       mock expects_method_name: "my_expects", (m) ->
         m.my_expects("my_expects")
     ).should.throw(format(messages.ReservedMethodName, "my_expects"))
-
-
-describe "args(value [, value ... ])", ->
-
-  it "throws an error if no 'value' arguments are specified", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").args()
-    ).should.throw(format(messages.ArgsUsage))
-
-  it "throws an error if args() has already been specified", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").args(1,2,3).args("a","b","c")
-    ).should.throw(format(messages.ArgsUsedMoreThanOnce))
-
-  it "throws an error if called after returns()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").returns(42).args(1,2,3)
-    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
-
-  # TODO: check that this dups the test above and then delete it
-  it "cannot be called before args()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").returns(42).args(1,2,3)
-    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
-
-  it "throws an error if called after throws()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
-    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
-
-  # TODO: check that this dups the test above and then delete it
-  it "cannot be called before args()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws(new Error("an error")).args(1,2,3)
-        m.my_method(1,2,3)  # TODO: remove this line
-    ).should.throw(format(messages.ArgsUsedAfterReturnsOrThrows))
-
-  it "wraps strings with quotes in expection messages"
 
 
 describe "my_method([ value [, value ... ] ])", ->
