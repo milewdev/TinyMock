@@ -1,4 +1,5 @@
 # TODO: In error message names: Called, Used, or Specified: pick one
+# TODO: pull the errors from the file and hard-code them here
 messages = require("../messages/messages.en.json")
 
 
@@ -9,7 +10,7 @@ mock = (test_function) ->
       @[method_name] = (args...) ->
         expectation = expectations.find_expectation(args...)
         fail(messages.UnknownExpectation, method_name, args) unless expectation
-        throw expectation._error if expectation._error
+        throw expectation._throws if expectation._throws
         expectation._returns
       expectations = @[method_name].expectations = new ExpectationList()
     expectations.create_expectation()
@@ -22,21 +23,26 @@ class Expectation
   constructor: ->
     @_args = []
     @_returns = undefined
-    @_error = undefined
+    @_throws = undefined
     
   args: (args...) ->
     @_args = args
     @
     
   returns: (value) ->
+    fail(messages.ReturnsUsage) unless value?
+    fail(messages.ReturnsUsage) if arguments.length != 1
+    fail(messages.ReturnsUsedMoreThanOnce) if @_returns?
+    fail(messages.ReturnsAndThrowsBothUsed) if @_throws?
     @_returns = value
     @
     
   throws: (error) ->
     fail(messages.ThrowsUsage) unless error?
-    fail(messages.ThrowsUsedMoreThanOnce) if @_error?
+    fail(messages.ThrowsUsage) if arguments.length != 1
+    fail(messages.ThrowsUsedMoreThanOnce) if @_throws?
     fail(messages.ReturnsAndThrowsBothUsed) if @_returns?
-    @_error = error
+    @_throws = error
     @
     
   matches: (args...) ->
