@@ -4,7 +4,7 @@ mock      = require("../src/TinyMock")
 messages  = require("../messages/messages.en.json")
 
 
-describe "test pre-conditions", ->
+describe "assumptions", ->
 
   describe "class Object", ->
 
@@ -20,9 +20,9 @@ describe "test pre-conditions", ->
       should.not.exist(Object.my_method)
       should.not.exist(Object.prototype.my_method)
 
-  describe "instances of Object", ->
+  describe "instance of Object", ->
 
-    it "do not have the property or method 'my_method'", ->
+    it "does not have the property or method 'my_method'", ->
       o = new Object()
       o.should.not.respondTo("my_method")
 
@@ -207,6 +207,40 @@ describe "expects( method_name )", ->
     # TODO: test that the original method is restored
 
 
+describe "args( arg [, ... ] )", ->
+
+  it "returns itself", ->
+    mock (m) ->
+      expectation = m.expects("my_method")
+      expectation.args(1).should.equal(expectation)
+
+
+describe "returns( value )", ->
+
+  it "causes the mock method to return the specified value", ->
+    mock (m) ->
+      m.expects("my_method").returns("return value")
+      m.my_method().should.equal("return value")
+
+  it "returns itself", ->
+    mock (m) ->
+      expectation = m.expects("my_method")
+      expectation.returns(1).should.equal(expectation)
+      
+      
+describe "throws( error )", ->
+  
+  it "causes the mock method to throw the specified error", ->
+    mock (m) ->
+      m.expects("my_method").throws(new Error("an error"))
+      (-> m.my_method() ).should.throw("an error")
+  
+  it "returns itself", ->
+    mock (m) ->
+      expectation = m.expects("my_method")
+      expectation.throws(new Error("an error")).should.equal(expectation)
+
+
 describe "my_method( [ arg ... ] )", ->
 
   it "does not throw an error if the arguments match an expectation", ->
@@ -220,28 +254,6 @@ describe "my_method( [ arg ... ] )", ->
     mock ->
       o.expects("my_method").args(42)
       (-> o.my_method(43) ).should.throw(format(messages.UnknownExpectation, "my_method", "43"))
-
-
-describe "args( arg [, ... ] )", ->
-
-  it "returns itself", ->
-    mock (m) ->
-      expectation = m.expects("my_method")
-      expectation.args(1).should.equal(expectation)
-
-
-describe "returns( value )", ->
-
-  it "causes the mock method to return the specified value", ->
-    o = { my_method: -> "anything" }
-    mock ->
-      o.expects("my_method").returns("test value")
-      o.my_method().should.equal("test value")
-
-  it "returns itself", ->
-    mock (m) ->
-      expectation = m.expects("my_method")
-      expectation.returns(1).should.equal(expectation)
 
 
 # This is a duplicate of a function in TinyMock.coffee, but this

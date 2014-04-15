@@ -6,8 +6,9 @@ mock = (test_function) ->
     expectations = @[method_name]?.expectations
     if ! expectations
       @[method_name] = (args...) ->
-        expectation = expectations.find(args...)
+        expectation = expectations.find_expectation(args...)
         fail(messages.UnknownExpectation, method_name, args) unless expectation
+        throw expectation._error if expectation._error
         expectation._returns
       expectations = @[method_name].expectations = new ExpectationList()
     expectations.create_expectation()
@@ -20,6 +21,7 @@ class Expectation
   constructor: ->
     @_args = []
     @_returns = undefined
+    @_error = undefined
     
   args: (args...) ->
     @_args = args
@@ -27,6 +29,10 @@ class Expectation
     
   returns: (value) ->
     @_returns = value
+    @
+    
+  throws: (error) ->
+    @_error = error
     @
     
   matches: (args...) ->
@@ -44,7 +50,7 @@ class ExpectationList
     @_list.push(expectation)
     expectation
     
-  find: (args...) ->
+  find_expectation: (args...) ->
     for expectation in @_list when expectation.matches(args...)
       return expectation
     undefined
