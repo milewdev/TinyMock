@@ -13,6 +13,7 @@ mock = (test_function) ->
     expectations = @[method_name]?.expectations
     if ! expectations
       @[method_name] = (args...) ->
+        expectations.check_for_duplicate_expectations(method_name)                  # TODO: explain why we do this here
         expectation = expectations.find_expectation(args...)
         fail(messages.UnknownExpectation, method_name, args) unless expectation
         throw expectation._throws if expectation._throws
@@ -58,6 +59,9 @@ class Expectation
     @_throws = error
     @
     
+  equals: (other) ->
+    @matches(other._args...)
+
   matches: (args...) ->
     ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
@@ -77,6 +81,14 @@ class ExpectationList
     for expectation in @_list when expectation.matches(args...)
       return expectation
     undefined
+
+  check_for_duplicate_expectations: (method_name) ->      # method_name is for error messages;  TODO: is there a better way?
+    # TODO: use each with index and slice to avoid last element
+    return if @_list.length < 2
+    for outer in [0..@_list.length-2]                     # given @_list = [ a, b, c ], these
+      for inner in [outer+1..@_list.length-1]             # loops produce the pairs (a,b), (a,c), (b,c)
+        if @_list[outer].equals( @_list[inner] )
+          fail(messages.DuplicateExpectation, method_name, @_list[outer]._args)
 
 
 #

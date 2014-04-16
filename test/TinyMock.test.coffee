@@ -466,18 +466,115 @@ describe "throws( error )", ->
 
 
 describe "my_method( [ arg ... ] )", ->
+  
+  it "does not throw an error if a method is called without arguments and none were expected", ->
+    mock (m) ->
+      m.expects("my_method")
+      m.my_method()
+  
+  it "does not throw an error if a method is called with arguments that were expected", ->
+    mock (m) ->
+      m.expects("my_method").args(1,2,3)
+      m.my_method(1,2,3)
+  
+  it "throws an error if an unexpected method is called", ->
+    (->
+      mock (m) ->
+        m.my_method()
+    ).should.throw("has no method 'my_method'")
+  
+  it "throws an error if a method is called without arguments but some were expected", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3)
+        m.my_method()
+    ).should.throw(format(messages.UnknownExpectation, "my_method", ""))
+  
+  it "throws an error if a method is called with argments but none were expected", ->
+    (->
+      mock (m) ->
+        m.expects("my_method")
+        m.my_method(1,2,3)
+    ).should.throw(format(messages.UnknownExpectation, "my_method", "1,2,3"))
+  
+  it "throws an error if a method is called with arguments but different arguments were expected", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3)
+        m.my_method(4,5,6)
+    ).should.throw(format(messages.UnknownExpectation, "my_method", "4,5,6"))
 
-  it "does not throw an error if the arguments match an expectation", ->
-    o = { my_method: (some_value) -> "anything" }
-    mock ->
-      o.expects("my_method").args(42, "life")
-      o.my_method(42, "life")
+  it "returns the value specified in a returns()", ->
+    mock (m) ->
+      m.expects("my_method").returns(123)
+      m.my_method().should.equal(123)
 
-  it "throws an error if the arguments do not match an expectation", ->
-    o = { my_method: (some_value) -> "anything" }
-    mock ->
-      o.expects("my_method").args(42)
-      (-> o.my_method(43) ).should.throw(format(messages.UnknownExpectation, "my_method", "43"))
+  it "returns undefined if no returns() was specified", ->
+    mock (m) ->
+      m.expects("my_method")
+      should.not.exist(m.my_method())
+
+  it "throws the error specified in a throws()", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error")
+        m.my_method()
+    ).should.throw("an error")
+
+  it "allows a method with args and the same method without args", ->
+    mock (m) ->
+      m.expects("my_method").args(1,2,3)
+      m.expects("my_method")
+      m.my_method(1,2,3)
+      m.my_method()
+
+  it "throws an error if an expectation with no args is duplicated", ->
+    (->
+      mock (m) ->
+        m.expects("my_method")
+        m.expects("my_method")
+        m.my_method()
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
+
+  it "throws an error if an expectation with args is duplicated", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").args(1,2,3)
+        m.expects("my_method").args(1,2,3)
+        m.my_method(1,2,3)
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", "1,2,3"))
+
+  it "throws an error when the same method returns the same values", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(1)
+        m.expects("my_method").returns(1)
+        m.my_method()
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
+
+  it "throws an error when the same method returns different values", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").returns(1)
+        m.expects("my_method").returns(2)
+        m.my_method()
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
+
+  it "throws an error when the same method throws the same values", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error")
+        m.expects("my_method").throws("an error")
+        m.my_method()
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
+
+  it "throws an error when the same method throws different values", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws("an error")
+        m.expects("my_method").throws("another error")
+        m.my_method()
+    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
 
 # This is a duplicate of a function in TinyMock.coffee, but this
@@ -674,111 +771,4 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     mock expects_method_name: "my_expects", ->
       k.my_expects("expects").returns("overridden expects() method")
       k.expects().should.equal("overridden expects() method")
-
-
-describe "my_method([ value [, value ... ] ])", ->
-
-  it "does not throw an error if my_method is called and was expected", ->
-    mock (m) ->
-      m.expects("my_method")
-      m.my_method()
-
-  it "throws an error if my_method is called but was not expected", ->
-    (->
-      mock (m) ->
-        m.my_method()
-    ).should.throw("has no method 'my_method'")
-
-  it "throws an error if my_method is called with arguments but none were expected", ->
-    (->
-      mock (m) ->
-        m.expects("my_method")
-        m.my_method(1,2,3)
-    ).should.throw(format(messages.UnknownExpectation, "my_method", "1,2,3"))
-
-  it "throws an error if the args do not match any expectations", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").args(1,2,3)
-        m.my_method(4,5,6)
-    ).should.throw(format(messages.UnknownExpectation, "my_method", "4,5,6"))
-
-  it "returns the value specified in a returns()", ->
-    mock (m) ->
-      m.expects("my_method").returns(123)
-      m.my_method().should.equal(123)
-
-  it "returns undefined if no returns() was specified", ->
-    mock (m) ->
-      m.expects("my_method")
-      should.not.exist(m.my_method())
-
-  it "throws the error specified in a throws()", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws("an error")
-        m.my_method()
-    ).should.throw("an error")
-
-  it "allows a method with args and the same method without args", ->
-    mock (m) ->
-      m.expects("my_method").args(1,2,3)
-      m.expects("my_method")
-      m.my_method(1,2,3)
-      m.my_method()
-
-  it "throws an error if a method requires args but is called with none", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").args(1,2,3)
-        m.my_method()
-    ).should.throw(format(messages.UnknownExpectation, "my_method", ""))
-
-  it "throws an error if an expectation with no args is duplicated", ->
-    (->
-      mock (m) ->
-        m.expects("my_method")
-        m.expects("my_method")
-        m.my_method()
-    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
-
-  it "throws an error if an expectation with args is duplicated", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").args(1,2,3)
-        m.expects("my_method").args(1,2,3)
-        m.my_method(1,2,3)
-    ).should.throw(format(messages.DuplicateExpectation, "my_method", "1,2,3"))
-
-  it "throws an error when the same method returns the same values", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").returns(1)
-        m.expects("my_method").returns(1)
-        m.my_method()
-    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
-
-  it "throws an error when the same method returns different values", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").returns(1)
-        m.expects("my_method").returns(2)
-        m.my_method()
-    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
-
-  it "throws an error when the same method throws the same values", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws("an error")
-        m.expects("my_method").throws("an error")
-        m.my_method()
-    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
-
-  it "throws an error when the same method throws different values", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws("an error")
-        m.expects("my_method").throws("another error")
-        m.my_method()
-    ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 ###
