@@ -28,14 +28,14 @@ describe "assumptions", ->
 
   describe "mock()", ->
 
-    it.skip "passes in objects that do not have the property or method 'my_method'", ->
+    it "passes in objects that do not have the property or method 'my_method'", ->
       mock (m) ->
         m.should.not.respondTo("my_method")
 
 
 describe "general behaviour", ->
 
-  describe "class methods", ->
+  describe "class method", ->
     
     it "allows different expectations of the same class method on a class", ->
       class Klass
@@ -79,7 +79,7 @@ describe "general behaviour", ->
         Klass1.class_method1(1).should.equal("one")           # forces a check for duplicate expectations
         Klass2.class_method2(2).should.equal("two")           # otherwise we'll get a 'class_method not called' error
 
-  describe "instance methods", ->
+  describe "instance method", ->
     
     it "allows different expectations of the same instance method on an class", ->
       class Klass
@@ -95,9 +95,11 @@ describe "general behaviour", ->
       class Klass
         instance_method: -> "instance method"
       k = new Klass()
-      mock ->
-        Klass.prototype.expects("instance_method").args(1)
-        (-> k.instance_method(2) ).should.throw(format(messages.UnknownExpectation, "instance_method", "2"))
+      (->
+        mock ->
+          Klass.prototype.expects("instance_method").args(1)
+          k.instance_method(2)
+      ).should.throw(format(messages.UnknownExpectation, "instance_method", "2"))
 
     it "allows the same expectation of the same method on different classes", ->
       class Klass1
@@ -138,7 +140,7 @@ describe "general behaviour", ->
         k1.instance_method1(1).should.equal("one")            # forces a check for duplicate expectations
         k2.instance_method2(2).should.equal("two")            # otherwise we'll get an 'instance_method not called' error
 
-  describe "object methods", ->
+  describe "object method", ->
     
     it "allows different expectations of the same object method on an object", ->
       mock (m) ->
@@ -179,6 +181,190 @@ describe "mock( [ options ], ( [ mock_object, ... ] ) -> )", ->
   it "passes five mock objects to the callback test function", ->
     mock (mocks...) ->
       mocks.length.should.equal(5)
+
+  it "throws an error if there are no arguments", ->
+    (->
+      mock()  # need parenthesis to coerce function call
+    ).should.throw(messages.MockUsage)
+
+  it "throws an error if there are more than two arguments", ->
+    (->
+      mock 1, 2, 3
+    ).should.throw(messages.MockUsage)
+
+  it "throws an error if there is one argument and it is not a function", ->
+    (->
+      mock 1
+    ).should.throw(messages.MockUsage)
+
+  it "throws an error if there are two arguments and the second one is not a function", ->
+    (->
+      mock expects_method_name: "expects", 1
+    ).should.throw(messages.MockUsage)
+
+  it "throws an error if the options arguments has neither the expects_method_name nor the mock_count properties", ->
+    (->
+      mock a: "expects", b: 3, -> 0
+    ).should.throw(messages.MockBadUsage)
+
+  it "adds expects() to Object so that it is available on all objects", ->
+    mock ->
+      Object.should.respondTo("expects")
+
+  it "adds the expects method name that was passed as an option to mock()", ->
+    mock expects_method_name: "my_expects", ->
+      Object.should.respondTo("my_expects")
+
+  it "does not affect existing expects() methods if an alternate name was passed as an option to mock()", ->
+    class Klass
+      expects: -> "pre-existing expects() method"
+    k = new Klass()
+    mock expects_method_name: "my_expects", ->
+      k.my_expects("expects").returns("overridden expects() method")
+      k.expects().should.equal("overridden expects() method")
+
+  it "removes expects() from Object after running the passed function", ->
+    mock ->
+      # empty
+    Object.should.not.respondTo("expects")
+
+  it "removes the expects method name that was passed as an option to mock()", ->
+    mock expects_method_name: "my_expects", ->
+      # empty
+    Object.should.not.respondTo("my_expects")
+
+  it "removes expects() from Object when the passed function throws an error", ->
+    try
+      mock ->
+        throw new Error("an error")
+    catch error
+      # ignore
+    Object.should.not.respondTo("expects")
+
+  it "removes the expects method name that was passed as an option to mock() when the passed function throws an error", ->
+    try
+      mock expects_method_name: "my_expects", ->
+        throw new Error("an error")
+    catch error
+      # ignore
+    Object.should.not.respondTo("my_expects")
+
+  it "throws an error if expects() is already a method of Object", ->
+    try
+      Object.prototype.expects = -> "existing expects method"
+      (->
+        mock ->
+          # empty
+      ).should.throw(format(messages.ExpectsMethodAlreadyExists, "expects"))
+    finally
+      delete Object.prototype.expects
+
+  it "throws an error if the expects method name that was passed as an option to mock() is already a method of Object", ->
+    try
+      Object.prototype.my_expects = -> "existing my_expects method"
+      (->
+        mock expects_method_name: "my_expects", ->
+          # empty
+      ).should.throw(format(messages.ExpectsMethodAlreadyExists, "my_expects"))
+    finally
+      delete Object.prototype.my_expects
+
+  it "does not eat errors thrown by the passed function", ->
+    (->
+      mock ->
+        throw new Error("an error")
+    ).should.throw("an error")
+
+  it "passes pre-created convenience Mock objects to the function argument", ->
+    mock (m) ->
+      m.constructor.name.should.equal("MockObject")
+
+  it "passes 5 mock objects to the function argument", ->
+    mock (m...) ->
+      m.length.should.equal(5)
+
+  it "passes mock_count mock objects to the function argument when the mock_count option is used", ->
+    mock mock_count: 17, (m...) ->
+      m.length.should.equal(17)
+
+  it "cannot be nested without specifying expects_method_name (no reason to do this but we'll test it anyway)", ->
+    (->
+      mock (m1) ->
+        mock (m2) ->
+          # empty
+    ).should.throw(format(messages.ExpectsMethodAlreadyExists, "expects"))
+
+  it "can be nested if expects_method_name is specified (no reason to do this but we'll test it anyway)", ->
+    mock (m0) ->
+      mock expects_method_name: "my_expects1", (m1) ->
+        mock expects_method_name: "my_expects2", (m2) ->
+          m0.expects("my_method0")
+          m1.my_expects1("my_method1")
+          m2.my_expects2("my_method2")
+          m0.my_method0()
+          m1.my_method1()
+          m2.my_method2()
+
+  it "allows one mock object to use another", ->
+    mock (m1, m2) ->
+      m1.expects("my_method").returns(m2)
+      m1.my_method().should.equal(m2)
+
+  it "reports all unmet expectations", ->
+    (->
+      mock (m1, m2) ->
+        m1.expects("my_method1").args(1,2,3)
+        m2.expects("my_method2")
+    ).should.throw("#{format(messages.ExpectationNeverCalled, 'my_method1', '1,2,3')}\n#{format(messages.ExpectationNeverCalled, 'my_method2', '')}\n")
+
+  it "restores the original class method", ->
+    original_method = -> "original method"
+    class Klass
+      @class_method: original_method
+    mock ->
+      Klass.expects("class_method")
+      Klass.class_method()    # otherwise we'll get a 'class_method() not called' error
+    Klass.class_method.should.equal(original_method)
+    
+  it "restores the original instance method", ->
+    original_method = -> "original method"
+    class Klass
+      instance_method: original_method
+    mock ->
+      Klass.prototype.expects("instance_method")
+      (new Klass()).instance_method()   # otherwise we'll get an 'instance_method() not called' error
+    Klass.prototype.instance_method.should.equal(original_method)
+  
+  it "restores the original object method", ->
+    original_method = -> "original method"
+    o = { object_method: original_method }
+    mock ->
+      o.expects("object_method")
+      o.object_method()     # otherwise we'll get a 'class_method() not called' error
+    o.object_method.should.equal(original_method)
+
+  it "restores the orginal method when the same method has more than one expectation", ->
+    original_method = -> "anything"
+    o = { object_method: original_method }
+    mock ->
+      o.expects("object_method").args(1)
+      o.expects("object_method").args(2)
+      o.object_method(1)    # otherwise we'll get a 'class_method() not called' error
+      o.object_method(2)    # -- ditto --
+    o.object_method.should.equal(original_method)
+
+  it "checks expectations for errors if the passed function did not throw an error", ->
+    (->
+      mock (m) ->
+        m.expects("my_method")
+    ).should.throw(format(messages.ExpectationNeverCalled, "my_method", ""))
+
+  it "does not check expectations for errors if the passed function throws an error", ->
+    (->
+      mock (m) ->
+        m.expects("my_method").throws(new Error("an error"))
+        m.my_method()
+    ).should.throw(/^an error$/)
 
 
 describe "expects( method_name )", ->
@@ -315,7 +501,7 @@ describe "expects( method_name )", ->
         m.expects("expects")
     ).should.throw(format(messages.ReservedMethodName, "expects"))
 
-  it.skip "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
+  it "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
     (->
       mock expects_method_name: "my_expects", (m) ->
         m.my_expects("my_expects")
@@ -328,6 +514,7 @@ describe "args( arg [, arg ... ] )", ->
     mock (m) ->
       expectation = m.expects("my_method")
       expectation.args(1).should.equal(expectation)
+      m.my_method(1)  # otherwise we'll get a 'my_method() not called' error
 
   it "throws an error if no arguments are specified", ->
     (->
@@ -367,6 +554,7 @@ describe "returns( value )", ->
     mock (m) ->
       expectation = m.expects("my_method")
       expectation.returns(1).should.equal(expectation)
+      m.my_method()   # otherwise we'll get a 'my_method() not called' error
 
   it "throws an error if no 'value' argument is specified", ->
     (->
@@ -397,7 +585,7 @@ describe "returns( value )", ->
       m.expects("my_method").args(1,2,3).returns(42)
       m.my_method(1,2,3)
 
-  it.skip "cannot be called more than once on the same expectation", ->
+  it "cannot be called more than once on the same expectation", ->
     (->
       mock (m) ->
         m.expects("my_method").returns(1)
@@ -414,10 +602,14 @@ describe "throws( error )", ->
       (-> m.my_method() ).should.throw("an error")
   
   it "returns itself", ->
-    mock (m) ->
-      expectation = m.expects("my_method")
-      expectation.throws(new Error("an error")).should.equal(expectation)
-
+    try
+      mock (m) ->
+        expectation = m.expects("my_method")
+        expectation.throws(new Error("an error")).should.equal(expectation)
+        m.my_method()   # otherwise we'll get a 'my_method() not called' error
+    catch
+      # eat the error thrown by throws()
+                                   
   it "throws an error if no 'error' argument is specified", ->
     (->
       mock (m) ->
@@ -456,7 +648,7 @@ describe "throws( error )", ->
         m.my_method(1,2,3)
     ).should.throw("an error")
 
-  it.skip "cannot be called more than once on the same expectation", ->
+  it "cannot be called more than once on the same expectation", ->
     (->
       mock (m) ->
         m.expects("my_method").throws(new Error("error1"))
@@ -577,198 +769,8 @@ describe "my_method( [ arg ... ] )", ->
     ).should.throw(format(messages.DuplicateExpectation, "my_method", ""))
 
 
-# This is a duplicate of a function in TinyMock.coffee, but this
-# application is currently so small that it is not worth worrying
-# about it.
+# This is a duplicate of a function in TinyMock.coffee, but this application 
+# is currently so small that it is not worth worrying about.
 format = (message, args...) ->    # format("{0} + {1} = {2}", 2, 2, "four") => "2 + 2 = four"
   message.replace /{(\d)+}/g, (match, i) ->
     if typeof args[i] isnt 'undefined' then args[i] else match
-
-
-
-
-###
-describe "mock( function( mock1 [, mock2 ...] ) )", ->
-
-  it "throws an error if there are no arguments", ->
-    (->
-      mock()  # need parenthesis to coerce function call
-    ).should.throw(messages.MockUsage)
-
-  it "throws an error if there are more than two arguments", ->
-    (->
-      mock 1, 2, 3
-    ).should.throw(messages.MockUsage)
-
-  it "throws an error if there is one argument and it is not a function", ->
-    (->
-      mock 1
-    ).should.throw(messages.MockUsage)
-
-  it "throws an error if there are two arguments and the first one is not an object", ->
-    (->
-      mock "expects", -> 0
-    ).should.throw(messages.MockUsage)
-
-  it "throws an error if there are two arguments and the second one is not a function", ->
-    (->
-      mock expects_method_name: "expects", 1
-    ).should.throw(messages.MockUsage)
-
-  it "throws an error if the options arguments has neither the expects_method_name nor the mock_count properties", ->
-    (->
-      mock a: "expects", b: 3, -> 0
-    ).should.throw(messages.MockBadUsage)
-
-  it "adds expects() to Object so that it is available on all objects", ->
-    mock ->
-      Object.should.respondTo("expects")
-
-  it "adds the expects method name that was passed as an option to mock()", ->
-    mock expects_method_name: "my_expects", ->
-      Object.should.respondTo("my_expects")
-
-  it "removes expects() from Object after running the passed function", ->
-    mock ->
-      # empty
-    Object.should.not.respondTo("expects")
-
-  it "removes the expects method name that was passed as an option to mock()", ->
-    mock expects_method_name: "my_expects", ->
-      # empty
-    Object.should.not.respondTo("my_expects")
-
-  it "removes expects() from Object when the passed function throws an error", ->
-    try
-      mock ->
-        throw new Error("an error")
-    catch error
-      # ignore
-    Object.should.not.respondTo("expects")
-
-  it "removes the expects method name that was passed as an option to mock() when the passed function throws an error", ->
-    try
-      mock expects_method_name: "my_expects", ->
-        throw new Error("an error")
-    catch error
-      # ignore
-    Object.should.not.respondTo("my_expects")
-
-  it "throws an error if expects() is already a method of Object", ->
-    try
-      Object.prototype.expects = -> "existing expects method"
-      (->
-        mock ->
-          # empty
-      ).should.throw(format(messages.ExpectsMethodAlreadyExists, "expects"))
-    finally
-      delete Object.prototype.expects
-
-  it "throws an error if the expects method name that was passed as an option to mock() is already a method of Object", ->
-    try
-      Object.prototype.my_expects = -> "existing my_expects method"
-      (->
-        mock expects_method_name: "my_expects", ->
-          # empty
-      ).should.throw(format(messages.ExpectsMethodAlreadyExists, "my_expects"))
-    finally
-      delete Object.prototype.my_expects
-
-  it "does not eat errors thrown by the passed function", ->
-    (->
-      mock ->
-        throw new Error("an error")
-    ).should.throw("an error")
-
-  it "passes pre-created convenience Mock objects to the function argument", ->
-    mock (m) ->
-      m.constructor.name.should.equal("MockObject")
-
-  it "passes 5 mock objects to the function argument", ->
-    mock (m...) ->
-      m.length.should.equal(5)
-
-  it "passes mock_count mock objects to the function argument when the mock_count option is used", ->
-    mock mock_count: 17, (m...) ->
-      m.length.should.equal(17)
-
-  it "checks expectations for errors if the passed function did not throw an error", ->
-    (->
-      mock (m) ->
-        m.expects("my_method")
-    ).should.throw(format(messages.ExpectationNeverCalled, "my_method", ""))
-
-  it "does not check expectations for errors if the passed function throws an error", ->
-    (->
-      mock (m) ->
-        m.expects("my_method").throws(new Error("an error"))
-        m.my_method()
-    ).should.throw(/^an error$/)
-
-  it "reports all unmet expectations", ->
-    (->
-      mock (m1, m2) ->
-        m1.expects("my_method1").args(1,2,3)
-        m2.expects("my_method2")
-    ).should.throw("#{format(messages.ExpectationNeverCalled, 'my_method1', '1,2,3')}\n#{format(messages.ExpectationNeverCalled, 'my_method2', '')}\n")
-
-  it "restores the original method on class prototypes", ->
-    original_method = -> "anything"
-    class Klass
-      my_method: original_method
-    mock ->
-      Klass.expects("my_method")
-      (new Klass()).my_method()       # otherwise we'll get a 'my_method not called' error
-    Klass.prototype.my_method.should.equal(original_method)
-
-  it "restores the original method on instances that had the original method", ->
-    original_method = -> "anything"
-    o = new Object()
-    o.my_method = original_method
-    mock ->
-      o.expects("my_method")
-      o.my_method()                   # otherwise we'll get a 'my_method not called' error
-    o.my_method.should.equal(original_method)
-
-  it "restores the orginal method when the same method has more than one expectation", ->
-    original_method = -> "anything"
-    o = new Object()
-    o.my_method = original_method
-    mock ->
-      o.expects("my_method").args(1)
-      o.expects("my_method").args(2)
-      o.my_method(1)                  # otherwise we'll get a 'my_method not called' error
-      o.my_method(2)
-    o.my_method.should.equal(original_method)
-
-  it "cannot be nested without specifying expects_method_name (no reason to do this but we'll test it anyway)", ->
-    (->
-      mock (m1) ->
-        mock (m2) ->
-          # empty
-    ).should.throw(format(messages.ExpectsMethodAlreadyExists, "expects"))
-
-  it "can be nested if expects_method_name is specified (no reason to do this but we'll test it anyway)", ->
-    mock (m0) ->
-      mock expects_method_name: "my_expects1", (m1) ->
-        mock expects_method_name: "my_expects2", (m2) ->
-          m0.expects("my_method0")
-          m1.my_expects1("my_method1")
-          m2.my_expects2("my_method2")
-          m0.my_method0()
-          m1.my_method1()
-          m2.my_method2()
-
-  it "allows one mock object to use another", ->
-    mock (m1, m2) ->
-      m1.expects("my_method").returns(m2)
-      m1.my_method().should.equal(m2)
-
-  it "allows a different expectation method name to be used instead of 'expects'", ->
-    class Klass
-      expects: -> "pre-existing expects() method"
-    k = new Klass()
-    mock expects_method_name: "my_expects", ->
-      k.my_expects("expects").returns("overridden expects() method")
-      k.expects().should.equal("overridden expects() method")
-###
