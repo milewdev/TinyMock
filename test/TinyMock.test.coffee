@@ -206,6 +206,121 @@ describe "expects( method_name )", ->
       o.object_method().should.equal("mock method")
     # TODO: test that the original method is restored
 
+  it "throws an error if called on an object that does not inherit from Object", ->
+    o = Object.create(null)
+    o.my_method = -> "my method"
+    (->
+      mock ->
+        o.expects("my_method")
+    ).should.throw("Object object has no method 'expects'")
+
+  it "adds method_name to mock object instances passed in by mock()", ->
+    mock (m) ->
+      m.expects("my_method")
+      (typeof m.my_method).should.equal('function')
+      m.my_method()                 # otherwise we'll get a 'my_method not called' error
+
+  it "mocks method_name on instances of classes that were not passed in by mock()", ->
+    existing_method = -> "existing method"
+    class Klass
+      my_method: existing_method
+    k = new Klass()
+    mock ->
+      k.expects("my_method")
+      k.my_method.should.not.equal(existing_method)
+      k.my_method()                 # otherwise we'll get a 'my_method not called' error
+
+  it "mocks method_name on instances that were not passed in by mock()", ->
+    existing_method = -> "existing method"
+    o = new Object()
+    o.my_method = existing_method
+    mock ->
+      o.expects("my_method")
+      o.my_method.should.not.equal(existing_method)
+      o.my_method()                 # otherwise we'll get a 'my_method not called' error
+
+  it "throws an error if method_name does not already exist on an instance of a class that was not passed in by mock()", ->
+    class Klass
+      some_method: -> "some method"
+    k = new Klass()
+    (->
+      mock ->
+        k.expects("my_method")
+    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
+
+  it "throws an error if method_name does not already exist on an instance that was not passed in by mock()", ->
+    o = new Object()
+    o.some_method = "some method"
+    (->
+      mock ->
+        o.expects("my_method")
+    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
+
+  # TODO: expects() should throw an error, stubs() should not?
+  it "throws an error if method_name does not already exist on a class", ->
+    class Klass
+      # empty
+    (->
+      mock ->
+        Klass.expects("my_method")
+    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
+
+  it "throws an error if method_name is already a property on an instance", ->
+    o = new Object()
+    o.my_method = "a property"
+    (->
+      mock ->
+        o.expects("my_method")
+    ).should.throw(format(messages.PreExistingProperty, "my_method"))
+
+  it "throws an error if method_name is already a property on a class", ->
+    try
+      Object.prototype.my_method = "a property"
+      (->
+        mock ->
+          Object.expects("my_method")
+      ).should.throw(format(messages.PreExistingProperty, "my_method"))
+    finally
+      delete Object.prototype.my_method
+
+  it "can be used many times to expect different methods", ->
+    mock (m) ->
+      m.expects("my_method1")
+      m.expects("my_method2")
+      m.my_method1()                # otherwise we'll get a 'my_method1 not called' error
+      m.my_method2()                # -- ditto --
+
+  it "can be used after expected methods have been used (harmless but bad form)", ->
+    mock (m) ->
+      m.expects("my_method1")
+      m.my_method1()
+      m.expects("my_method2")
+      m.my_method2()                # otherwise we'll get a 'my_method2 not called' error
+
+  it "throws an error if method_name is missing", ->
+    (->
+      mock (m) ->
+        m.expects()
+    ).should.throw(format(messages.ExpectsUsage, "my_method"))
+    
+  it "throws an error if more than one argument is specified", ->
+    (->
+      mock (m) ->
+        m.expects("my_method1", "my_method2")
+    ).should.throw(format(messages.ExpectsUsage))
+
+  it "throws an error if method_name is the reserved name 'expects'", ->
+    (->
+      mock (m) ->
+        m.expects("expects")
+    ).should.throw(format(messages.ReservedMethodName, "expects"))
+
+  it.skip "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
+    (->
+      mock expects_method_name: "my_expects", (m) ->
+        m.my_expects("my_expects")
+    ).should.throw(format(messages.ReservedMethodName, "my_expects"))
+
 
 describe "args( arg [, arg ... ] )", ->
 
@@ -559,118 +674,6 @@ describe "mock( function( mock1 [, mock2 ...] ) )", ->
     mock expects_method_name: "my_expects", ->
       k.my_expects("expects").returns("overridden expects() method")
       k.expects().should.equal("overridden expects() method")
-
-
-describe "expects(method_name)", ->
-
-  it "throws an error if called on an object that does not inherit from Object", ->
-    o = Object.create(null)
-    o.my_method = -> "my method"
-    (->
-      mock ->
-        o.expects("my_method")
-    ).should.throw("Object object has no method 'expects'")
-
-  it "adds method_name to mock object instances passed in by mock()", ->
-    mock (m) ->
-      m.expects("my_method")
-      (typeof m.my_method).should.equal('function')
-      m.my_method()                 # otherwise we'll get a 'my_method not called' error
-
-  it "mocks method_name on instances of classes that were not passed in by mock()", ->
-    existing_method = -> "existing method"
-    class Klass
-      my_method: existing_method
-    k = new Klass()
-    mock ->
-      k.expects("my_method")
-      k.my_method.should.not.equal(existing_method)
-      k.my_method()                 # otherwise we'll get a 'my_method not called' error
-
-  it "mocks method_name on instances that were not passed in by mock()", ->
-    existing_method = -> "existing method"
-    o = new Object()
-    o.my_method = existing_method
-    mock ->
-      o.expects("my_method")
-      o.my_method.should.not.equal(existing_method)
-      o.my_method()                 # otherwise we'll get a 'my_method not called' error
-
-  it "throws an error if method_name does not already exist on an instance of a class that was not passed in by mock()", ->
-    class Klass
-      some_method: -> "some method"
-    k = new Klass()
-    (->
-      mock ->
-        k.expects("my_method")
-    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
-
-  it "throws an error if method_name does not already exist on an instance that was not passed in by mock()", ->
-    o = new Object()
-    o.some_method = "some method"
-    (->
-      mock ->
-        o.expects("my_method")
-    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
-
-  # TODO: expects() should throw an error, stubs() should not?
-  it "throws an error if method_name does not already exist on a class", ->
-    class Klass
-      # empty
-    (->
-      mock ->
-        Klass.expects("my_method")
-    ).should.throw(format(messages.NotAnExistingMethod, "my_method"))
-
-  it "throws an error if method_name is already a property on an instance", ->
-    o = new Object()
-    o.my_method = "a property"
-    (->
-      mock ->
-        o.expects("my_method")
-    ).should.throw(format(messages.PreExistingProperty, "my_method"))
-
-  it "throws an error if method_name is already a property on a class", ->
-    try
-      Object.prototype.my_method = "a property"
-      (->
-        mock ->
-          Object.expects("my_method")
-      ).should.throw(format(messages.PreExistingProperty, "my_method"))
-    finally
-      delete Object.prototype.my_method
-
-  it "can be used many times to expect different methods", ->
-    mock (m) ->
-      m.expects("my_method1")
-      m.expects("my_method2")
-      m.my_method1()                # otherwise we'll get a 'my_method1 not called' error
-      m.my_method2()                # -- ditto --
-
-  it "can be used after expected methods have been used (harmless but bad form)", ->
-    mock (m) ->
-      m.expects("my_method1")
-      m.my_method1()
-      m.expects("my_method2")
-      m.my_method2()                # otherwise we'll get a 'my_method2 not called' error
-
-  it "throws an error if method_name is missing", ->
-    (->
-      mock (m) ->
-        m.expects()
-    ).should.throw(format(messages.ExpectsUsage, "my_method"))
-
-  it "throws an error if method_name is the reserved name 'expects'", ->
-    (->
-      mock (m) ->
-        m.expects("expects")
-    ).should.throw(format(messages.ReservedMethodName, "expects"))
-
-  it "throws an error if method_name is the alternate name for 'expects' that is specified to mocks()", ->
-    (->
-      mock expects_method_name: "my_expects", (m) ->
-        m.my_expects("my_expects")
-    ).should.throw(format(messages.ReservedMethodName, "my_expects"))
 
 
 describe "my_method([ value [, value ... ] ])", ->

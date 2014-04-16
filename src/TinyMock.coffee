@@ -5,6 +5,11 @@ messages = require("../messages/messages.en.json")
 
 mock = (test_function) ->
   Object.prototype.expects = (method_name) ->
+    fail(messages.ExpectsUsage) unless method_name?
+    fail(messages.ExpectsUsage) if arguments.length != 1
+    fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(@) or has_method(@, method_name)
+    fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
+    fail(messages.ReservedMethodName, method_name) if method_name == "expects"      # TODO: extract is_reserved_method_name()
     expectations = @[method_name]?.expectations
     if ! expectations
       @[method_name] = (args...) ->
@@ -14,8 +19,13 @@ mock = (test_function) ->
         expectation._returns
       expectations = @[method_name].expectations = new ExpectationList()
     expectations.create_expectation()
-  mock_objects = ( new Object() for i in [1..5] )
+  mock_objects = ( new MockObject() for i in [1..5] )
   test_function.apply(null, mock_objects)
+  
+  
+class MockObject
+  
+    # empty
 
   
 class Expectation
@@ -73,14 +83,11 @@ class ExpectationList
 # common functions
 #
 
-does_prototype_have_method = (object, method_name) ->
-  object.prototype[ method_name ]?
-   
-does_object_have_method = (object, method_name) ->
-  object[ method_name ]?
-
 has_property = (object, property_name) ->
   object[ property_name ]? and (typeof object[ property_name ]) isnt 'function'
+
+has_method = (object, method_name) ->
+  object[ method_name ]?
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
