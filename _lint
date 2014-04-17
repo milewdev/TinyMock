@@ -10,6 +10,8 @@
 # Warning: the checks are not sophisticated.
 #
 
+echo '--------------------------------------------------------------------------------'
+
 echo 'Check for occurrences of 'signature' (should use 'expectation' instead) ...'
 egrep -rin 'signature' src/*.coffee test/*.coffee
 
