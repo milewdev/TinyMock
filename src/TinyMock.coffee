@@ -1,6 +1,6 @@
 # TODO: In error message names: Called, Used, or Specified: pick one
-# TODO: pull the errors from the file and hard-code them here
 messages = require("../messages/messages.en.json")
+
 
 
 mock = (args...) ->
@@ -43,36 +43,38 @@ mock = (args...) ->
   finally
     mock_methods.restore_original_methods()
     delete Object.prototype[expects_method_name]
-  
-  
-class MockObject
-  
-    # empty
 
-  
+
+
+class MockObject
+
+  # empty
+
+
+
 class Expectation
-  
+
   constructor: ->
     @_args = []
     @_returns = undefined
     @_throws = undefined
     @_called = no
-    
+
   args: (args...) ->
     _check_args_usage(@, args)
     @_args = args
     @
-    
+
   returns: (value) ->
     _check_returns_usage(@, value, arguments.length)
     @_returns = value
     @
-    
+
   throws: (error) ->
     _check_throws_usage(@, error, arguments.length)
     @_throws = error
     @
-    
+
   # is this expectation the same as this other one
   equals: (other) ->
     @matches(other._args...)
@@ -81,37 +83,38 @@ class Expectation
   matches: (args...) ->
     ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
-      
+
   # private
-  
+
   _check_args_usage = (self, args) ->
     fail(messages.ArgsUsage) if args.length == 0
     fail(messages.ArgsUsedMoreThanOnce) unless self._args.length == 0
     fail(messages.ArgsUsedAfterReturnsOrThrows) if self._returns? or self._throws?
-    
+
   _check_returns_usage = (self, value, arg_count) ->
     fail(messages.ReturnsUsage) unless value?
     fail(messages.ReturnsUsage) if arg_count != 1
     fail(messages.ReturnsUsedMoreThanOnce) if self._returns?
     fail(messages.ReturnsAndThrowsBothUsed) if self._throws?
-    
+
   _check_throws_usage = (self, error, arg_count) ->
     fail(messages.ThrowsUsage) unless error?
     fail(messages.ThrowsUsage) if arg_count != 1
     fail(messages.ThrowsUsedMoreThanOnce) if self._throws?
     fail(messages.ReturnsAndThrowsBothUsed) if self._returns?
-      
-      
+
+
+
 class ExpectationList
-  
+
   constructor: ->
     @_list = []
-    
+
   create_expectation: ->
     expectation = new Expectation()
     @_list.push(expectation)
     expectation
-    
+
   find_expectation: (args...) ->
     for expectation in @_list when expectation.matches(args...)
       return expectation
@@ -124,26 +127,25 @@ class ExpectationList
       for inner in [outer+1..@_list.length-1]             # loops produce the pairs (a,b), (a,c), (b,c)
         if @_list[outer].equals( @_list[inner] )
           fail(messages.DuplicateExpectation, method_name, @_list[outer]._args)
-          
+
   find_errors: (method_name) ->                           # method_name is for error messages; TODO: is there a better way?
-    errors = []
-    errors.push( format(messages.ExpectationNeverCalled, method_name, expectation._args) ) for expectation in @_list when ! expectation._called
-    errors
-          
-          
+    format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when ! expectation._called
+
+
+
 class MockMethodList
-  
+
   constructor: ->
     @_list = []
-    
+
   add: (mock_method) ->
     @_list.push(mock_method)
-    
+
   find_errors: ->
     errors = []
     errors = errors.concat( mock_method.expectations.find_errors(mock_method.method_name) ) for mock_method in @_list
     errors
-    
+
   restore_original_methods: ->
     for mock_method in @_list
       if mock_method.original_method?
@@ -168,7 +170,7 @@ is_function = (object) ->
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
 
-fail = (message, args...) ->  
+fail = (message, args...) ->
   throw new Error(format(message, args...))
 
 #
