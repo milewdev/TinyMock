@@ -64,10 +64,7 @@ class Expectation
     @
     
   returns: (value) ->
-    fail(messages.ReturnsUsage) unless value?
-    fail(messages.ReturnsUsage) if arguments.length != 1
-    fail(messages.ReturnsUsedMoreThanOnce) if @_returns?
-    fail(messages.ReturnsAndThrowsBothUsed) if @_throws?
+    _check_returns_usage(@, value, arguments.length)
     @_returns = value
     @
     
@@ -94,6 +91,12 @@ class Expectation
     fail(messages.ArgsUsage) if args.length == 0
     fail(messages.ArgsUsedMoreThanOnce) unless self._args.length == 0
     fail(messages.ArgsUsedAfterReturnsOrThrows) if self._returns? or self._throws?
+    
+  _check_returns_usage = (self, value, arg_count) ->
+    fail(messages.ReturnsUsage) unless value?
+    fail(messages.ReturnsUsage) if arg_count != 1
+    fail(messages.ReturnsUsedMoreThanOnce) if self._returns?
+    fail(messages.ReturnsAndThrowsBothUsed) if self._throws?
       
       
 class ExpectationList
