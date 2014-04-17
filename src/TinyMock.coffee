@@ -115,10 +115,9 @@ class ExpectationList
     @_list.push(expectation)
     expectation
 
+  # returns undefined if not found
   find_expectation: (args...) ->
-    for expectation in @_list when expectation.matches(args...)
-      return expectation
-    undefined
+    return expectation for expectation in @_list when expectation.matches(args...)
 
   check_for_duplicate_expectations: (method_name) ->      # method_name is for error messages;  TODO: is there a better way?
     # TODO: use each with index and slice to avoid last element
