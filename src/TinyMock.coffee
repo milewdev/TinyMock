@@ -33,6 +33,11 @@ mock = (args...) ->
       mock_method.method_name = method_name
       mock_method.original_method = @[method_name]
       mock_method.expectations = expectations = new ExpectationList()
+      mock_method.restore_original_method = ->
+        if @original_method?
+          @object[@method_name] = @original_method
+        else
+          delete @object[@method_name]
       @[method_name] = mock_method
       mock_methods.add(mock_method)
     expectations.create_expectation()
@@ -146,11 +151,8 @@ class MockMethodList
     errors
 
   restore_original_methods: ->
-    for mock_method in @_list
-      if mock_method.original_method?
-        mock_method.object[mock_method.method_name] = mock_method.original_method
-      else
-        delete mock_method.object[mock_method.method_name]
+    mock_method.restore_original_method() for mock_method in @_list
+
 
 
 #
