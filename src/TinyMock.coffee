@@ -59,9 +59,7 @@ class Expectation
     @_called = no
     
   args: (args...) ->
-    fail(messages.ArgsUsage) if args.length == 0
-    fail(messages.ArgsUsedMoreThanOnce) unless @_args.length == 0
-    fail(messages.ArgsUsedAfterReturnsOrThrows) if @_returns? or @_throws?
+    _check_args_usage(@, args)
     @_args = args
     @
     
@@ -89,6 +87,13 @@ class Expectation
   matches: (args...) ->
     ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
+      
+  # private
+  
+  _check_args_usage = (self, args) ->
+    fail(messages.ArgsUsage) if args.length == 0
+    fail(messages.ArgsUsedMoreThanOnce) unless self._args.length == 0
+    fail(messages.ArgsUsedAfterReturnsOrThrows) if self._returns? or self._throws?
       
       
 class ExpectationList
