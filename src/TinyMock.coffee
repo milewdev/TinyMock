@@ -69,10 +69,7 @@ class Expectation
     @
     
   throws: (error) ->
-    fail(messages.ThrowsUsage) unless error?
-    fail(messages.ThrowsUsage) if arguments.length != 1
-    fail(messages.ThrowsUsedMoreThanOnce) if @_throws?
-    fail(messages.ReturnsAndThrowsBothUsed) if @_returns?
+    _check_throws_usage(@, error, arguments.length)
     @_throws = error
     @
     
@@ -97,6 +94,12 @@ class Expectation
     fail(messages.ReturnsUsage) if arg_count != 1
     fail(messages.ReturnsUsedMoreThanOnce) if self._returns?
     fail(messages.ReturnsAndThrowsBothUsed) if self._throws?
+    
+  _check_throws_usage = (self, error, arg_count) ->
+    fail(messages.ThrowsUsage) unless error?
+    fail(messages.ThrowsUsage) if arg_count != 1
+    fail(messages.ThrowsUsedMoreThanOnce) if self._throws?
+    fail(messages.ReturnsAndThrowsBothUsed) if self._returns?
       
       
 class ExpectationList
