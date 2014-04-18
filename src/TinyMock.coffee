@@ -43,18 +43,19 @@ class MockFunction
     @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
     
   install_expects_method: (mock_methods) ->
-    Object.prototype[@_expects_method_name] = _build_mock_function(@_expects_method_name, mock_methods)
+    Object.prototype[@_expects_method_name] = @build_mock_function(mock_methods)
     
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
     
-  _build_mock_function = (expects_method_name, mock_methods) ->
+  build_mock_function: (mock_methods) ->
+    that = @
     (method_name) ->
       fail(messages.ExpectsUsage) unless method_name?
       fail(messages.ExpectsUsage) if arguments.length != 1
       fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(@) or has_method(@, method_name)
       fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
-      fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
+      fail(messages.ReservedMethodName, method_name) if method_name == that._expects_method_name        # TODO: extract is_reserved_method_name()
       expectations = @[method_name]?.expectations
       if not expectations
         mock_method = (args...) ->
