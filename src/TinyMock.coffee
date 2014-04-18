@@ -13,20 +13,20 @@ class MockFunction
     @_test_function = undefined
     @_expects_method_name = undefined
     @_mock_count = undefined
+    @_mock_methods = new MockMethodList()
     
   setup: (args) ->
     @check_mock_usage(args)
     @parse_args(args)
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
-    mock_methods = new MockMethodList()
-    @install_expects_method(mock_methods)
+    @install_expects_method(@_mock_methods)
     mock_objects = ( new MockObject() for i in [1..@_mock_count] )
     try
       @_test_function.apply(null, mock_objects)
-      errors = mock_methods.find_errors()
+      errors = @_mock_methods.find_errors()
       fail( errors.join("\n") + "\n" ) unless errors.length == 0
     finally
-      mock_methods.restore_original_methods()
+      @_mock_methods.restore_original_methods()
       @uninstall_expects_method()
       
   # private
@@ -42,13 +42,13 @@ class MockFunction
     @_expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
     @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
     
-  install_expects_method: (mock_methods) ->
-    Object.prototype[@_expects_method_name] = @build_mock_method(mock_methods)
+  install_expects_method: ->
+    Object.prototype[@_expects_method_name] = @build_mock_method()
     
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
     
-  build_mock_method: (mock_methods) ->
+  build_mock_method: ->
     that = @
     (method_name) ->
       fail(messages.ExpectsUsage) unless method_name?
@@ -77,7 +77,7 @@ class MockFunction
         mock_method.find_errors = ->
           @expectations.find_errors(@method_name)
         @[method_name] = mock_method
-        mock_methods.add(mock_method)
+        that._mock_methods.add(mock_method)
       expectations.create_expectation()
 
 
