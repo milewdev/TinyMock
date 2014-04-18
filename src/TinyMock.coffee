@@ -25,7 +25,7 @@ class MockFunction
     @parse_args(args)
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
     @install_expects_method(@_mock_methods)
-    @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
+    @create_mock_objects()
     @create_empty_mock_methods_list()
   
   run: ->
@@ -53,6 +53,9 @@ class MockFunction
     
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
+    
+  create_mock_objects: ->
+    @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
     
   create_empty_mock_methods_list: ->
     @_mock_methods = new MockMethodList()
