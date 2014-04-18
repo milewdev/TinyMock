@@ -9,7 +9,7 @@ class MockFunction
     mock = new MockFunction()
     mock.setup(args)
     try
-      mock.run()
+      mock.run_test_function()
       mock.verify_expectations()
     finally
       mock.cleanup()
@@ -29,7 +29,7 @@ class MockFunction
     @create_mock_objects()
     @create_empty_mock_methods_list()
   
-  run: ->
+  run_test_function: ->
     @_test_function.apply(null, @_mock_objects)
     
   verify_expectations: ->
