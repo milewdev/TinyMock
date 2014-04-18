@@ -26,7 +26,7 @@ class MockFunction
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
     @install_expects_method(@_mock_methods)
     @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
-    @_mock_methods = new MockMethodList()
+    @create_empty_mock_methods_list()
   
   run: ->
     @_test_function.apply(null, @_mock_objects)
@@ -37,8 +37,6 @@ class MockFunction
     @_mock_methods.restore_original_methods()
     @uninstall_expects_method()
       
-  # private
-  
   check_mock_usage: (args) ->
     fail(messages.MockUsage) if args.length < 1 or 2 < args.length
     fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
@@ -55,6 +53,9 @@ class MockFunction
     
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
+    
+  create_empty_mock_methods_list: ->
+    @_mock_methods = new MockMethodList()
     
   build_mock_method: ->
     that = @
