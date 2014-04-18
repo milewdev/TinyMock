@@ -3,53 +3,55 @@ messages = require("../messages/messages.en.json")
 
 
 
-mock = (args...) ->
-  fail(messages.MockUsage) if args.length < 1 or 2 < args.length
-  fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
-  fail(messages.MockUsage) if args.length == 2 and not is_function(args[1])
-  fail(messages.MockBadUsage) if args.length == 2 and not has_property(args[0], "expects_method_name") and not has_property(args[0], "mock_count")
-  test_function = ( if args.length == 1 then args[0] else args[1] )
-  expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
-  mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
-  fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
-  mock_objects = ( new MockObject() for i in [1..mock_count] )
-  mock_methods = new MockMethodList()
-  Object.prototype[expects_method_name] = (method_name) ->
-    fail(messages.ExpectsUsage) unless method_name?
-    fail(messages.ExpectsUsage) if arguments.length != 1
-    fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(@) or has_method(@, method_name)
-    fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
-    fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
-    expectations = @[method_name]?.expectations
-    if not expectations
-      mock_method = (args...) ->
-        expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
-        expectation = expectations.find_expectation(args...)
-        fail(messages.UnknownExpectation, method_name, args) unless expectation
-        expectation._called = yes
-        throw expectation._throws if expectation._throws
-        expectation._returns
-      mock_method.object = @
-      mock_method.method_name = method_name
-      mock_method.original_method = @[method_name]
-      mock_method.expectations = expectations = new ExpectationList()
-      mock_method.restore_original_method = ->
-        if @original_method?
-          @object[@method_name] = @original_method
-        else
-          delete @object[@method_name]
-      mock_method.find_errors = ->
-        @expectations.find_errors(@method_name)
-      @[method_name] = mock_method
-      mock_methods.add(mock_method)
-    expectations.create_expectation()
-  try
-    test_function.apply(null, mock_objects)
-    errors = mock_methods.find_errors()
-    fail( errors.join("\n") + "\n" ) unless errors.length == 0
-  finally
-    mock_methods.restore_original_methods()
-    delete Object.prototype[expects_method_name]
+class MockFunction
+  
+  @mock: (args...) ->
+    fail(messages.MockUsage) if args.length < 1 or 2 < args.length
+    fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
+    fail(messages.MockUsage) if args.length == 2 and not is_function(args[1])
+    fail(messages.MockBadUsage) if args.length == 2 and not has_property(args[0], "expects_method_name") and not has_property(args[0], "mock_count")
+    test_function = ( if args.length == 1 then args[0] else args[1] )
+    expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
+    mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
+    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
+    mock_objects = ( new MockObject() for i in [1..mock_count] )
+    mock_methods = new MockMethodList()
+    Object.prototype[expects_method_name] = (method_name) ->
+      fail(messages.ExpectsUsage) unless method_name?
+      fail(messages.ExpectsUsage) if arguments.length != 1
+      fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(@) or has_method(@, method_name)
+      fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
+      fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
+      expectations = @[method_name]?.expectations
+      if not expectations
+        mock_method = (args...) ->
+          expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
+          expectation = expectations.find_expectation(args...)
+          fail(messages.UnknownExpectation, method_name, args) unless expectation
+          expectation._called = yes
+          throw expectation._throws if expectation._throws
+          expectation._returns
+        mock_method.object = @
+        mock_method.method_name = method_name
+        mock_method.original_method = @[method_name]
+        mock_method.expectations = expectations = new ExpectationList()
+        mock_method.restore_original_method = ->
+          if @original_method?
+            @object[@method_name] = @original_method
+          else
+            delete @object[@method_name]
+        mock_method.find_errors = ->
+          @expectations.find_errors(@method_name)
+        @[method_name] = mock_method
+        mock_methods.add(mock_method)
+      expectations.create_expectation()
+    try
+      test_function.apply(null, mock_objects)
+      errors = mock_methods.find_errors()
+      fail( errors.join("\n") + "\n" ) unless errors.length == 0
+    finally
+      mock_methods.restore_original_methods()
+      delete Object.prototype[expects_method_name]
 
 
 
@@ -184,18 +186,7 @@ fail = (message, args...) ->
 format = (message, args...) ->
   message.replace /{(\d)+}/g, (match, i) ->
     if typeof args[i] isnt 'undefined' then args[i] else match
-    
-#
-# [ [], [ "a" ], [ "b", "c" ] ]   => [ "a", "b", "c" ]
-# [ [], [], [] ]                  => []
-#
-# Don't care about this scenario:
-# [ [ [ "a" ] ], [ "b"] ]         => [ [ "a" ], "b" ]
-#
-# See: http://stackoverflow.com/a/10865042
-#
-flatten = (array) ->
-  [].concat.apply([], array)
+
 
 
 #
@@ -215,6 +206,6 @@ flatten = (array) ->
 # See: http://www.matteoagosti.com/blog/2013/02/24/writing-javascript-modules-for-both-browser-and-node/
 #
 if module?.exports?
-  module.exports = mock
+  module.exports = MockFunction.mock
 else
-  window.mock = mock
+  window.mock = MockFunction.mock
