@@ -6,36 +6,41 @@ messages = require("../messages/messages.en.json")
 class MockFunction
   
   @mock: (args...) ->
-    new MockFunction(args)
+    mock = new MockFunction()
+    mock.setup(args)
     
-  constructor: (args) ->
-    _check_mock_usage(args)
-    [ expects_method_name, mock_count, test_function ] = _parse_args(args)
-    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
+  constructor: ->
+    @_test_function = undefined
+    @_expects_method_name = undefined
+    @_mock_count = undefined
+    
+  setup: (args) ->
+    @check_mock_usage(args)
+    @parse_args(args)
+    fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
     mock_methods = new MockMethodList()
-    _install_expects_method(expects_method_name, mock_methods)
-    mock_objects = ( new MockObject() for i in [1..mock_count] )
+    _install_expects_method(@_expects_method_name, mock_methods)
+    mock_objects = ( new MockObject() for i in [1..@_mock_count] )
     try
-      test_function.apply(null, mock_objects)
+      @_test_function.apply(null, mock_objects)
       errors = mock_methods.find_errors()
       fail( errors.join("\n") + "\n" ) unless errors.length == 0
     finally
       mock_methods.restore_original_methods()
-      _uninstall_expects_method(expects_method_name)
+      _uninstall_expects_method(@_expects_method_name)
       
   # private
   
-  _check_mock_usage = (args) ->
+  check_mock_usage: (args) ->
     fail(messages.MockUsage) if args.length < 1 or 2 < args.length
     fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
     fail(messages.MockUsage) if args.length == 2 and not is_function(args[1])
     fail(messages.MockBadUsage) if args.length == 2 and not has_property(args[0], "expects_method_name") and not has_property(args[0], "mock_count")
     
-  _parse_args = (args) ->
-    test_function = ( if args.length == 1 then args[0] else args[1] )
-    expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
-    mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
-    [ expects_method_name, mock_count, test_function ]
+  parse_args: (args) ->
+    @_test_function = ( if args.length == 1 then args[0] else args[1] )
+    @_expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
+    @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
     
   _install_expects_method = (expects_method_name, mock_methods) ->
     Object.prototype[expects_method_name] = _build_mock_function(expects_method_name, mock_methods)
