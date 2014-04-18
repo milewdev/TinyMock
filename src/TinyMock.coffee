@@ -7,9 +7,7 @@ class MockFunction
   
   @mock: (args...) ->
     _check_mock_usage(args)
-    test_function = ( if args.length == 1 then args[0] else args[1] )
-    expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
-    mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
+    [ expects_method_name, mock_count, test_function ] = _parse_args(args)
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
     mock_objects = ( new MockObject() for i in [1..mock_count] )
     mock_methods = new MockMethodList()
@@ -57,6 +55,12 @@ class MockFunction
     fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
     fail(messages.MockUsage) if args.length == 2 and not is_function(args[1])
     fail(messages.MockBadUsage) if args.length == 2 and not has_property(args[0], "expects_method_name") and not has_property(args[0], "mock_count")
+    
+  _parse_args = (args) ->
+    test_function = ( if args.length == 1 then args[0] else args[1] )
+    expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
+    mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
+    [ expects_method_name, mock_count, test_function ]
 
 
 
