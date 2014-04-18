@@ -19,7 +19,7 @@ class MockFunction
     @parse_args(args)
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
     mock_methods = new MockMethodList()
-    _install_expects_method(@_expects_method_name, mock_methods)
+    @install_expects_method(mock_methods)
     mock_objects = ( new MockObject() for i in [1..@_mock_count] )
     try
       @_test_function.apply(null, mock_objects)
@@ -27,7 +27,7 @@ class MockFunction
       fail( errors.join("\n") + "\n" ) unless errors.length == 0
     finally
       mock_methods.restore_original_methods()
-      _uninstall_expects_method(@_expects_method_name)
+      @uninstall_expects_method()
       
   # private
   
@@ -42,11 +42,11 @@ class MockFunction
     @_expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
     @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
     
-  _install_expects_method = (expects_method_name, mock_methods) ->
-    Object.prototype[expects_method_name] = _build_mock_function(expects_method_name, mock_methods)
+  install_expects_method: (mock_methods) ->
+    Object.prototype[@_expects_method_name] = _build_mock_function(@_expects_method_name, mock_methods)
     
-  _uninstall_expects_method = (expects_method_name) ->
-    delete Object.prototype[expects_method_name]
+  uninstall_expects_method: ->
+    delete Object.prototype[@_expects_method_name]
     
   _build_mock_function = (expects_method_name, mock_methods) ->
     (method_name) ->
