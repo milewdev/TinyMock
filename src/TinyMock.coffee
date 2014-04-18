@@ -23,9 +23,9 @@ class MockFunction
     @check_mock_usage(args)
     @parse_args(args)
     @check_expects_method_name()
-    @install_expects_method(@_mock_methods)
     @create_mock_objects()
     @create_empty_mock_methods_list()
+    @install_expects_method(@_mock_methods)   # TODO: remove arg
 
   run_test_function: ->
     @_test_function.apply(null, @_mock_objects)
@@ -77,13 +77,18 @@ class MockFunction
     @_mock_methods = new MockMethodList()
 
   build_expects_method: ->
-    that = @
+    ExpectsMethod.build(@_expects_method_name, @_mock_methods)
+
+
+class ExpectsMethod
+  
+  @build: (expects_method_name, mock_methods)->
     (method_name) ->
       fail(messages.ExpectsUsage) unless method_name?
       fail(messages.ExpectsUsage) if arguments.length != 1
       fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(@) or has_method(@, method_name)
       fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
-      fail(messages.ReservedMethodName, method_name) if method_name == that._expects_method_name        # TODO: extract is_reserved_method_name()
+      fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
       expectations = @[method_name]?.expectations
       if not expectations
         mock_method = (args...) ->
@@ -105,9 +110,9 @@ class MockFunction
         mock_method.find_errors = ->
           @expectations.find_errors(@method_name)
         @[method_name] = mock_method
-        that._mock_methods.add(mock_method)
+        mock_methods.add(mock_method)
       expectations.create_expectation()
-
+    
 
 class MockObject
 
