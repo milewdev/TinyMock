@@ -6,12 +6,15 @@ messages = require("../messages/messages.en.json")
 class MockFunction
   
   @mock: (args...) ->
+    new MockFunction(args)
+    
+  constructor: (args) ->
     _check_mock_usage(args)
     [ expects_method_name, mock_count, test_function ] = _parse_args(args)
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
-    mock_objects = ( new MockObject() for i in [1..mock_count] )
     mock_methods = new MockMethodList()
     _install_expects_method(expects_method_name, mock_methods)
+    mock_objects = ( new MockObject() for i in [1..mock_count] )
     try
       test_function.apply(null, mock_objects)
       errors = mock_methods.find_errors()
