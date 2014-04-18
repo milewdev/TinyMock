@@ -10,6 +10,7 @@ class MockFunction
     mock.setup(args)
     try
       mock.run()
+      mock.verify_expectations()
     finally
       mock.cleanup()
     
@@ -30,6 +31,8 @@ class MockFunction
   
   run: ->
     @_test_function.apply(null, @_mock_objects)
+    
+  verify_expectations: ->
     errors = @_mock_methods.find_errors()
     fail( errors.join("\n") + "\n" ) unless errors.length == 0
       
