@@ -5,9 +5,9 @@ messages = require("../messages/messages.en.json")
 
 mock = (args...) ->
   fail(messages.MockUsage) if args.length < 1 or 2 < args.length
-  fail(messages.MockUsage) if args.length == 1 and ! is_function(args[0])
-  fail(messages.MockUsage) if args.length == 2 and ! is_function(args[1])
-  fail(messages.MockBadUsage) if args.length == 2 and ! has_property(args[0], "expects_method_name") and ! has_property(args[0], "mock_count")
+  fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
+  fail(messages.MockUsage) if args.length == 2 and not is_function(args[1])
+  fail(messages.MockBadUsage) if args.length == 2 and not has_property(args[0], "expects_method_name") and not has_property(args[0], "mock_count")
   test_function = ( if args.length == 1 then args[0] else args[1] )
   expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
   mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
@@ -21,7 +21,7 @@ mock = (args...) ->
     fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
     fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
     expectations = @[method_name]?.expectations
-    if ! expectations
+    if not expectations
       mock_method = (args...) ->
         expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
         expectation = expectations.find_expectation(args...)
@@ -136,7 +136,7 @@ class ExpectationList
 
   # returns [ "an error re method1()", "another error re method1()", ... ]
   find_errors: (method_name) ->                           # method_name is for error messages; TODO: is there a better way?
-    format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when ! expectation._called
+    format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when not expectation._called
 
 
 
