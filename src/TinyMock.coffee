@@ -8,25 +8,30 @@ class MockFunction
   @mock: (args...) ->
     mock = new MockFunction()
     mock.setup(args)
+    try
+      mock.run()
+    finally
+      mock.cleanup()
     
   constructor: ->
     @_test_function = undefined
     @_expects_method_name = undefined
     @_mock_count = undefined
-    @_mock_methods = new MockMethodList()
+    @_mock_objects = undefined
+    @_mock_methods = undefined
     
   setup: (args) ->
     @check_mock_usage(args)
     @parse_args(args)
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
     @install_expects_method(@_mock_methods)
-    mock_objects = ( new MockObject() for i in [1..@_mock_count] )
-    try
-      @_test_function.apply(null, mock_objects)
-      errors = @_mock_methods.find_errors()
-      fail( errors.join("\n") + "\n" ) unless errors.length == 0
-    finally
-      @cleanup()
+    @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
+    @_mock_methods = new MockMethodList()
+  
+  run: ->
+    @_test_function.apply(null, @_mock_objects)
+    errors = @_mock_methods.find_errors()
+    fail( errors.join("\n") + "\n" ) unless errors.length == 0
       
   cleanup: ->
     @_mock_methods.restore_original_methods()
