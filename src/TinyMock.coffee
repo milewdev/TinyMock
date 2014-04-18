@@ -26,8 +26,11 @@ class MockFunction
       errors = @_mock_methods.find_errors()
       fail( errors.join("\n") + "\n" ) unless errors.length == 0
     finally
-      @_mock_methods.restore_original_methods()
-      @uninstall_expects_method()
+      @cleanup()
+      
+  cleanup: ->
+    @_mock_methods.restore_original_methods()
+    @uninstall_expects_method()
       
   # private
   
