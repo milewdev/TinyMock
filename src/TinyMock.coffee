@@ -50,9 +50,17 @@ class MockFunction
         fail(messages.MockUsage)
         
   parse_args: (args) ->
-    @_test_function = ( if args.length == 1 then args[0] else args[1] )
-    @_expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
-    @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
+    switch args.length
+      when 1
+        @_test_function = args[0]
+      when 2
+        @_expects_method_name = args[0].expects_method_name
+        @_mock_count = args[0].mock_count
+        @_test_function = args[1]
+    @_expects_method_name ?= "expects"    
+    @_mock_count ?= 5
+    # TODO: what happens if expects_method_name is not a legal method name?
+    # TODO: what happens if mock_count is not a number?
     
   check_expects_method_name: ->
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
