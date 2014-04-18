@@ -24,7 +24,7 @@ class MockFunction
   setup: (args) ->
     @check_mock_usage(args)
     @parse_args(args)
-    fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
+    @check_expects_method_name()
     @install_expects_method(@_mock_methods)
     @create_mock_objects()
     @create_empty_mock_methods_list()
@@ -34,7 +34,7 @@ class MockFunction
     
   verify_expectations: ->
     errors = @_mock_methods.find_errors()
-    fail( errors.join("\n") + "\n" ) unless errors.length == 0
+    fail( errors.join("\n") + "\n" ) if errors.length > 0
       
   cleanup: ->
     @_mock_methods.restore_original_methods()
@@ -50,6 +50,9 @@ class MockFunction
     @_test_function = ( if args.length == 1 then args[0] else args[1] )
     @_expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
     @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
+    
+  check_expects_method_name: ->
+    fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
     
   install_expects_method: ->
     Object.prototype[@_expects_method_name] = @build_mock_method()
