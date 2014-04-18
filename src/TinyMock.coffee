@@ -18,7 +18,7 @@ class MockFunction
       fail( errors.join("\n") + "\n" ) unless errors.length == 0
     finally
       mock_methods.restore_original_methods()
-      delete Object.prototype[expects_method_name]
+      _uninstall_expects_method(expects_method_name)
       
   # private
   
@@ -36,6 +36,9 @@ class MockFunction
     
   _install_expects_method = (expects_method_name, mock_methods) ->
     Object.prototype[expects_method_name] = _build_mock_function(expects_method_name, mock_methods)
+    
+  _uninstall_expects_method = (expects_method_name) ->
+    delete Object.prototype[expects_method_name]
     
   _build_mock_function = (expects_method_name, mock_methods) ->
     (method_name) ->
