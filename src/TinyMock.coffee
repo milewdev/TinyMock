@@ -38,6 +38,8 @@ mock = (args...) ->
           @object[@method_name] = @original_method
         else
           delete @object[@method_name]
+      mock_method.find_errors = ->
+        @expectations.find_errors(@method_name)
       @[method_name] = mock_method
       mock_methods.add(mock_method)
     expectations.create_expectation()
@@ -80,11 +82,11 @@ class Expectation
     @_throws = error
     @
 
-  # is this expectation the same as this other one
+  # is this expectation the same as that other one
   equals: (other) ->
     @matches(other._args...)
 
-  # does this expectation have these args
+  # does this expectation have those args
   matches: (args...) ->
     ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
@@ -132,6 +134,7 @@ class ExpectationList
         if @_list[outer].equals( @_list[inner] )
           fail(messages.DuplicateExpectation, method_name, @_list[outer]._args)
 
+  # returns [ "an error re method1()", "another error re method1()", ... ]
   find_errors: (method_name) ->                           # method_name is for error messages; TODO: is there a better way?
     format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when ! expectation._called
 
@@ -145,10 +148,9 @@ class MockMethodList
   add: (mock_method) ->
     @_list.push(mock_method)
 
+  # returns [ "an error re method1()", "another error re method1()", "an error re method2()", ... ]
   find_errors: ->
-    errors = []
-    errors = errors.concat( mock_method.expectations.find_errors(mock_method.method_name) ) for mock_method in @_list
-    errors
+    @_list.reduce ( (errors, mock_method) -> errors.concat(mock_method.find_errors()) ), []
 
   restore_original_methods: ->
     mock_method.restore_original_method() for mock_method in @_list
@@ -182,6 +184,18 @@ fail = (message, args...) ->
 format = (message, args...) ->
   message.replace /{(\d)+}/g, (match, i) ->
     if typeof args[i] isnt 'undefined' then args[i] else match
+    
+#
+# [ [], [ "a" ], [ "b", "c" ] ]   => [ "a", "b", "c" ]
+# [ [], [], [] ]                  => []
+#
+# Don't care about this scenario:
+# [ [ [ "a" ] ], [ "b"] ]         => [ [ "a" ], "b" ]
+#
+# See: http://stackoverflow.com/a/10865042
+#
+flatten = (array) ->
+  [].concat.apply([], array)
 
 
 #
