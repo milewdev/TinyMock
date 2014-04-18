@@ -11,7 +11,7 @@ class MockFunction
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
     mock_objects = ( new MockObject() for i in [1..mock_count] )
     mock_methods = new MockMethodList()
-    Object.prototype[expects_method_name] = _build_mock_function(expects_method_name, mock_methods)
+    _install_expects_method(expects_method_name, mock_methods)
     try
       test_function.apply(null, mock_objects)
       errors = mock_methods.find_errors()
@@ -33,6 +33,9 @@ class MockFunction
     expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
     mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
     [ expects_method_name, mock_count, test_function ]
+    
+  _install_expects_method = (expects_method_name, mock_methods) ->
+    Object.prototype[expects_method_name] = _build_mock_function(expects_method_name, mock_methods)
     
   _build_mock_function = (expects_method_name, mock_methods) ->
     (method_name) ->
