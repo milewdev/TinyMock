@@ -43,12 +43,12 @@ class MockFunction
     @_mock_count = ( if args.length == 2 then args[0].mock_count ) ? 5                              # TODO: what happens if mock_count is not a number?
     
   install_expects_method: (mock_methods) ->
-    Object.prototype[@_expects_method_name] = @build_mock_function(mock_methods)
+    Object.prototype[@_expects_method_name] = @build_mock_method(mock_methods)
     
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
     
-  build_mock_function: (mock_methods) ->
+  build_mock_method: (mock_methods) ->
     that = @
     (method_name) ->
       fail(messages.ExpectsUsage) unless method_name?
