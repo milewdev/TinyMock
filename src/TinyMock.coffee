@@ -40,11 +40,15 @@ class MockFunction
     @uninstall_expects_method()
       
   check_mock_usage: (args) ->
-    fail(messages.MockUsage) if args.length < 1 or 2 < args.length
-    fail(messages.MockUsage) if args.length == 1 and not is_function(args[0])
-    fail(messages.MockUsage) if args.length == 2 and not is_function(args[1])
-    fail(messages.MockBadUsage) if args.length == 2 and not has_property(args[0], "expects_method_name") and not has_property(args[0], "mock_count")
-    
+    switch args.length
+      when 1
+        fail(messages.MockUsage) unless is_function(args[0])
+      when 2
+        fail(messages.MockBadUsage) unless has_property(args[0], "expects_method_name") or has_property(args[0], "mock_count")
+        fail(messages.MockUsage) unless is_function(args[1])
+      else
+        fail(messages.MockUsage)
+        
   parse_args: (args) ->
     @_test_function = ( if args.length == 1 then args[0] else args[1] )
     @_expects_method_name = ( if args.length == 2 then args[0].expects_method_name ) ? "expects"    # TODO: use merge idiom?  what happens if expects_method_name is not a valid method name?
