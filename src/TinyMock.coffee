@@ -1,9 +1,8 @@
 messages = require("../messages/messages.en.json")
 
 
-
 class MockFunction
-  
+
   @mock: (args...) ->
     mock = new MockFunction()
     mock.setup(args)
@@ -12,14 +11,14 @@ class MockFunction
       mock.verify_expectations()
     finally
       mock.cleanup()
-    
+
   constructor: ->
     @_test_function = undefined
     @_expects_method_name = undefined
     @_mock_count = undefined
     @_mock_objects = undefined
     @_mock_methods = undefined
-    
+
   setup: (args) ->
     @check_mock_usage(args)
     @parse_args(args)
@@ -27,18 +26,18 @@ class MockFunction
     @install_expects_method(@_mock_methods)
     @create_mock_objects()
     @create_empty_mock_methods_list()
-  
+
   run_test_function: ->
     @_test_function.apply(null, @_mock_objects)
-    
+
   verify_expectations: ->
     errors = @_mock_methods.find_errors()
     fail( errors.join("\n") + "\n" ) if errors.length > 0
-      
+
   cleanup: ->
     @_mock_methods.restore_original_methods()
     @uninstall_expects_method()
-      
+
   check_mock_usage: (args) ->
     switch args.length
       when 1
@@ -48,7 +47,7 @@ class MockFunction
         fail(messages.MockUsage) unless is_function(args[1])
       else
         fail(messages.MockUsage)
-        
+
   parse_args: (args) ->
     switch args.length
       when 1
@@ -57,26 +56,26 @@ class MockFunction
         @_expects_method_name = args[0].expects_method_name
         @_mock_count = args[0].mock_count
         @_test_function = args[1]
-    @_expects_method_name ?= "expects"    
+    @_expects_method_name ?= "expects"
     @_mock_count ?= 5
     # TODO: what happens if expects_method_name is not a legal method name?
     # TODO: what happens if mock_count is not a number?
-    
+
   check_expects_method_name: ->
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
-    
+
   install_expects_method: ->
     Object.prototype[@_expects_method_name] = @build_mock_method()
-    
+
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
-    
+
   create_mock_objects: ->
     @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
-    
+
   create_empty_mock_methods_list: ->
     @_mock_methods = new MockMethodList()
-    
+
   build_mock_method: ->
     that = @
     (method_name) ->
@@ -110,11 +109,9 @@ class MockFunction
       expectations.create_expectation()
 
 
-
 class MockObject
 
   # empty
-
 
 
 class Expectation
@@ -169,7 +166,6 @@ class Expectation
     fail(messages.ReturnsAndThrowsBothUsed) if self._returns?
 
 
-
 class ExpectationList
 
   constructor: ->
@@ -197,7 +193,6 @@ class ExpectationList
     format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when not expectation._called
 
 
-
 class MockMethodList
 
   constructor: ->
@@ -212,7 +207,6 @@ class MockMethodList
 
   restore_original_methods: ->
     mock_method.restore_original_method() for mock_method in @_list
-
 
 
 #
@@ -242,7 +236,6 @@ fail = (message, args...) ->
 format = (message, args...) ->
   message.replace /{(\d)+}/g, (match, i) ->
     if typeof args[i] isnt 'undefined' then args[i] else match
-
 
 
 #
