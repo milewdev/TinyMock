@@ -83,35 +83,41 @@ class MockFunction
 class ExpectsMethod
   
   @build: (expects_method_name, mock_methods)->
-    (method_name) ->
+    
+    check_expects_usage = (self, method_name, arg_count) ->
       fail(messages.ExpectsUsage) unless method_name?
-      fail(messages.ExpectsUsage) if arguments.length != 1
-      fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(@) or has_method(@, method_name)
-      fail(messages.PreExistingProperty, method_name) if has_property(@, method_name)
+      fail(messages.ExpectsUsage) unless arg_count == 1
+      fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
+      fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
       fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
-      expectations = @[method_name]?.expectations
-      if not expectations
-        mock_method = (args...) ->
-          expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
-          expectation = expectations.find_expectation(args...)
-          fail(messages.UnknownExpectation, method_name, args) unless expectation
-          expectation._called = yes
-          throw expectation._throws if expectation._throws
-          expectation._returns
-        mock_method.object = @
-        mock_method.method_name = method_name
-        mock_method.original_method = @[method_name]
-        mock_method.expectations = expectations = new ExpectationList()
-        mock_method.restore_original_method = ->
-          if @original_method?
-            @object[@method_name] = @original_method
-          else
-            delete @object[@method_name]
-        mock_method.find_errors = ->
-          @expectations.find_errors(@method_name)
-        @[method_name] = mock_method
-        mock_methods.add(mock_method)
-      expectations.create_expectation()
+    
+    build_mock_method = (object, method_name) ->
+      mock_method = (args...) ->
+        expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
+        expectation = expectations.find_expectation(args...)
+        fail(messages.UnknownExpectation, method_name, args) unless expectation
+        expectation._called = yes
+        throw expectation._throws if expectation._throws
+        expectation._returns
+      original_method = object[method_name]
+      mock_method.expectations = expectations = new ExpectationList()
+      mock_method.restore_original_method = ->
+        if original_method?
+          object[method_name] = original_method
+        else
+          delete object[method_name]
+      mock_method.find_errors = ->
+        expectations.find_errors(method_name)
+      mock_method
+    
+    expects = (method_name) ->
+      check_expects_usage(@, method_name, arguments.length)
+      if not @[method_name]?.expectations
+        @[method_name] = build_mock_method(@, method_name)
+        mock_methods.add(@[method_name])
+      @[method_name].expectations.create_expectation()
+    
+    expects
     
 
 class MockObject
@@ -160,13 +166,13 @@ class Expectation
 
   _check_returns_usage = (self, value, arg_count) ->
     fail(messages.ReturnsUsage) unless value?
-    fail(messages.ReturnsUsage) if arg_count != 1
+    fail(messages.ReturnsUsage) unless arg_count == 1
     fail(messages.ReturnsUsedMoreThanOnce) if self._returns?
     fail(messages.ReturnsAndThrowsBothUsed) if self._throws?
 
   _check_throws_usage = (self, error, arg_count) ->
     fail(messages.ThrowsUsage) unless error?
-    fail(messages.ThrowsUsage) if arg_count != 1
+    fail(messages.ThrowsUsage) unless arg_count == 1
     fail(messages.ThrowsUsedMoreThanOnce) if self._throws?
     fail(messages.ReturnsAndThrowsBothUsed) if self._returns?
 
