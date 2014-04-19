@@ -358,14 +358,16 @@ describe "mock", ->
 
     it "can be nested if expects_method_name is specified (no reason to do this but we'll test it anyway)", ->
       mock (m0) ->
-        mock expects_method_name: "my_expects1", (m1) ->
-          mock expects_method_name: "my_expects2", (m2) ->
-            m0.expects("my_method0")
-            m1.my_expects1("my_method1")
-            m2.my_expects2("my_method2")
-            m0.my_method0()
-            m1.my_method1()
-            m2.my_method2()
+        mock expects_method_name: "expects1", (m1) ->
+          mock expects_method_name: "expects2", (m2) ->
+            m0.expects("my_method")
+            m1.expects1("my_method")
+            m2.expects2("my_method")
+            m0.my_method()
+            m1.my_method()
+            m2.my_method()
+          m1.my_method()              # expectations on m1 still available after mock() with m2 goes out of scope
+        m0.my_method()                # expectations on m0 still available after mock() with m1 goes out of scope
 
 
 
