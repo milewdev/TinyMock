@@ -97,7 +97,7 @@ build_expects_method = (expects_method_name, mock_methods)->
   
   expects_method = (method_name) ->
     check_expects_usage(@, method_name, arguments.length)
-    if not mock_methods.contains(@[method_name])
+    if not is_mock_method(@[method_name])
       @[method_name] = build_mock_method(@, method_name)
       mock_methods.add(@[method_name])
     @[method_name].expectations.create_expectation()
@@ -108,6 +108,9 @@ build_expects_method = (expects_method_name, mock_methods)->
     fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
     fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
     fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
+    
+  is_mock_method = (method) ->
+    mock_methods.contains(method)
     
   is_reserved_method_name = (method_name) ->
     method_name == expects_method_name
