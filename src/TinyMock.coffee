@@ -14,47 +14,36 @@ messages = require("../messages/messages.en.json")
 #     sut.do_something_interesting()                    # run whatever it is we want to test
 #   ...                                                 # end scope: check expectations, remove expects(), restore original writeFileSync()
 #
-class MockFunction
+mock = (args...) ->
+  
+  _test_function = undefined
+  _expects_method_name = undefined
+  _mock_count = undefined
+  _mock_objects = undefined
+  _mock_methods = undefined
 
-  @mock: (args...) ->
-    mock = new MockFunction()
-    mock.load_args(args)
-    mock.setup_environment()
-    try
-      mock.run_test_function()
-      mock.verify_expectations()
-    finally
-      mock.cleanup_environment()
+  load_args = (args) ->
+    check_usage(args)
+    parse_args(args)
+    check_expects_method_name()
 
-  constructor: ->
-    @_test_function = undefined
-    @_expects_method_name = undefined
-    @_mock_count = undefined
-    @_mock_objects = undefined
-    @_mock_methods = undefined
-    
-  load_args: (args) ->
-    @check_usage(args)
-    @parse_args(args)
-    @check_expects_method_name()
+  setup_environment = ->
+    create_mock_objects()
+    create_empty_mock_methods_list()
+    install_expects_method()
 
-  setup_environment: (args) ->
-    @create_mock_objects()
-    @create_empty_mock_methods_list()
-    @install_expects_method()
+  run_test_function = ->
+    _test_function.apply(null, _mock_objects)
 
-  run_test_function: ->
-    @_test_function.apply(null, @_mock_objects)
-
-  verify_expectations: ->
-    errors = @_mock_methods.find_errors()
+  verify_expectations = ->
+    errors = _mock_methods.find_errors()
     fail( errors.join("\n") + "\n" ) if errors.length > 0
 
-  cleanup_environment: ->
-    @_mock_methods.uninstall_mock_methods()
-    @uninstall_expects_method()
+  cleanup_environment = ->
+    _mock_methods.uninstall_mock_methods()
+    uninstall_expects_method()
 
-  check_usage: (args) ->
+  check_usage = (args) ->
     switch args.length
       when 1
         fail(messages.MockUsage) unless is_function(args[0])
@@ -64,33 +53,41 @@ class MockFunction
       else
         fail(messages.MockUsage)
 
-  parse_args: (args) ->
+  parse_args = (args) ->
     switch args.length
       when 1
-        @_test_function = args[0]
+        _test_function = args[0]
       when 2
-        @_expects_method_name = args[0].expects_method_name
-        @_mock_count = args[0].mock_count
-        @_test_function = args[1]
-    @_expects_method_name ?= "expects"
-    @_mock_count ?= 5
+        _expects_method_name = args[0].expects_method_name
+        _mock_count = args[0].mock_count
+        _test_function = args[1]
+    _expects_method_name ?= "expects"
+    _mock_count ?= 5
     # TODO: what happens if expects_method_name is not a legal method name?
     # TODO: what happens if mock_count is not a number?
 
-  check_expects_method_name: ->
-    fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
+  check_expects_method_name = ->
+    fail(messages.ExpectsMethodAlreadyExists, _expects_method_name) if Object.prototype[_expects_method_name]?
 
-  install_expects_method: ->
-    Object.prototype[@_expects_method_name] = new_ExpectsMethod(@_expects_method_name, @_mock_methods)
+  install_expects_method = ->
+    Object.prototype[_expects_method_name] = new_ExpectsMethod(_expects_method_name, _mock_methods)
 
-  uninstall_expects_method: ->
-    delete Object.prototype[@_expects_method_name]
+  uninstall_expects_method = ->
+    delete Object.prototype[_expects_method_name]
 
-  create_mock_objects: ->
-    @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
+  create_mock_objects = ->
+    _mock_objects = ( new MockObject() for i in [1.._mock_count] )
 
-  create_empty_mock_methods_list: ->
-    @_mock_methods = new MockMethodList()    
+  create_empty_mock_methods_list = ->
+    _mock_methods = new MockMethodList()    
+  
+  load_args(args)
+  setup_environment()
+  try
+    run_test_function()
+    verify_expectations()
+  finally
+    cleanup_environment()
 
 
 new_ExpectsMethod = (expects_method_name, mock_methods)->
@@ -302,6 +299,6 @@ format = (message, args...) ->
 # See: http://www.matteoagosti.com/blog/2013/02/24/writing-javascript-modules-for-both-browser-and-node/
 #
 if module?.exports?
-  module.exports = MockFunction.mock
+  module.exports = mock
 else
-  window.mock = MockFunction.mock
+  window.mock = mock
