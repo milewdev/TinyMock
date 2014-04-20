@@ -28,7 +28,7 @@ class MockFunction
   setup: (args) ->
     @create_mock_objects()
     @create_empty_mock_methods_list()
-    @install_expects_method(@_mock_methods)   # TODO: remove arg
+    @install_expects_method()
 
   run_test_function: ->
     @_test_function.apply(null, @_mock_objects)
