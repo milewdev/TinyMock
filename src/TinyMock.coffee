@@ -132,7 +132,9 @@ new_MockMethod = (object, method_name) ->
     expectation._returns
     
   mock_method.create_expectation = ->
-    expectations.create_expectation()
+    expectation = new Expectation()
+    expectations.add(expectation)
+    expectation
 
   mock_method.restore_original_method = ->
     if original_method?
@@ -207,11 +209,9 @@ class ExpectationList
 
   constructor: ->
     @_list = []
-
-  create_expectation: ->
-    expectation = new Expectation()
+    
+  add: (expectation) ->
     @_list.push(expectation)
-    expectation
 
   # returns undefined if not found
   find_expectation: (args...) ->
