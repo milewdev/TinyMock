@@ -109,7 +109,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
     
   install_mock_method = (self, method_name) ->
     mock_method = new_MockMethod(self, method_name)
-    mock_methods.add(mock_method)
+    mock_methods.register(mock_method)
     self[method_name] = mock_method
     
   is_mock_method = (method) ->
@@ -136,7 +136,7 @@ new_MockMethod = (object, method_name) ->
     
   mock_method.create_expectation = ->
     expectation = new Expectation()
-    expectations.add(expectation)
+    expectations.register(expectation)
     expectation
 
   mock_method.restore_original_method = ->
@@ -213,7 +213,7 @@ class ExpectationList
   constructor: ->
     @_list = []
     
-  add: (expectation) ->
+  register: (expectation) ->
     @_list.push(expectation)
 
   # returns undefined if not found
@@ -238,7 +238,7 @@ class MockMethodList
   constructor: ->
     @_list = []
 
-  add: (mock_method) ->
+  register: (mock_method) ->
     @_list.push(mock_method)
     
   contains: (mock_method) ->
