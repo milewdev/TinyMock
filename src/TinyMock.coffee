@@ -70,7 +70,7 @@ mock = (args...) ->
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
 
   install_expects_method = ->
-    Object.prototype[expects_method_name] = new_ExpectsMethod(expects_method_name, mock_methods)
+    Object.prototype[expects_method_name] = ExpectsMethod(expects_method_name, mock_methods)
 
   uninstall_expects_method = ->
     delete Object.prototype[expects_method_name]
@@ -90,7 +90,7 @@ mock = (args...) ->
     cleanup_environment()
 
 
-new_ExpectsMethod = (expects_method_name, mock_methods)->
+ExpectsMethod = (expects_method_name, mock_methods)->
   
   expects_method = (method_name) ->
     check_usage(@, method_name, arguments.length)
@@ -105,7 +105,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
     fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
     
   install_mock_method = (self, method_name) ->
-    mock_method = new_MockMethod(self, method_name)
+    mock_method = MockMethod(self, method_name)
     mock_method.install()
     mock_methods.register(mock_method)
     
@@ -118,7 +118,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
   expects_method
     
     
-new_MockMethod = (object, method_name) ->
+MockMethod = (object, method_name) ->
 
   expectations = new ExpectationList()
   original_method = undefined
