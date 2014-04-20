@@ -51,7 +51,7 @@ class MockFunction
     fail( errors.join("\n") + "\n" ) if errors.length > 0
 
   cleanup_environment: ->
-    @_mock_methods.restore_original_methods()
+    @_mock_methods.uninstall_mock_methods()
     @uninstall_expects_method()
 
   check_usage: (args) ->
@@ -133,17 +133,17 @@ new_MockMethod = (object, method_name) ->
     expectation._called = yes
     throw expectation._throws if expectation._throws
     expectation._returns
+
+  mock_method.uninstall = ->
+    if original_method?
+      object[method_name] = original_method
+    else
+      delete object[method_name]
     
   mock_method.create_expectation = ->
     expectation = new Expectation()
     expectations.register(expectation)
     expectation
-
-  mock_method.restore_original_method = ->
-    if original_method?
-      object[method_name] = original_method
-    else
-      delete object[method_name]
 
   mock_method.find_errors = ->
     expectations.find_errors(method_name)
@@ -248,8 +248,8 @@ class MockMethodList
   find_errors: ->
     @_list.reduce ( (errors, mock_method) -> errors.concat(mock_method.find_errors()) ), []
 
-  restore_original_methods: ->
-    mock_method.restore_original_method() for mock_method in @_list
+  uninstall_mock_methods: ->
+    mock_method.uninstall() for mock_method in @_list
 
 
 #
