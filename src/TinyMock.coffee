@@ -107,33 +107,41 @@ class ExpectsMethod
       fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
       fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
     
-    build_mock_method = (object, method_name) ->
-      mock_method = (args...) ->
-        expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
-        expectation = expectations.find_expectation(args...)
-        fail(messages.UnknownExpectation, method_name, args) unless expectation
-        expectation._called = yes
-        throw expectation._throws if expectation._throws
-        expectation._returns
-      original_method = object[method_name]
-      mock_method.expectations = expectations = new ExpectationList()
-      mock_method.restore_original_method = ->
-        if original_method?
-          object[method_name] = original_method
-        else
-          delete object[method_name]
-      mock_method.find_errors = ->
-        expectations.find_errors(method_name)
-      mock_method
-    
     expects_method = (method_name) ->
       check_expects_usage(@, method_name, arguments.length)
-      if not @[method_name]?.expectations
+      if not mock_methods.contains(@[method_name])
         @[method_name] = build_mock_method(@, method_name)
         mock_methods.add(@[method_name])
       @[method_name].expectations.create_expectation()
     
     expects_method
+    
+    
+build_mock_method = (object, method_name) ->
+
+  expectations = new ExpectationList()
+  original_method = object[method_name]
+
+  mock_method = (args...) ->
+    expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
+    expectation = expectations.find_expectation(args...)
+    fail(messages.UnknownExpectation, method_name, args) unless expectation
+    expectation._called = yes
+    throw expectation._throws if expectation._throws
+    expectation._returns
+
+  mock_method.expectations = expectations
+
+  mock_method.restore_original_method = ->
+    if original_method?
+      object[method_name] = original_method
+    else
+      delete object[method_name]
+
+  mock_method.find_errors = ->
+    expectations.find_errors(method_name)
+
+  mock_method
     
 
 class MockObject
@@ -227,6 +235,9 @@ class MockMethodList
 
   add: (mock_method) ->
     @_list.push(mock_method)
+    
+  contains: (mock_method) ->
+    @_list.indexOf(mock_method) != -1
 
   # returns [ "an error re method1()", "another error re method1()", "an error re method2()", ... ]
   find_errors: ->
