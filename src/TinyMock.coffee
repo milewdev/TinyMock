@@ -16,11 +16,11 @@ messages = require("../messages/messages.en.json")
 #
 mock = (args...) ->
   
-  _test_function = undefined
-  _expects_method_name = undefined
-  _mock_count = undefined
-  _mock_objects = undefined
-  _mock_methods = undefined
+  test_function = undefined
+  expects_method_name = undefined
+  mock_count = undefined
+  mock_objects = undefined
+  mock_methods = undefined
 
   load_args = (args) ->
     check_usage(args)
@@ -33,14 +33,14 @@ mock = (args...) ->
     install_expects_method()
 
   run_test_function = ->
-    _test_function.apply(null, _mock_objects)
+    test_function.apply(null, mock_objects)
 
   verify_expectations = ->
-    errors = _mock_methods.find_errors()
+    errors = mock_methods.find_errors()
     fail( errors.join("\n") + "\n" ) if errors.length > 0
 
   cleanup_environment = ->
-    _mock_methods.uninstall_mock_methods()
+    mock_methods.uninstall_mock_methods()
     uninstall_expects_method()
 
   check_usage = (args) ->
@@ -56,30 +56,30 @@ mock = (args...) ->
   parse_args = (args) ->
     switch args.length
       when 1
-        _test_function = args[0]
+        test_function = args[0]
       when 2
-        _expects_method_name = args[0].expects_method_name
-        _mock_count = args[0].mock_count
-        _test_function = args[1]
-    _expects_method_name ?= "expects"
-    _mock_count ?= 5
+        expects_method_name = args[0].expects_method_name
+        mock_count = args[0].mock_count
+        test_function = args[1]
+    expects_method_name ?= "expects"
+    mock_count ?= 5
     # TODO: what happens if expects_method_name is not a legal method name?
     # TODO: what happens if mock_count is not a number?
 
   check_expects_method_name = ->
-    fail(messages.ExpectsMethodAlreadyExists, _expects_method_name) if Object.prototype[_expects_method_name]?
+    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
 
   install_expects_method = ->
-    Object.prototype[_expects_method_name] = new_ExpectsMethod(_expects_method_name, _mock_methods)
+    Object.prototype[expects_method_name] = new_ExpectsMethod(expects_method_name, mock_methods)
 
   uninstall_expects_method = ->
-    delete Object.prototype[_expects_method_name]
+    delete Object.prototype[expects_method_name]
 
   create_mock_objects = ->
-    _mock_objects = ( new MockObject() for i in [1.._mock_count] )
+    mock_objects = ( new MockObject() for i in [1..mock_count] )
 
   create_empty_mock_methods_list = ->
-    _mock_methods = new MockMethodList()    
+    mock_methods = new MockMethodList()    
   
   load_args(args)
   setup_environment()
@@ -166,17 +166,17 @@ class Expectation
     @_called = no
 
   args: (args...) ->
-    _check_args_usage(@, args)
+    check_args_usage(@, args)
     @_args = args
     @
 
   returns: (value) ->
-    _check_returns_usage(@, value, arguments.length)
+    check_returns_usage(@, value, arguments.length)
     @_returns = value
     @
 
   throws: (error) ->
-    _check_throws_usage(@, error, arguments.length)
+    check_throws_usage(@, error, arguments.length)
     @_throws = error
     @
 
@@ -191,18 +191,18 @@ class Expectation
 
   # private
 
-  _check_args_usage = (self, args) ->
+  check_args_usage = (self, args) ->
     fail(messages.ArgsUsage) if args.length == 0
     fail(messages.ArgsUsedMoreThanOnce) unless self._args.length == 0
     fail(messages.ArgsUsedAfterReturnsOrThrows) if self._returns? or self._throws?
 
-  _check_returns_usage = (self, value, arg_count) ->
+  check_returns_usage = (self, value, arg_count) ->
     fail(messages.ReturnsUsage) unless value?
     fail(messages.ReturnsUsage) unless arg_count == 1
     fail(messages.ReturnsUsedMoreThanOnce) if self._returns?
     fail(messages.ReturnsAndThrowsBothUsed) if self._throws?
 
-  _check_throws_usage = (self, error, arg_count) ->
+  check_throws_usage = (self, error, arg_count) ->
     fail(messages.ThrowsUsage) unless error?
     fail(messages.ThrowsUsage) unless arg_count == 1
     fail(messages.ThrowsUsedMoreThanOnce) if self._throws?
