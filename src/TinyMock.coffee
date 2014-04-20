@@ -34,7 +34,7 @@ class MockFunction
     @_mock_methods = undefined
     
   load_args: (args) ->
-    @check_mock_usage(args)
+    @check_usage(args)
     @parse_args(args)
     @check_expects_method_name()
 
@@ -54,7 +54,7 @@ class MockFunction
     @_mock_methods.restore_original_methods()
     @uninstall_expects_method()
 
-  check_mock_usage: (args) ->
+  check_usage: (args) ->
     switch args.length
       when 1
         fail(messages.MockUsage) unless is_function(args[0])
