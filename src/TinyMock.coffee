@@ -98,7 +98,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
   expects_method = (method_name) ->
     check_expects_usage(@, method_name, arguments.length)
     if not is_mock_method(@[method_name])
-      @[method_name] = build_mock_method(@, method_name)
+      @[method_name] = new_MockMethod(@, method_name)
       mock_methods.add(@[method_name])
     @[method_name].expectations.create_expectation()
   
@@ -118,7 +118,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
   expects_method
     
     
-build_mock_method = (object, method_name) ->
+new_MockMethod = (object, method_name) ->
 
   expectations = new ExpectationList()
   original_method = object[method_name]
