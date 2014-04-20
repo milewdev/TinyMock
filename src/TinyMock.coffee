@@ -107,7 +107,10 @@ build_expects_method = (expects_method_name, mock_methods)->
     fail(messages.ExpectsUsage) unless arg_count == 1
     fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
     fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
-    fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
+    fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
+    
+  is_reserved_method_name = (method_name) ->
+    method_name == expects_method_name
   
   expects_method
     
