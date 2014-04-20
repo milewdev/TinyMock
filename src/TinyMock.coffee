@@ -100,7 +100,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
     if not is_mock_method(@[method_name])
       @[method_name] = new_MockMethod(@, method_name)
       mock_methods.add(@[method_name])
-    @[method_name].expectations.create_expectation()
+    @[method_name].create_expectation()
   
   check_expects_usage = (self, method_name, arg_count) ->
     fail(messages.ExpectsUsage) unless method_name?
@@ -130,8 +130,9 @@ new_MockMethod = (object, method_name) ->
     expectation._called = yes
     throw expectation._throws if expectation._throws
     expectation._returns
-
-  mock_method.expectations = expectations
+    
+  mock_method.create_expectation = ->
+    expectations.create_expectation()
 
   mock_method.restore_original_method = ->
     if original_method?
