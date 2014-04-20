@@ -5,7 +5,8 @@ class MockFunction
 
   @mock: (args...) ->
     mock = new MockFunction()
-    mock.setup(args)
+    mock.load_args(args)
+    mock.setup()
     try
       mock.run_test_function()
       mock.verify_expectations()
@@ -18,11 +19,13 @@ class MockFunction
     @_mock_count = undefined
     @_mock_objects = undefined
     @_mock_methods = undefined
-
-  setup: (args) ->
+    
+  load_args: (args) ->
     @check_mock_usage(args)
     @parse_args(args)
     @check_expects_method_name()
+
+  setup: (args) ->
     @create_mock_objects()
     @create_empty_mock_methods_list()
     @install_expects_method(@_mock_methods)   # TODO: remove arg
