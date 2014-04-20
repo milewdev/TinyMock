@@ -81,7 +81,7 @@ class MockFunction
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
 
   install_expects_method: ->
-    Object.prototype[@_expects_method_name] = @build_expects_method()
+    Object.prototype[@_expects_method_name] = build_expects_method(@_expects_method_name, @_mock_methods)
 
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
@@ -90,31 +90,26 @@ class MockFunction
     @_mock_objects = ( new MockObject() for i in [1..@_mock_count] )
 
   create_empty_mock_methods_list: ->
-    @_mock_methods = new MockMethodList()
-
-  build_expects_method: ->
-    ExpectsMethod.build(@_expects_method_name, @_mock_methods)
+    @_mock_methods = new MockMethodList()    
 
 
-class ExpectsMethod
+build_expects_method = (expects_method_name, mock_methods)->
   
-  @build: (expects_method_name, mock_methods)->
-    
-    check_expects_usage = (self, method_name, arg_count) ->
-      fail(messages.ExpectsUsage) unless method_name?
-      fail(messages.ExpectsUsage) unless arg_count == 1
-      fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
-      fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
-      fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
-    
-    expects_method = (method_name) ->
-      check_expects_usage(@, method_name, arguments.length)
-      if not mock_methods.contains(@[method_name])
-        @[method_name] = build_mock_method(@, method_name)
-        mock_methods.add(@[method_name])
-      @[method_name].expectations.create_expectation()
-    
-    expects_method
+  expects_method = (method_name) ->
+    check_expects_usage(@, method_name, arguments.length)
+    if not mock_methods.contains(@[method_name])
+      @[method_name] = build_mock_method(@, method_name)
+      mock_methods.add(@[method_name])
+    @[method_name].expectations.create_expectation()
+  
+  check_expects_usage = (self, method_name, arg_count) ->
+    fail(messages.ExpectsUsage) unless method_name?
+    fail(messages.ExpectsUsage) unless arg_count == 1
+    fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
+    fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
+    fail(messages.ReservedMethodName, method_name) if method_name == expects_method_name        # TODO: extract is_reserved_method_name()
+  
+  expects_method
     
     
 build_mock_method = (object, method_name) ->
