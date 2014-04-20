@@ -124,8 +124,8 @@ new_MockMethod = (object, method_name) ->
   original_method = object[method_name]
 
   mock_method = (args...) ->
-    expectations.check_for_duplicate_expectations(method_name)                              # TODO: explain why we do this here
-    expectation = expectations.find_expectation(args...)
+    expectations.check_for_duplicates(method_name)                              # TODO: explain why we do this here
+    expectation = expectations.find(args...)
     fail(messages.UnknownExpectation, method_name, args) unless expectation
     expectation._called = yes
     throw expectation._throws if expectation._throws
@@ -214,10 +214,10 @@ class ExpectationList
     @_list.push(expectation)
 
   # returns undefined if not found
-  find_expectation: (args...) ->
+  find: (args...) ->
     return expectation for expectation in @_list when expectation.matches(args...)
 
-  check_for_duplicate_expectations: (method_name) ->      # method_name is for error messages;  TODO: is there a better way?
+  check_for_duplicates: (method_name) ->                  # method_name is for error messages;  TODO: is there a better way?
     # TODO: use each with index and slice to avoid last element
     return if @_list.length < 2
     for outer in [0..@_list.length-2]                     # given @_list = [ a, b, c ], these
