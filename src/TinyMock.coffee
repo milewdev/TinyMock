@@ -1,6 +1,22 @@
 messages = require("../messages/messages.en.json")
 
 
+#
+# The mock() function sets up a mocking environment or scope where 
+# a test function can set method call expectations on objects.  It 
+# then runs the test function, checks that all expectations were 
+# met, and finally cleans up the environment.  If the test function
+# throws an error, mock() will still clean up the environment, but 
+# it will not check the expectations;  there is no need to add 
+# noise to the thrown error.  To illustrate:
+#
+#   fs = require("fs")                                  # a dependency
+#   sut = new Sut()                                     # something under test
+#   mock ->                                             # start mocking scope: add expects() to Object.prototype
+#     fs.expects("writeFileSync").args("some content")  # set an expectation: replace writeFileSync with a mock version
+#     sut.do_something_interesting()                    # do whatever it is we want to test
+#   ...                                                 # end scope: check expectations, remove expects(), restore original writeFileSync()
+#
 class MockFunction
 
   @mock: (args...) ->
