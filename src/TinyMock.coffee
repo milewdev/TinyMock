@@ -126,14 +126,14 @@ class ExpectsMethod
         expectations.find_errors(method_name)
       mock_method
     
-    expects = (method_name) ->
+    expects_method = (method_name) ->
       check_expects_usage(@, method_name, arguments.length)
       if not @[method_name]?.expectations
         @[method_name] = build_mock_method(@, method_name)
         mock_methods.add(@[method_name])
       @[method_name].expectations.create_expectation()
     
-    expects
+    expects_method
     
 
 class MockObject
