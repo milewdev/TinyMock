@@ -97,8 +97,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
   
   expects_method = (method_name) ->
     check_usage(@, method_name, arguments.length)
-    if not is_mock_method(@[method_name])
-      install_mock_method(@, method_name)
+    install_mock_method(@, method_name) unless is_mock_method(@[method_name])
     @[method_name].create_expectation()
   
   check_usage = (self, method_name, arg_count) ->
