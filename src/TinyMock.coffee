@@ -108,8 +108,9 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
     fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
     
   install_mock_method = (self, method_name) ->
-    self[method_name] = new_MockMethod(self, method_name)
-    mock_methods.add(self[method_name])
+    mock_method = new_MockMethod(self, method_name)
+    mock_methods.add(mock_method)
+    self[method_name] = mock_method
     
   is_mock_method = (method) ->
     mock_methods.contains(method)
