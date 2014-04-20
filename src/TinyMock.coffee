@@ -109,8 +109,8 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
     
   install_mock_method = (self, method_name) ->
     mock_method = new_MockMethod(self, method_name)
+    mock_method.install()
     mock_methods.register(mock_method)
-    self[method_name] = mock_method
     
   is_mock_method = (method) ->
     mock_methods.contains(method)
@@ -124,7 +124,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
 new_MockMethod = (object, method_name) ->
 
   expectations = new ExpectationList()
-  original_method = object[method_name]
+  original_method = undefined
 
   mock_method = (args...) ->
     expectations.check_for_duplicates(method_name)                              # TODO: explain why we do this here
@@ -133,6 +133,10 @@ new_MockMethod = (object, method_name) ->
     expectation._called = yes
     throw expectation._throws if expectation._throws
     expectation._returns
+    
+  mock_method.install = ->
+    original_method = object[method_name]
+    object[method_name] = mock_method
 
   mock_method.uninstall = ->
     if original_method?
