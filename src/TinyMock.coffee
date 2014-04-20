@@ -96,13 +96,13 @@ class MockFunction
 new_ExpectsMethod = (expects_method_name, mock_methods)->
   
   expects_method = (method_name) ->
-    check_expects_usage(@, method_name, arguments.length)
+    check_usage(@, method_name, arguments.length)
     if not is_mock_method(@[method_name])
       @[method_name] = new_MockMethod(@, method_name)
       mock_methods.add(@[method_name])
     @[method_name].create_expectation()
   
-  check_expects_usage = (self, method_name, arg_count) ->
+  check_usage = (self, method_name, arg_count) ->
     fail(messages.ExpectsUsage) unless method_name?
     fail(messages.ExpectsUsage) unless arg_count == 1
     fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
