@@ -81,7 +81,7 @@ class MockFunction
     fail(messages.ExpectsMethodAlreadyExists, @_expects_method_name) if Object.prototype[@_expects_method_name]?
 
   install_expects_method: ->
-    Object.prototype[@_expects_method_name] = build_expects_method(@_expects_method_name, @_mock_methods)
+    Object.prototype[@_expects_method_name] = new_ExpectsMethod(@_expects_method_name, @_mock_methods)
 
   uninstall_expects_method: ->
     delete Object.prototype[@_expects_method_name]
@@ -93,7 +93,7 @@ class MockFunction
     @_mock_methods = new MockMethodList()    
 
 
-build_expects_method = (expects_method_name, mock_methods)->
+new_ExpectsMethod = (expects_method_name, mock_methods)->
   
   expects_method = (method_name) ->
     check_expects_usage(@, method_name, arguments.length)
