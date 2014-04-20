@@ -10,8 +10,8 @@ messages = require("../messages/messages.en.json")
 #   fs = require("fs")                                  # a dependency
 #   sut = new Sut()                                     # something under test
 #   mock ->                                             # start mocking scope: add expects() to Object.prototype
-#     fs.expects("writeFileSync").args("some content")  # set an expectation: replace writeFileSync with a mock version
-#     sut.do_something_interesting()                    # do whatever it is we want to test
+#     fs.expects("writeFileSync").args("some content")  # set an expectation: replace writeFileSync() with a mock method
+#     sut.do_something_interesting()                    # run whatever it is we want to test
 #   ...                                                 # end scope: check expectations, remove expects(), restore original writeFileSync()
 #
 class MockFunction
@@ -98,8 +98,7 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
   expects_method = (method_name) ->
     check_usage(@, method_name, arguments.length)
     if not is_mock_method(@[method_name])
-      @[method_name] = new_MockMethod(@, method_name)
-      mock_methods.add(@[method_name])
+      install_mock_method(@, method_name)
     @[method_name].create_expectation()
   
   check_usage = (self, method_name, arg_count) ->
@@ -108,6 +107,10 @@ new_ExpectsMethod = (expects_method_name, mock_methods)->
     fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
     fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
     fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
+    
+  install_mock_method = (self, method_name) ->
+    self[method_name] = new_MockMethod(self, method_name)
+    mock_methods.add(self[method_name])
     
   is_mock_method = (method) ->
     mock_methods.contains(method)
