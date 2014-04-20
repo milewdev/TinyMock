@@ -6,12 +6,12 @@ class MockFunction
   @mock: (args...) ->
     mock = new MockFunction()
     mock.load_args(args)
-    mock.setup()
+    mock.setup_environment()
     try
       mock.run_test_function()
       mock.verify_expectations()
     finally
-      mock.cleanup()
+      mock.cleanup_environment()
 
   constructor: ->
     @_test_function = undefined
@@ -25,7 +25,7 @@ class MockFunction
     @parse_args(args)
     @check_expects_method_name()
 
-  setup: (args) ->
+  setup_environment: (args) ->
     @create_mock_objects()
     @create_empty_mock_methods_list()
     @install_expects_method()
@@ -37,7 +37,7 @@ class MockFunction
     errors = @_mock_methods.find_errors()
     fail( errors.join("\n") + "\n" ) if errors.length > 0
 
-  cleanup: ->
+  cleanup_environment: ->
     @_mock_methods.restore_original_methods()
     @uninstall_expects_method()
 
