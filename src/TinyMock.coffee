@@ -5,7 +5,7 @@ messages = require("../messages/messages.en.json")
 # MockFunction
 #
 class MockFunction
-  
+
   #
   # mock (my_mock) ->
   #   my_mock.expects("my_method")
@@ -27,7 +27,7 @@ class MockFunction
       all_expectations.unregister_all_expectations() if all_expectations?
 
   # private
-  
+
   #
   # Can be either 'mock ->' or 'mock {option: value ...}, ->'
   #
@@ -44,7 +44,7 @@ class MockFunction
 
   _has_expected_options = (object) ->
     has_property(object, "expects_method_name") or has_property(object, "mock_count")
-      
+
   _parse_args = (args) ->
     switch args.length
       when 1
@@ -60,18 +60,18 @@ class MockFunction
 
   _run_test_function = (test_function, convenience_mocks) ->
     test_function.apply(undefined, convenience_mocks)
-    
-    
+
+
 #
 # MockObject
 #
-# TODO: explain that Mock is simply a way to distinguish objects 
+# TODO: explain that Mock is simply a way to distinguish objects
 # created and passed in by mock(), i.e. that in mock (m1, m2),
 # methods mocked on m1 and m2 do not already have to exist on
 # m1 and m2.
 #
 class MockObject
-  
+
   # empty
 
 
@@ -88,17 +88,17 @@ class MockObject
 # Note: this is better thought of as a mixin; comment further
 #
 class ExpectsMethod
-  
+
   constructor: (expects_method_name, all_expectations) ->
     _check_constructor_usage(expects_method_name)
     _install_expects_method(expects_method_name, all_expectations)
     _install_uninstall_expects_method(@, expects_method_name)
 
   # private
-  
+
   _check_constructor_usage = (expects_method_name) ->
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[ expects_method_name ]?
-    
+
   _install_expects_method = (expects_method_name, all_expectations) ->
     Object.prototype[ expects_method_name ] = (method_name) ->
       _check_expects_usage(@, expects_method_name, method_name)
@@ -106,7 +106,7 @@ class ExpectsMethod
 
   # TODO: refactor (hideous name confusion re: expects_method, _install_uninstall_..., etc.)
   _install_uninstall_expects_method = (expects_method, expects_method_name) ->
-    expects_method.uninstall_expects_method = -> delete Object.prototype[ expects_method_name ]    
+    expects_method.uninstall_expects_method = -> delete Object.prototype[ expects_method_name ]
 
   _check_expects_usage = (object, expects_method_name, method_name) ->
     fail(messages.ExpectsUsage) unless method_name?
@@ -114,7 +114,7 @@ class ExpectsMethod
     fail(messages.PreExistingProperty, method_name) if has_property(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
     fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
-  
+
   _create_expectation = (object, method_name, all_expectations) ->
     new Expectation(object, method_name, all_expectations)
 
@@ -130,13 +130,13 @@ class ExpectsMethod
 # TODO: need to de-singleton this
 #
 class AllExpectations
-  
+
   constructor: ->
     @_expectations = []
-    
+
   register_expectation: (expectation) ->
     @_expectations.push(expectation)
-    
+
   find_expectation: (object, method_name, args...) ->
     for expectation in @_expectations when expectation.matches(object, method_name, args...)
       return expectation
@@ -157,7 +157,7 @@ class AllExpectations
   # TODO: write comment about uninstalling in reverse
   uninstall_all_mocked_methods: ->
     expectation.uninstall_mocked_method() for expectation in @_expectations by -1
-    
+
   unregister_all_expectations: ->
     @_expectations.length = 0
 
@@ -166,7 +166,7 @@ class AllExpectations
   _find_all_errors = (all_expectations) ->    # returns "an error\nanother error\n...\n" or ""
     errors = _flatten_array( expectation.find_errors() for expectation in all_expectations )
     if errors.length > 0 then errors.join("\n") + "\n" else ""
-    
+
   #
   # [ [], [ "a" ], [ "b", "c" ] ]   => [ "a", "b", "c" ]
   # [ [], [], [] ]                  => []
@@ -178,8 +178,8 @@ class AllExpectations
   #
   _flatten_array = (array) ->
     [].concat.apply([], array)
-  
-  
+
+
 #
 # Expectation
 #
@@ -231,12 +231,12 @@ class Expectation
       expectation.uninstall_mocked_method = -> methods[ expectation._method_name ] = original_method
     else
       expectation.uninstall_mocked_method = -> delete methods[ expectation._method_name ]
-  
+
   _build_mocked_method = (method_name, all_expectations) ->
     (args...) ->
       all_expectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
       _invoke( all_expectations.find_expectation(@, method_name, args...) )
-      
+
   _invoke = (expectation) ->
     expectation._called = yes
     throw expectation._throws if expectation._throws?
@@ -275,16 +275,16 @@ class Expectation
 
 is_class = (object) ->
   typeof object == 'function'
-  
+
 is_function = (object) ->
   typeof object == 'function'
-  
+
 is_object = (object) ->
   typeof object == 'object'
 
 does_prototype_have_method = (object, method_name) ->
   object.prototype[ method_name ]?
-   
+
 does_object_have_method = (object, method_name) ->
   object[ method_name ]?
 
@@ -294,7 +294,7 @@ has_property = (object, property_name) ->
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
 
-fail = (message, args...) ->  
+fail = (message, args...) ->
   throw new Error(format(message, args...))
 
 #
