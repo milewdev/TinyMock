@@ -1,6 +1,7 @@
 Before 'git push'
 =================
 
+- review the TODO file
 - run ./_lint
 - run ./_build
 - run ./_test

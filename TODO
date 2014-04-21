@@ -1,3 +1,4 @@
+Rename 'messages' to 'MESSAGES'.
 Test in a browser.
 Finish writing up LESSONS.
 Check the ordering of the unit tests - are they listed logically?
