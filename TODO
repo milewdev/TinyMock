@@ -1,4 +1,5 @@
 Rename 'messages' to 'MESSAGES'.
+Rename 'mock_count' to 'mock_object_count'?
 Test in a browser.
 Finish writing up LESSONS.
 Check the ordering of the unit tests - are they listed logically?

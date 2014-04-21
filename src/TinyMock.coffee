@@ -1,8 +1,69 @@
+#
+# It may be helpful to skim the tutorial and the reference in order to 
+# understand what TinyMock does before reading the code.
+#
+# tutorial:  http://milewgit.github.io/TinyMock.doc/tutorial.html
+# reference: http://milewgit.github.io/TinyMock.doc/reference.html
+#
+
+#
+# Two coding structures are used, classes and function closures:
+#
+#   class MyClass
+#
+#     constructor: ->
+#     @_var = undefined                 # list of instance variables
+#     ...
+#
+#     public_method: ->                 # public methods
+#     ...
+#     private_method(@)                 # pass 'this' to private methods
+#     ...
+#
+#     private_method = (self) ->        # private methods
+#     ...
+#     self._var = ...
+#     ...
+#
+#
+#   MyFunction = ->
+#
+#     var = undefined                   # list of closure variables
+#     ...
+#
+#     my_function = ->                  # the main function
+#       ...
+#       var = ...
+#       private_method()
+#       ...
+#
+#     my_function.public_method = ->    # public methods
+#       ...
+#       var = ...
+#       private_method()
+#       ...
+#
+#     private_method = ->               # private methods
+#       ...
+#       var = ...
+#       ...
+#
+#     private_method()                  # body of MyFunction
+#     ...
+#     my_function                       # return the main function
+#
+
+
+#
+# All error messages are stored in an external json file which we load 
+# into 'messages'.  This is the only state that is maintained between 
+# calls to mock().
+#
 messages = require("../messages/messages.en.json")
 
 
 #
-# The mock() function sets up a mocking environment or scope where
+# The mock() function sets up a mocking environment, or scope, where
 # a test function can set method call expectations on objects.  It
 # then runs the test function, checks that all expectations were
 # met, and finally cleans up the environment:
@@ -13,6 +74,11 @@ messages = require("../messages/messages.en.json")
 #     fs.expects("writeFileSync").args("some content")  # set an expectation: replace writeFileSync() with a mock method
 #     sut.do_something_interesting()                    # run whatever it is we want to test
 #                                                       # end scope: checks expectations, removes expects(), restores original writeFileSync()
+#
+# mock() is a function closure.  Variables are defined first, followed
+# by support functions, and finally the body of the function itself.
+#
+# mock() is exported at the end of this file.
 #
 mock = (args...) ->
 
@@ -81,6 +147,7 @@ mock = (args...) ->
   create_empty_mock_methods_list = ->
     mock_methods = new MockMethodList()
 
+  # main function body
   read_args(args)
   setup_environment()
   try
@@ -90,8 +157,38 @@ mock = (args...) ->
     cleanup_environment()
 
 
+#
+# ExpectsMethod is a function closure used to implement the expects() method:
+#
+#   mock (m) ->
+#     m.expects("my_method")
+#     ...
+#
+# Many expectations can be set on the same method:
+#
+#   mock (m) ->
+#     m.expects("my_method").args(1, 2, 3)
+#     m.expects("my_method").args(4, 5, 6)
+#
+# These are represented internally by one instance of MockMethod for
+# "my_method", which itself has a list of two expectations, one with args 1, 
+# 2, and 3, and the second with args 4, 5, and 6.  
+#
+# expects() first validates the method_name argument ("my_method" in the
+# examples above).  It then installs a mock method for method_name if one has 
+# not already been installed, and finally it creates a new expectation, which 
+# it returns to the caller.  Rewriting the example above to make the process
+# clearer:
+#
+#   mock (m) ->
+#     expectation1 = m.expects("my_method")   # install mock "my_method"; create and return an expectation
+#     expectation1.args(1, 2, 3)
+#     expectation2 = m.expects("my_method")   # "my_method" already mocked; create and return another expectation
+#     expectation2.args(4, 5, 6)
+#
 ExpectsMethod = (expects_method_name, mock_methods)->
 
+  # this is the actual expects() method
   expects_method = (method_name) ->
     check_usage(@, method_name, arguments.length)
     install_mock_method(@, method_name) unless is_mock_method(@[method_name])
@@ -115,6 +212,7 @@ ExpectsMethod = (expects_method_name, mock_methods)->
   is_reserved_method_name = (method_name) ->
     method_name == expects_method_name
 
+  # main function body
   expects_method
 
 
