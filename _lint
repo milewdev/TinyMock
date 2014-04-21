@@ -10,11 +10,10 @@
 # Warning: the checks are not sophisticated.
 #
 
+echo '--------------------------------------------------------------------------------'
+
 echo 'Check for occurrences of 'signature' (should use 'expectation' instead) ...'
 egrep -rin 'signature' src/*.coffee test/*.coffee
-
-echo 'Check for private functions not beginning with underscore (_) ...'
-egrep -rin '^[ ]+[a-z][a-z_]*[ ]*=.*->' src/*.coffee
 
 echo 'Check for capitalization in test descriptions ...'
 egrep -rn $'(describe|it)[ ]+[\'"][A-Z]' test/*.coffee
@@ -36,3 +35,6 @@ egrep -rn '\t' src/*.coffee test/*.coffee
 
 echo 'Check for trailing spaces in source code files ...'
 egrep -rn ' $' src/*.coffee test/*.coffee
+
+echo 'Check for git stashes ...'
+git stash list

@@ -2,297 +2,280 @@ messages = require("../messages/messages.en.json")
 
 
 #
-# MockFunction
+# The mock() function sets up a mocking environment or scope where
+# a test function can set method call expectations on objects.  It
+# then runs the test function, checks that all expectations were
+# met, and finally cleans up the environment:
 #
-class MockFunction
+#   fs = require("fs")                                  # a dependency
+#   sut = new Sut()                                     # something under test
+#   mock ->                                             # start mocking scope: adds expects() to Object.prototype
+#     fs.expects("writeFileSync").args("some content")  # set an expectation: replace writeFileSync() with a mock method
+#     sut.do_something_interesting()                    # run whatever it is we want to test
+#                                                       # end scope: checks expectations, removes expects(), restores original writeFileSync()
+#
+mock = (args...) ->
 
-  #
-  # mock (my_mock) ->
-  #   my_mock.expects("my_method")
-  #   ...
-  #
-  @mock: (args...) ->
-    try
-      _check_usage(args)
-      [ expects_method_name, mock_count, test_function ] = _parse_args(args)
-      # TODO: what is 'all_expectations'?  Why is it being created here?  What purpose does it server?  Need a better name.
-      all_expectations = new AllExpectations()    # TODO: use factory method instead of new (same for other classes)
-      expects_method = new ExpectsMethod(expects_method_name, all_expectations)   # TODO: expects_method/ExpectsMethod is a poor name
-      convenience_mocks = _build_convenience_mock_objects(mock_count)
-      _run_test_function(test_function, convenience_mocks)
-      all_expectations.verify_all_expectations()
-    finally
-      expects_method.uninstall_expects_method() if expects_method?  # TODO: the 'if' guard smells?
-      all_expectations.uninstall_all_mocked_methods() if all_expectations?
-      all_expectations.unregister_all_expectations() if all_expectations?
+  test_function = undefined
+  expects_method_name = undefined
+  mock_count = undefined
+  mock_objects = undefined
+  mock_methods = undefined
 
-  # private
+  read_args = (args) ->
+    check_usage(args)
+    parse_args(args)
+    check_expects_method_name()
 
-  #
-  # Can be either 'mock ->' or 'mock {option: value ...}, ->'
-  #
-  _check_usage = (args) ->
+  setup_environment = ->
+    create_mock_objects()
+    create_empty_mock_methods_list()
+    install_expects_method()
+
+  run_test_function = ->
+    test_function.apply(null, mock_objects)
+
+  verify_expectations = ->
+    errors = mock_methods.find_errors()
+    fail( errors.join("\n") + "\n" ) if errors.length > 0
+
+  cleanup_environment = ->
+    mock_methods.uninstall_mock_methods()
+    uninstall_expects_method()
+
+  check_usage = (args) ->
     switch args.length
       when 1
-        fail(messages.MockUsage) if not is_function(args[0])
+        fail(messages.MockUsage) unless is_function(args[0])
       when 2
-        fail(messages.MockUsage) if not is_object(args[0])
-        fail(messages.MockBadOptions) if not _has_expected_options(args[0])
-        fail(messages.MockUsage) if not is_function(args[1])
+        fail(messages.MockBadUsage) unless has_property(args[0], "expects_method_name") or has_property(args[0], "mock_count")
+        fail(messages.MockCountNotANumber, args[0].mock_count) if args[0].mock_count? and not is_integer(args[0].mock_count)
+        fail(messages.MockCountNegative, args[0].mock_count, -1 * args[0].mock_count) if args[0].mock_count? and (args[0].mock_count < 0)
+        fail(messages.MockUsage) unless is_function(args[1])
       else
         fail(messages.MockUsage)
 
-  _has_expected_options = (object) ->
-    has_property(object, "expects_method_name") or has_property(object, "mock_count")
-
-  _parse_args = (args) ->
+  parse_args = (args) ->
     switch args.length
       when 1
         test_function = args[0]
       when 2
-        expects_method_name = args[0]["expects_method_name"]
-        mock_count = args[0]["mock_count"]
+        expects_method_name = args[0].expects_method_name
+        mock_count = args[0].mock_count
         test_function = args[1]
-    [ expects_method_name || "expects", mock_count || 5, test_function ]
+    expects_method_name ?= "expects"
+    mock_count ?= 5
 
-  _build_convenience_mock_objects = (mock_count)->
-    ( new MockObject() for i in [1..mock_count] )       # => [ mock, mock, ... ]
+  check_expects_method_name = ->
+    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
 
-  _run_test_function = (test_function, convenience_mocks) ->
-    test_function.apply(undefined, convenience_mocks)
+  install_expects_method = ->
+    Object.prototype[expects_method_name] = ExpectsMethod(expects_method_name, mock_methods)
+
+  uninstall_expects_method = ->
+    delete Object.prototype[expects_method_name]
+
+  create_mock_objects = ->
+    mock_objects = ( new MockObject() for i in [1..mock_count] )
+
+  create_empty_mock_methods_list = ->
+    mock_methods = new MockMethodList()
+
+  read_args(args)
+  setup_environment()
+  try
+    run_test_function()
+    verify_expectations()
+  finally
+    cleanup_environment()
 
 
-#
-# MockObject
-#
-# TODO: explain that Mock is simply a way to distinguish objects
-# created and passed in by mock(), i.e. that in mock (m1, m2),
-# methods mocked on m1 and m2 do not already have to exist on
-# m1 and m2.
-#
+ExpectsMethod = (expects_method_name, mock_methods)->
+
+  expects_method = (method_name) ->
+    check_usage(@, method_name, arguments.length)
+    install_mock_method(@, method_name) unless is_mock_method(@[method_name])
+    @[method_name].create_expectation()
+
+  check_usage = (self, method_name, arg_count) ->
+    fail(messages.ExpectsUsage) unless method_name?
+    fail(messages.ExpectsUsage) unless arg_count == 1
+    fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
+    fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
+    fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
+
+  install_mock_method = (self, method_name) ->
+    mock_method = MockMethod(self, method_name)
+    mock_method.install()
+    mock_methods.register(mock_method)
+
+  is_mock_method = (method) ->
+    mock_methods.contains(method)
+
+  is_reserved_method_name = (method_name) ->
+    method_name == expects_method_name
+
+  expects_method
+
+
+MockMethod = (object, method_name) ->
+
+  expectations = new ExpectationList()
+  original_method = undefined
+
+  mock_method = (args...) ->
+    expectations.check_for_duplicates(method_name)                              # TODO: explain why we do this here
+    expectation = expectations.find(args...)
+    fail(messages.UnknownExpectation, method_name, args) unless expectation
+    expectation._called = yes
+    throw expectation._throws if expectation._throws
+    expectation._returns
+
+  mock_method.install = ->
+    original_method = object[method_name]
+    object[method_name] = mock_method
+
+  mock_method.uninstall = ->
+    if original_method?
+      object[method_name] = original_method
+    else
+      delete object[method_name]
+
+  mock_method.create_expectation = ->
+    expectation = new Expectation()
+    expectations.register(expectation)
+    expectation
+
+  mock_method.find_errors = ->
+    expectations.find_errors(method_name)
+
+  mock_method
+
+
 class MockObject
 
   # empty
 
 
-#
-# ExpectsMethod
-#
-#
-# Add comment: this functions gets installed to Object.prototype while
-# in the scope of the mock() function
-#
-# mock(my_mock) ->
-#   my_mock.expects("my_method")
-#
-# Note: this is better thought of as a mixin; comment further
-#
-class ExpectsMethod
-
-  constructor: (expects_method_name, all_expectations) ->
-    _check_constructor_usage(expects_method_name)
-    _install_expects_method(expects_method_name, all_expectations)
-    _install_uninstall_expects_method(@, expects_method_name)
-
-  # private
-
-  _check_constructor_usage = (expects_method_name) ->
-    fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[ expects_method_name ]?
-
-  _install_expects_method = (expects_method_name, all_expectations) ->
-    Object.prototype[ expects_method_name ] = (method_name) ->
-      _check_expects_usage(@, expects_method_name, method_name)
-      _create_expectation(@, method_name, all_expectations)
-
-  # TODO: refactor (hideous name confusion re: expects_method, _install_uninstall_..., etc.)
-  _install_uninstall_expects_method = (expects_method, expects_method_name) ->
-    expects_method.uninstall_expects_method = -> delete Object.prototype[ expects_method_name ]
-
-  _check_expects_usage = (object, expects_method_name, method_name) ->
-    fail(messages.ExpectsUsage) unless method_name?
-    fail(messages.ReservedMethodName, method_name) if _is_reserved_method_name(expects_method_name, method_name)
-    fail(messages.PreExistingProperty, method_name) if has_property(object, method_name)
-    fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and not is_class(object) and not does_object_have_method(object, method_name)
-    fail(messages.NotAnExistingMethod, method_name) if not is_mock_object(object) and is_class(object) and not does_prototype_have_method(object, method_name)
-
-  _create_expectation = (object, method_name, all_expectations) ->
-    new Expectation(object, method_name, all_expectations)
-
-  _is_reserved_method_name = (expects_method_name, method_name) ->
-    method_name == expects_method_name
-
-
-#
-# AllExpectations
-#
-# TODO: note about there not being that many expectations (i.e. typically fewer than 10?)
-#
-# TODO: need to de-singleton this
-#
-class AllExpectations
-
-  constructor: ->
-    @_expectations = []
-
-  register_expectation: (expectation) ->
-    @_expectations.push(expectation)
-
-  find_expectation: (object, method_name, args...) ->
-    for expectation in @_expectations when expectation.matches(object, method_name, args...)
-      return expectation
-    fail(messages.UnknownExpectation, method_name, args)
-
-  check_for_duplicate_expectations: ->
-    # TODO: use each with index and slice to avoid last element
-    return if @_expectations.length < 2
-    for outer in [0..@_expectations.length-2]                     # given @_expectations = [ a, b, c ], these
-      for inner in [outer+1..@_expectations.length-1]             # loops produce the pairs (a,b), (a,c), (b,c)
-        if @_expectations[outer].equals( @_expectations[inner] )
-          fail(messages.DuplicateExpectation, @_expectations[outer]._method_name, @_expectations[outer]._args)
-
-  verify_all_expectations: ->
-    errors = _find_all_errors(@_expectations)
-    fail(errors) unless errors == ""
-
-  # TODO: write comment about uninstalling in reverse
-  uninstall_all_mocked_methods: ->
-    expectation.uninstall_mocked_method() for expectation in @_expectations by -1
-
-  unregister_all_expectations: ->
-    @_expectations.length = 0
-
-  # private
-
-  _find_all_errors = (all_expectations) ->    # returns "an error\nanother error\n...\n" or ""
-    errors = _flatten_array( expectation.find_errors() for expectation in all_expectations )
-    if errors.length > 0 then errors.join("\n") + "\n" else ""
-
-  #
-  # [ [], [ "a" ], [ "b", "c" ] ]   => [ "a", "b", "c" ]
-  # [ [], [], [] ]                  => []
-  #
-  # Don't care about this scenario:
-  # [ [ [ "a" ] ], [ "b"] ]         => [ [ "a" ], "b" ]
-  #
-  # See: http://stackoverflow.com/a/10865042
-  #
-  _flatten_array = (array) ->
-    [].concat.apply([], array)
-
-
-#
-# Expectation
-#
 class Expectation
 
-  constructor: (object, method_name, all_expectations) ->
-    @_object = object
-    @_method_name = method_name
+  constructor: ->
     @_args = []
     @_returns = undefined
     @_throws = undefined
     @_called = no
-    _install_mock_method(@, all_expectations)
-    all_expectations.register_expectation(@)
 
+  # m.expects("my_method").args(1,2,"three")
   args: (args...) ->
-    _check_args_usage(@, args...)
-    _save_args(@, args)
+    check_args_usage(@, args)
+    @_args = args
     @
 
+  # m.expects("my_method").returns(42)
   returns: (value) ->
-    _check_returns_usage(@, value)
-    _save_returns(@, value)
+    check_returns_usage(@, value, arguments.length)
+    @_returns = value
     @
 
+  # m.expects("my_method").throws(new Error("an error message"))
   throws: (error) ->
-    _check_throws_usage(@, error)
-    _save_throws(@, error)
+    check_throws_usage(@, error, arguments.length)
+    @_throws = error
     @
 
+  # is this expectation the same as that other one
   equals: (other) ->
-    @matches(other._object, other._method_name, other._args...)
+    @matches(other._args...)
 
-  matches: (object, method_name, args...) ->
-    ( @_method_name == method_name ) and
-      ( @_args.length == args.length ) and
+  # does this expectation have those args
+  matches: (args...) ->
+    ( @_args.length == args.length ) and
       ( @_args.every ( element, i ) -> element == args[ i ] )
-
-  find_errors: ->
-    if @_called then [] else [ format(messages.ExpectationNeverCalled, @_method_name, @_args) ]
 
   # private
 
-  _install_mock_method = (expectation, all_expectations) ->
-    methods = if is_class(expectation._object) then expectation._object.prototype else expectation._object
-    original_method = methods[ expectation._method_name ]
-    methods[ expectation._method_name ] = _build_mocked_method(expectation._method_name, all_expectations)
-    if original_method?
-      expectation.uninstall_mocked_method = -> methods[ expectation._method_name ] = original_method
-    else
-      expectation.uninstall_mocked_method = -> delete methods[ expectation._method_name ]
-
-  _build_mocked_method = (method_name, all_expectations) ->
-    (args...) ->
-      all_expectations.check_for_duplicate_expectations()    # TODO: explain why we call this here
-      _invoke( all_expectations.find_expectation(@, method_name, args...) )
-
-  _invoke = (expectation) ->
-    expectation._called = yes
-    throw expectation._throws if expectation._throws?
-    expectation._returns
-
-  _check_args_usage = (expectation, args...) ->
+  check_args_usage = (self, args) ->
     fail(messages.ArgsUsage) if args.length == 0
-    fail(messages.ArgsUsedMoreThanOnce) unless expectation._args.length == 0
-    fail(messages.ArgsUsedAfterReturnsOrThrows) if expectation._returns? or expectation._throws?
+    fail(messages.ArgsUsedMoreThanOnce) unless self._args.length == 0
+    fail(messages.ArgsUsedAfterReturnsOrThrows) if self._returns? or self._throws?
 
-  _check_returns_usage = (expectation, value) ->
-    # TODO: check argument count
+  check_returns_usage = (self, value, arg_count) ->
     fail(messages.ReturnsUsage) unless value?
-    fail(messages.ReturnsUsedMoreThanOnce) if expectation._returns?
-    fail(messages.ReturnsAndThrowsBothUsed) if expectation._throws?
+    fail(messages.ReturnsUsage) unless arg_count == 1
+    fail(messages.ReturnsUsedMoreThanOnce) if self._returns?
+    fail(messages.ReturnsAndThrowsBothUsed) if self._throws?
 
-  _check_throws_usage = (expectation, error) ->
-    # TODO: check argument count
+  check_throws_usage = (self, error, arg_count) ->
     fail(messages.ThrowsUsage) unless error?
-    fail(messages.ThrowsUsedMoreThanOnce) if expectation._throws?
-    fail(messages.ReturnsAndThrowsBothUsed) if expectation._returns?
+    fail(messages.ThrowsUsage) unless arg_count == 1
+    fail(messages.ThrowsUsedMoreThanOnce) if self._throws?
+    fail(messages.ReturnsAndThrowsBothUsed) if self._returns?
 
-  _save_args = (expectation, args) ->
-    expectation._args = args
 
-  _save_returns = (expectation, value) ->
-    expectation._returns = value
+class ExpectationList
 
-  _save_throws = (expectation, error) ->
-    expectation._throws = error
+  constructor: ->
+    @_list = []
+
+  register: (expectation) ->
+    @_list.push(expectation)
+
+  # returns undefined if not found
+  find: (args...) ->
+    return expectation for expectation in @_list when expectation.matches(args...)
+
+  # method_name is for error messages
+  check_for_duplicates: (method_name) ->
+    return if @_list.length < 2
+    for outer in [0..@_list.length-2]           # given @_list = [ a, b, c ], these loops produce the pairs (a,b), (a,c), (b,c)
+      for inner in [outer+1..@_list.length-1]
+        if @_list[outer].equals( @_list[inner] )
+          fail(messages.DuplicateExpectation, method_name, @_list[outer]._args)
+
+  # method_name is for error messages
+  # returns [ "an error re method1()", "another error re method1()", ... ]
+  find_errors: (method_name) ->
+    format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when not expectation._called
+
+
+class MockMethodList
+
+  constructor: ->
+    @_list = []
+
+  register: (mock_method) ->
+    @_list.push(mock_method)
+
+  contains: (mock_method) ->
+    @_list.indexOf(mock_method) != -1
+
+  # returns [ "an error re method1()", "another error re method1()", "an error re method2()", ... ]
+  find_errors: ->
+    @_list.reduce ( (errors, mock_method) -> errors.concat(mock_method.find_errors()) ), []
+
+  uninstall_mock_methods: ->
+    mock_method.uninstall() for mock_method in @_list
 
 
 #
 # common functions
 #
 
-is_class = (object) ->
-  typeof object == 'function'
+has_property = (object, property_name) ->
+  object[ property_name ]? and (typeof object[ property_name ]) isnt 'function'
+
+has_method = (object, method_name) ->
+  object[ method_name ]?
 
 is_function = (object) ->
   typeof object == 'function'
 
-is_object = (object) ->
-  typeof object == 'object'
-
-does_prototype_have_method = (object, method_name) ->
-  object.prototype[ method_name ]?
-
-does_object_have_method = (object, method_name) ->
-  object[ method_name ]?
-
-has_property = (object, property_name) ->
-  object[ property_name ]? and (typeof object[ property_name ]) isnt 'function'
-
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
+
+# See: http://stackoverflow.com/a/3886106
+is_integer = (number) ->
+  (typeof number is 'number') && (number % 1 == 0)
 
 fail = (message, args...) ->
   throw new Error(format(message, args...))
@@ -324,6 +307,6 @@ format = (message, args...) ->
 # See: http://www.matteoagosti.com/blog/2013/02/24/writing-javascript-modules-for-both-browser-and-node/
 #
 if module?.exports?
-  module.exports = MockFunction.mock
+  module.exports = mock
 else
-  window.mock = MockFunction.mock
+  window.mock = mock

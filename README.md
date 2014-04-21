@@ -35,7 +35,7 @@ In a terminal window on the vm (guest machine):
 $ cd ~/Documents/TinyMock
 $ ./_test
 
-> TinyMock@0.2.0 test /Users/vagrant/Documents/TinyMock
+> TinyMock@0.3.0 test /Users/vagrant/Documents/TinyMock
 > cake test
 
   test pre-conditions
@@ -68,10 +68,10 @@ $ rm -r ~/work/TinyMock    # and possibly rm -r ~/work if it is now empty
 - ./_test will run all business/unit tests.  Leave a terminal window open during development and
 run ./_test as you make changes to code.
 
-- ./_build will create TinyMock-0.2.0.tgz.  This file is checked into GitHub so that TinyMock
-can be installed using:
+- ./_build will create TinyMock-0.3.0.tgz.  This file is checked into GitHub so that TinyMock
+can be installed using something similar to:
     ```
-	$ npm install https://github.com/milewgit/TinyMock/raw/v0.2.0/TinyMock-0.2.0.tgz
+	$ npm install https://github.com/milewgit/TinyMock/raw/master/TinyMock-0.3.0.tgz
 	```
   
 - ./_lint will run various checks against the source code, typically looking for things that cropped
