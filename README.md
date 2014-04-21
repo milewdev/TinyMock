@@ -34,20 +34,24 @@ In a terminal window on the vm (guest machine):
 ```
 $ cd ~/Documents/TinyMock
 $ ./_test
+--------------------------------------------------------------------------------
 
 > TinyMock@0.3.0 test /Users/vagrant/Documents/TinyMock
 > cake test
 
-  test pre-conditions
-    ✓ Object does not have the property or method 'expects' 
-    ✓ Object does not have the property or method 'my_expects' 
 
+
+  assumptions
+    class Object
+      ✓ does not have the property or method 'expects' 
+      ✓ does not have the property or method 'my_expects' 
 ...
 
-    ✓ throws an error when the same method throws the same values 
-    ✓ throws an error when the same method throws different values 
+    ✓ throws an error if the same method throws the same values 
+    ✓ throws an error if the same method throws different values 
 
-  74 passing (40ms)
+
+  101 passing (52ms)
   1 pending
 ```
 
