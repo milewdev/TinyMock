@@ -252,6 +252,18 @@ describe "mock", ->
     it "passes mock_count mock objects to test_function", ->
       mock mock_count: 17, (m...) ->
         m.length.should.equal(17)
+        
+    it "throws an error if mock_count is not a number", ->
+      (->
+        mock mock_count: "17", (many...) ->
+          m.expects("my_method") for m in many
+      ).should.throw(format(messages.MockCountNotANumber, 17))
+      
+    it "must be >= 0", ->
+      (->
+        mock mock_count: -17, (many...) ->
+          m.expects("my_method") for m in many
+      ).should.throw(format(messages.MockCountNegative, -17, 17))
 
   describe "expectation validation", ->
 

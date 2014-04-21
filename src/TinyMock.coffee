@@ -49,6 +49,8 @@ mock = (args...) ->
         fail(messages.MockUsage) unless is_function(args[0])
       when 2
         fail(messages.MockBadUsage) unless has_property(args[0], "expects_method_name") or has_property(args[0], "mock_count")
+        fail(messages.MockCountNotANumber, args[0].mock_count) if args[0].mock_count? and not is_integer(args[0].mock_count)
+        fail(messages.MockCountNegative, args[0].mock_count, -1 * args[0].mock_count) if args[0].mock_count? and (args[0].mock_count < 0)
         fail(messages.MockUsage) unless is_function(args[1])
       else
         fail(messages.MockUsage)
@@ -64,7 +66,6 @@ mock = (args...) ->
     expects_method_name ?= "expects"
     mock_count ?= 5
     # TODO: what happens if expects_method_name is not a legal method name?
-    # TODO: what happens if mock_count is not a number?
 
   check_expects_method_name = ->
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
@@ -268,6 +269,10 @@ is_function = (object) ->
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
+  
+# See: http://stackoverflow.com/a/3886106
+is_integer = (number) ->
+  (typeof number is 'number') && (number % 1 == 0)
 
 fail = (message, args...) ->
   throw new Error(format(message, args...))
