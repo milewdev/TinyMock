@@ -1,5 +1,5 @@
 #
-# It may be helpful to skim the tutorial and the reference in order to 
+# It may be helpful to skim the tutorial and the reference in order to
 # understand what TinyMock does before reading the code.
 #
 # tutorial:  http://milewgit.github.io/TinyMock.doc/tutorial.html
@@ -55,8 +55,8 @@
 
 
 #
-# All error messages are stored in an external json file which we load 
-# into 'messages'.  This is the only state that is maintained between 
+# All error messages are stored in an external json file which we load
+# into 'messages'.  This is the only state that is maintained between
 # calls to mock().
 #
 messages = require("../messages/messages.en.json")
@@ -171,12 +171,12 @@ mock = (args...) ->
 #     m.expects("my_method").args(4, 5, 6)
 #
 # These are represented internally by one instance of MockMethod for
-# "my_method", which itself has a list of two expectations, one with args 1, 
-# 2, and 3, and the second with args 4, 5, and 6.  
+# "my_method", which itself has a list of two expectations, one with args 1,
+# 2, and 3, and the second with args 4, 5, and 6.
 #
 # expects() first validates the method_name argument ("my_method" in the
-# examples above).  It then installs a mock method for method_name if one has 
-# not already been installed, and finally it creates a new expectation, which 
+# examples above).  It then installs a mock method for method_name if one has
+# not already been installed, and finally it creates a new expectation, which
 # it returns to the caller.  Rewriting the example above to make the process
 # clearer:
 #
@@ -221,11 +221,11 @@ ExpectsMethod = (expects_method_name, mock_methods)->
 # by expects().  A mock method has a list of one or more expectations; when
 # the mock method is invoked with various arguments, it retrieves the matching
 # expectation and marks it as called (i.e. the expectation was met).  Finally,
-# it throws the expectation's throw error, if it has one, or it returns the 
+# it throws the expectation's throw error, if it has one, or it returns the
 # expectation's return value.
 #
-# MockMethod is also resposible for checking for duplicate expectations as all 
-# expectations will have been specified when it is called, and it also has 
+# MockMethod is also resposible for checking for duplicate expectations as all
+# expectations will have been specified when it is called, and it also has
 # access to the list of expectations:
 #
 #   mock (m) ->
@@ -235,9 +235,9 @@ ExpectsMethod = (expects_method_name, mock_methods)->
 #     expectation2.args(1,2,3)                # could check in the args() method but it does not have clean access to expectation1
 #     m.my_method()                           # best place to do it, as my_method mock method has the list of all expectations
 #
-# A MockMethod instance replaces an existing method on an object (except MockObject 
-# instances passed in by mock()), and that existing method is restored when mock() 
-# finishes.  The MockMethod instance is a convenient place to save the original 
+# A MockMethod instance replaces an existing method on an object (except MockObject
+# instances passed in by mock()), and that existing method is restored when mock()
+# finishes.  The MockMethod instance is a convenient place to save the original
 # method and so MockMethod provides install() and uninstall() methods to help
 # with this.
 #
@@ -282,11 +282,36 @@ MockMethod = (object, method_name) ->
   mock_method
 
 
+#
+# Instances of MockObject area created by mock() and passed to the test
+# function.  It is an empty class that exists solely so that expects()
+# can distinguish between 'regular' objects and those passed by mock():
+# expectations can only be set on existing methods of regular objects,
+# whereas expectations can be set on non-existing methods on MockObjects.
+#
 class MockObject
 
   # empty
 
 
+#
+# An Expectation represents the set of method arguments of a method
+# invocation.  For example:
+#
+#   my_method(1, 2, 3)
+#   my_method(4, 5, 6)
+#
+# are two expectations of the method my_method(), the first with arguments
+# 1, 2, and 3, the second with 4, 5, and 6.
+#
+# Sometimes it is necessary for mocked methods to return values or throw
+# errors in order for the system under test to function correctly,
+# therefore an expectation can have a return value or a throws value,
+# but not both.
+#
+# Finally, an expectation is met when it is called, so Expectation has
+# a called flag that is set to true to note that the expectation was met.
+#
 class Expectation
 
   constructor: ->
@@ -342,6 +367,10 @@ class Expectation
     fail(messages.ReturnsAndThrowsBothUsed) if self._returns?
 
 
+#
+# ExpectationList is simply an array of Expectations with some additional
+# convenience methods.
+#
 class ExpectationList
 
   constructor: ->
@@ -368,6 +397,10 @@ class ExpectationList
     format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when not expectation._called
 
 
+#
+# MockMethodList is simply an array of MockMethods with some additional
+# convenience methods.
+#
 class MockMethodList
 
   constructor: ->
