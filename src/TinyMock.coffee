@@ -158,7 +158,7 @@ mock = (args...) ->
 
 
 #
-# ExpectsMethod is a function closure used to implement the expects() method:
+# ExpectsMethod is a function closure that implements the expects() method:
 #
 #   mock (m) ->
 #     m.expects("my_method")
@@ -216,13 +216,44 @@ ExpectsMethod = (expects_method_name, mock_methods)->
   expects_method
 
 
+#
+# MockMethod is a function closure that implements the mock methods installed
+# by expects().  A mock method has a list of one or more expectations; when
+# the mock method is invoked with various arguments, it retrieves the matching
+# expectation and marks it as called (i.e. the expectation was met).  Finally,
+# it throws the expectation's throw error, if it has one, or it returns the 
+# expectation's return value.
+#
+# MockMethod is also resposible for checking for duplicate expectations as all 
+# expectations will have been specified when it is called, and it also has 
+# access to the list of expectations:
+#
+#   mock (m) ->
+#     expectation1 = m.expects("my_method")
+#     expectation1.args(1,2,3)
+#     expectation2 = m.expects("my_method")   # cannot check for duplicates because args() not called yet, if at all
+#     expectation2.args(1,2,3)                # could check in the args() method but it does not have clean access to expectation1
+#     m.my_method()                           # best place to do it, as my_method mock method has the list of all expectations
+#
+# A MockMethod instance replaces an existing method on an object (except MockObject 
+# instances passed in by mock()), and that existing method is restored when mock() 
+# finishes.  The MockMethod instance is a convenient place to save the original 
+# method and so MockMethod provides install() and uninstall() methods to help
+# with this.
+#
+# Finally, since MockMethod maintains a list of expectations, it provides a
+# create_expectation() method to create a new expectation, add it to the list,
+# and return it to the caller.  It also provides a find_errors() method to
+# gather and return any errors from each of the expectations in the list.
+#
 MockMethod = (object, method_name) ->
 
   expectations = new ExpectationList()
   original_method = undefined
 
+  # this is the actual mock method
   mock_method = (args...) ->
-    expectations.check_for_duplicates(method_name)                              # TODO: explain why we do this here
+    expectations.check_for_duplicates(method_name)
     expectation = expectations.find(args...)
     fail(messages.UnknownExpectation, method_name, args) unless expectation
     expectation._called = yes
@@ -247,6 +278,7 @@ MockMethod = (object, method_name) ->
   mock_method.find_errors = ->
     expectations.find_errors(method_name)
 
+  # main function body
   mock_method
 
 
