@@ -2,9 +2,9 @@ messages = require("../messages/messages.en.json")
 
 
 #
-# The mock() function sets up a mocking environment or scope where 
-# a test function can set method call expectations on objects.  It 
-# then runs the test function, checks that all expectations were 
+# The mock() function sets up a mocking environment or scope where
+# a test function can set method call expectations on objects.  It
+# then runs the test function, checks that all expectations were
 # met, and finally cleans up the environment:
 #
 #   fs = require("fs")                                  # a dependency
@@ -15,7 +15,7 @@ messages = require("../messages/messages.en.json")
 #                                                       # end scope: checks expectations, removes expects(), restores original writeFileSync()
 #
 mock = (args...) ->
-  
+
   test_function = undefined
   expects_method_name = undefined
   mock_count = undefined
@@ -79,8 +79,8 @@ mock = (args...) ->
     mock_objects = ( new MockObject() for i in [1..mock_count] )
 
   create_empty_mock_methods_list = ->
-    mock_methods = new MockMethodList()    
-  
+    mock_methods = new MockMethodList()
+
   read_args(args)
   setup_environment()
   try
@@ -91,33 +91,33 @@ mock = (args...) ->
 
 
 ExpectsMethod = (expects_method_name, mock_methods)->
-  
+
   expects_method = (method_name) ->
     check_usage(@, method_name, arguments.length)
     install_mock_method(@, method_name) unless is_mock_method(@[method_name])
     @[method_name].create_expectation()
-  
+
   check_usage = (self, method_name, arg_count) ->
     fail(messages.ExpectsUsage) unless method_name?
     fail(messages.ExpectsUsage) unless arg_count == 1
     fail(messages.NotAnExistingMethod, method_name) unless is_mock_object(self) or has_method(self, method_name)
     fail(messages.PreExistingProperty, method_name) if has_property(self, method_name)
     fail(messages.ReservedMethodName, method_name) if is_reserved_method_name(method_name)
-    
+
   install_mock_method = (self, method_name) ->
     mock_method = MockMethod(self, method_name)
     mock_method.install()
     mock_methods.register(mock_method)
-    
+
   is_mock_method = (method) ->
     mock_methods.contains(method)
-    
+
   is_reserved_method_name = (method_name) ->
     method_name == expects_method_name
-  
+
   expects_method
-    
-    
+
+
 MockMethod = (object, method_name) ->
 
   expectations = new ExpectationList()
@@ -130,7 +130,7 @@ MockMethod = (object, method_name) ->
     expectation._called = yes
     throw expectation._throws if expectation._throws
     expectation._returns
-    
+
   mock_method.install = ->
     original_method = object[method_name]
     object[method_name] = mock_method
@@ -140,7 +140,7 @@ MockMethod = (object, method_name) ->
       object[method_name] = original_method
     else
       delete object[method_name]
-    
+
   mock_method.create_expectation = ->
     expectation = new Expectation()
     expectations.register(expectation)
@@ -150,7 +150,7 @@ MockMethod = (object, method_name) ->
     expectations.find_errors(method_name)
 
   mock_method
-    
+
 
 class MockObject
 
@@ -216,7 +216,7 @@ class ExpectationList
 
   constructor: ->
     @_list = []
-    
+
   register: (expectation) ->
     @_list.push(expectation)
 
@@ -225,7 +225,7 @@ class ExpectationList
     return expectation for expectation in @_list when expectation.matches(args...)
 
   # method_name is for error messages
-  check_for_duplicates: (method_name) ->        
+  check_for_duplicates: (method_name) ->
     return if @_list.length < 2
     for outer in [0..@_list.length-2]           # given @_list = [ a, b, c ], these loops produce the pairs (a,b), (a,c), (b,c)
       for inner in [outer+1..@_list.length-1]
@@ -234,7 +234,7 @@ class ExpectationList
 
   # method_name is for error messages
   # returns [ "an error re method1()", "another error re method1()", ... ]
-  find_errors: (method_name) ->                 
+  find_errors: (method_name) ->
     format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when not expectation._called
 
 
@@ -245,7 +245,7 @@ class MockMethodList
 
   register: (mock_method) ->
     @_list.push(mock_method)
-    
+
   contains: (mock_method) ->
     @_list.indexOf(mock_method) != -1
 
@@ -272,7 +272,7 @@ is_function = (object) ->
 
 is_mock_object = (object) ->
   object.constructor.name == 'MockObject'
-  
+
 # See: http://stackoverflow.com/a/3886106
 is_integer = (number) ->
   (typeof number is 'number') && (number % 1 == 0)
