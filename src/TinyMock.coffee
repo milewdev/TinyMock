@@ -262,7 +262,7 @@ class MockMethodList
 #
 
 has_property = (object, property_name) ->
-  object[ property_name ]? and (typeof object[ property_name ]) isnt 'function'
+  object[ property_name ]? and (typeof object[ property_name ] isnt 'function')
 
 has_method = (object, method_name) ->
   object[ method_name ]?
