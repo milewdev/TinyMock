@@ -65,7 +65,6 @@ mock = (args...) ->
         test_function = args[1]
     expects_method_name ?= "expects"
     mock_count ?= 5
-    # TODO: what happens if expects_method_name is not a legal method name?
 
   check_expects_method_name = ->
     fail(messages.ExpectsMethodAlreadyExists, expects_method_name) if Object.prototype[expects_method_name]?
