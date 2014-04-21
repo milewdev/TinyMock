@@ -9,10 +9,10 @@ messages = require("../messages/messages.en.json")
 #
 #   fs = require("fs")                                  # a dependency
 #   sut = new Sut()                                     # something under test
-#   mock ->                                             # start mocking scope: add expects() to Object.prototype
+#   mock ->                                             # start mocking scope: adds expects() to Object.prototype
 #     fs.expects("writeFileSync").args("some content")  # set an expectation: replace writeFileSync() with a mock method
 #     sut.do_something_interesting()                    # run whatever it is we want to test
-#   ...                                                 # end scope: check expectations, remove expects(), restore original writeFileSync()
+#                                                       # end scope: checks expectations, removes expects(), restores original writeFileSync()
 #
 mock = (args...) ->
   
