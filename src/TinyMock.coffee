@@ -226,7 +226,6 @@ class ExpectationList
 
   # method_name is for error messages
   check_for_duplicates: (method_name) ->        
-    # TODO: use each with index and slice to avoid last element
     return if @_list.length < 2
     for outer in [0..@_list.length-2]           # given @_list = [ a, b, c ], these loops produce the pairs (a,b), (a,c), (b,c)
       for inner in [outer+1..@_list.length-1]
