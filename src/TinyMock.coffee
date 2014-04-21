@@ -165,16 +165,19 @@ class Expectation
     @_throws = undefined
     @_called = no
 
+  # m.expects("my_method").args(1,2,"three")
   args: (args...) ->
     check_args_usage(@, args)
     @_args = args
     @
 
+  # m.expects("my_method").returns(42)
   returns: (value) ->
     check_returns_usage(@, value, arguments.length)
     @_returns = value
     @
 
+  # m.expects("my_method").throws(new Error("an error message"))
   throws: (error) ->
     check_throws_usage(@, error, arguments.length)
     @_throws = error
@@ -221,16 +224,18 @@ class ExpectationList
   find: (args...) ->
     return expectation for expectation in @_list when expectation.matches(args...)
 
-  check_for_duplicates: (method_name) ->                  # method_name is for error messages;  TODO: is there a better way?
+  # method_name is for error messages
+  check_for_duplicates: (method_name) ->        
     # TODO: use each with index and slice to avoid last element
     return if @_list.length < 2
-    for outer in [0..@_list.length-2]                     # given @_list = [ a, b, c ], these
-      for inner in [outer+1..@_list.length-1]             # loops produce the pairs (a,b), (a,c), (b,c)
+    for outer in [0..@_list.length-2]           # given @_list = [ a, b, c ], these loops produce the pairs (a,b), (a,c), (b,c)
+      for inner in [outer+1..@_list.length-1]
         if @_list[outer].equals( @_list[inner] )
           fail(messages.DuplicateExpectation, method_name, @_list[outer]._args)
 
+  # method_name is for error messages
   # returns [ "an error re method1()", "another error re method1()", ... ]
-  find_errors: (method_name) ->                           # method_name is for error messages; TODO: is there a better way?
+  find_errors: (method_name) ->                 
     format(messages.ExpectationNeverCalled, method_name, expectation._args) for expectation in @_list when not expectation._called
 
 
