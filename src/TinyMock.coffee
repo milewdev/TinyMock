@@ -22,7 +22,7 @@ mock = (args...) ->
   mock_objects = undefined
   mock_methods = undefined
 
-  load_args = (args) ->
+  read_args = (args) ->
     check_usage(args)
     parse_args(args)
     check_expects_method_name()
@@ -81,7 +81,7 @@ mock = (args...) ->
   create_empty_mock_methods_list = ->
     mock_methods = new MockMethodList()    
   
-  load_args(args)
+  read_args(args)
   setup_environment()
   try
     run_test_function()
