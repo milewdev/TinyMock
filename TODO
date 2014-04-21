@@ -1,5 +1,4 @@
 Test in a browser.
-Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
 Finish writing up LESSONS.
 Check the ordering of the unit tests - are they listed logically?
 Extract all test descriptions and make sure they are consistent.
@@ -27,3 +26,4 @@ Check that spacing around '(' and ')' is consistent.
 [done] Rename TinyMockJS to TinyMock; rename the github project from TinyMockJS to TinyMock.js
 [done] Get Travis CI working.
 [done] Refactor TinyMock.coffee
+[done] Add comments showing progression of algorithm (e.g. show changes to arrays or a parameter).
