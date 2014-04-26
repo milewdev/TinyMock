@@ -75,8 +75,8 @@ messages = require("../messages/messages.en.json")
 #     sut.do_something_interesting()                    # run whatever it is we want to test
 #                                                       # end scope: checks expectations, removes expects(), restores original writeFileSync()
 #
-# mock() is a function closure.  Variables are defined first, followed
-# by support functions, and finally the body of the function itself.
+# mock() consists of a number of variable declarations, function
+# definitions, and finally the mock() function body itself.
 #
 # mock() is exported at the end of this file.
 #
