@@ -27,11 +27,6 @@ messages = require("../messages/messages.en.json")
 #     sut.do_something_interesting()                    # run whatever it is we want to test
 #                                                       # end scope: checks expectations, removes expects(), restores original writeFileSync()
 #
-# mock() consists of a number of variable declarations, function
-# definitions, and finally the mock() function body itself.
-#
-# mock() is exported at the end of this file.
-#
 mock = (args...) ->
 
   test_function = undefined
