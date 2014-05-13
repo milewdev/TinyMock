@@ -1,56 +1,8 @@
 #
-# It may be helpful to skim the tutorial and the reference in order to
-# understand what TinyMock does before reading the code.
+# For background, please see:
 #
 # tutorial:  http://milewgit.github.io/TinyMock.doc/tutorial.html
 # reference: http://milewgit.github.io/TinyMock.doc/reference.html
-#
-
-#
-# Two coding structures are used, classes and function closures:
-#
-#   class MyClass
-#
-#     constructor: ->
-#     @_var = undefined                 # list of instance variables
-#     ...
-#
-#     public_method: ->                 # public methods
-#     ...
-#     private_method(@)                 # pass 'this' to private methods
-#     ...
-#
-#     private_method = (self) ->        # private methods
-#     ...
-#     self._var = ...
-#     ...
-#
-#
-#   MyFunction = ->
-#
-#     var = undefined                   # list of closure variables
-#     ...
-#
-#     my_function = ->                  # the main function
-#       ...
-#       var = ...
-#       private_method()
-#       ...
-#
-#     my_function.public_method = ->    # public methods
-#       ...
-#       var = ...
-#       private_method()
-#       ...
-#
-#     private_method = ->               # private methods
-#       ...
-#       var = ...
-#       ...
-#
-#     private_method()                  # body of MyFunction
-#     ...
-#     my_function                       # return the main function
 #
 
 
