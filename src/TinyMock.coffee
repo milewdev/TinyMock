@@ -1,8 +1,8 @@
 #
 # For background, please see:
 #
-# tutorial:  http://milewgit.github.io/TinyMock.doc/tutorial.html
-# reference: http://milewgit.github.io/TinyMock.doc/reference.html
+# tutorial:  http://milewdev.github.io/TinyMock.doc/tutorial.html
+# reference: http://milewdev.github.io/TinyMock.doc/reference.html
 #
 
 

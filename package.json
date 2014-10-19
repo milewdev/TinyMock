@@ -1,6 +1,6 @@
 {
   "name": "TinyMock",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "tiny coffeescript mocking library",
   "private": true,
   "main": "./lib/TinyMock.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/milewgit/TinyMock.git"
+    "url": "https://github.com/milewdev/TinyMock.git"
   },
   "keywords": [
     "test",
@@ -24,7 +24,7 @@
   "author": "Michael Lewandowski",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/milewgit/TinyMock/issues"
+    "url": "https://github.com/milewdev/TinyMock/issues"
   },
   "devDependencies": {
     "mocha": "~1.18",

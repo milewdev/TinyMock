@@ -1,6 +1,6 @@
 VM_NAME                           = "TinyMock"
 VAGRANTFILE_API_VERSION           = "2"
-PROJECT_SCC_URL                   = "https://github.com/milewgit/TinyMock.git"
+PROJECT_SCC_URL                   = "https://github.com/milewdev/TinyMock.git"
 PROJECT_VM_PATH                   = "/Users/vagrant/Documents/TinyMock"
 PROVIDER                          = "vmware_fusion"
 BOX                               = "OSX109"

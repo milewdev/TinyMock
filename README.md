@@ -1,5 +1,5 @@
 <!-- build status badge -->
-[![Build Status](https://travis-ci.org/milewgit/TinyMock.svg?branch=master)](https://travis-ci.org/milewgit/TinyMock)
+[![Build Status](https://travis-ci.org/milewdev/TinyMock.svg?branch=master)](https://travis-ci.org/milewdev/TinyMock)
 
 
 ### What is TinyMock?
@@ -7,7 +7,7 @@ A very small coffeescript mocking framework.
 
 
 ### Documentation
-[Here](http://milewgit.github.io/TinyMock.doc/) (documentation source is [here](https://github.com/milewgit/TinyMock.doc)).
+[Here](http://milewdev.github.io/TinyMock.doc/) (documentation source is [here](https://github.com/milewdev/TinyMock.doc)).
 
 
 ### Development Setup
@@ -24,7 +24,7 @@ In a terminal window on the host machine:
 ```
 $ mkdir -p ~/work/TinyMock
 $ cd ~/work/TinyMock
-$ curl -fsSL https://raw.github.com/milewgit/TinyMock/master/Vagrantfile -o Vagrantfile
+$ curl -fsSL https://raw.github.com/milewdev/TinyMock/master/Vagrantfile -o Vagrantfile
 $ vagrant up --provider=vmware_fusion
 ...
 ```
@@ -36,7 +36,7 @@ $ cd ~/Documents/TinyMock
 $ ./_test
 --------------------------------------------------------------------------------
 
-> TinyMock@0.3.0 test /Users/vagrant/Documents/TinyMock
+> TinyMock@0.4.0 test /Users/vagrant/Documents/TinyMock
 > cake test
 
 
@@ -72,10 +72,10 @@ $ rm -r ~/work/TinyMock    # and possibly rm -r ~/work if it is now empty
 - ./_test will run all business/unit tests.  Leave a terminal window open during development and
 run ./_test as you make changes to code.
 
-- ./_build will create TinyMock-0.3.0.tgz.  This file is checked into GitHub so that TinyMock
+- ./_build will create TinyMock-0.4.0.tgz.  This file is checked into GitHub so that TinyMock
 can be installed using something similar to:
     ```
-	$ npm install https://github.com/milewgit/TinyMock/raw/master/TinyMock-0.3.0.tgz
+	$ npm install https://github.com/milewdev/TinyMock/raw/master/TinyMock-0.4.0.tgz
 	```
   
 - ./_lint will run various checks against the source code, typically looking for things that cropped
