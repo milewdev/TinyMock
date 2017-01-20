@@ -103,7 +103,7 @@ changes, vagrant up and then in a terminal window on the vm do something like:
 - [Apple](http://www.apple.com)
 - [CoffeeScript](http://coffeescript.org)
 - [GitHub](https://github.com) and [GitHub pages](http://pages.github.com)
-- [mocha](http://visionmedia.github.io/mocha) and [chai](http://chaijs.com)
+- [mocha](http://mochajs.org/) and [chai](http://chaijs.com)
 - [Node.js](http://nodejs.org)
 - [npm](https://www.npmjs.org)
 - [TextMate](http://macromates.com)
